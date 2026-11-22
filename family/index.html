@@ -134,9 +134,9 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 
 
 /* ---------- This month in past years ---------- */
-.past { display: grid; grid-template-columns: 7.5rem repeat(3, minmax(0, 1fr)); gap: .6rem; padding: .6rem; }
-.past .ttl { display: flex; flex-direction: column; justify-content: center; padding-left: .5rem; }
-.past .ttl b { font-family: var(--display); font-weight: 400; font-size: 1.55rem; line-height: 1.05; color: var(--amber); }
+.past { display: grid; grid-template-columns: 8.5rem repeat(3, minmax(0, 1fr)); gap: .6rem; padding: .6rem; }
+.past .ttl { display: flex; flex-direction: column; justify-content: center; padding-left: .4rem; min-width: 0; overflow-wrap: anywhere; }
+.past .ttl b { font-family: var(--display); font-weight: 400; font-size: 1.3rem; line-height: 1.05; color: var(--amber); }
 .past .ttl span { font-family: var(--display); font-size: 1.15rem; line-height: 1.1; color: var(--fg); }
 .past .ttl .label { margin-top: .5rem; }
 .past .tile { position: relative; overflow: hidden; border-radius: .5rem; background: #0b0e1d; min-height: 0; }
