@@ -287,13 +287,13 @@ async function renderWeather() {
 /* ---------- private data ---------- */
 const b64 = s => { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return Uint8Array.from(atob(s), c => c.charCodeAt(0)); };
 let cryptoKey = null;
-async function unlock(file) {
+async function unlock(file, raw) {
   if (!KEY) throw new Error("nokey");
   cryptoKey = cryptoKey || await crypto.subtle.importKey("raw", b64(KEY), "AES-GCM", false, ["decrypt"]);
   const r = await fetch(file + "?v=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw new Error("missing");
   const { iv, ct } = await r.json();
   const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(iv) }, cryptoKey, b64(ct));
-  return JSON.parse(new TextDecoder().decode(pt));
+  return raw ? pt : JSON.parse(new TextDecoder().decode(pt));
 }
 
 let DATA = null;
@@ -360,13 +360,17 @@ async function loadPhotos() {
   if (!box.querySelector("img")) for (let i = 0; i < 2; i++) { const img = new Image(); img.alt = ""; box.insertBefore(img, $("cap")); }
   showPhoto();
 }
-function showPhoto() {
+const PHOTO_DIR = "/almanac-board-photos/";
+async function showPhoto() {
   const mode = MODES[mi % MODES.length]; if (!mode) return;
   $("po").dataset.mode = mode;
   const list = SETS[mode], p = list[idx[mode] % list.length];
   const imgs = $("photo").querySelectorAll("img"), next = imgs[1 - layer], cur = imgs[layer];
-  next.onload = () => { next.classList.add("on"); cur.classList.remove("on"); layer = 1 - layer; };
-  next.src = p.src;
+  let url;
+  try { url = p.src || URL.createObjectURL(new Blob([await unlock(PHOTO_DIR + p.file, true)], { type: "image/jpeg" })); } catch (e) { return; }
+  next.onload = () => { next.classList.add("on"); cur.classList.remove("on"); layer = 1 - layer; if (cur.dataset.url) { URL.revokeObjectURL(cur.dataset.url); delete cur.dataset.url; } };
+  if (!p.src) next.dataset.url = url;
+  next.src = url;
   $("cap").textContent = p.date || "";
   if (mode === "quad") $("quadcap").textContent = p.date || "";
 }
