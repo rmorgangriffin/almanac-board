@@ -384,8 +384,15 @@ function since() {
   const p = parts(new Date(), TZ); let years = +p.year - 1963;
   if (Date.UTC(+p.year, 10, 23, 17, 16, 20) > now) years--;
   const days = Math.floor(ms / 86400000);
-  $("sinceBig").textContent = `${years} years`;
-  $("sinceSmall").textContent = `${days.toLocaleString("en-US")} days since the first episode`;
+  const moment = Date.UTC(+p.year, 10, 23, 17, 16, 20), left = moment - now;
+  if (left > 0 && left < 86400000) {   // anniversary day, before 12:16 pm Eastern
+    const h = Math.floor(left / 3600000), m = Math.floor(left / 60000) % 60;
+    $("sinceBig").textContent = h ? `${h}h ${m}m` : `${m} min`;
+    $("sinceSmall").textContent = `until it turns ${years + 1}, at 12:16 pm here`;
+  } else {
+    $("sinceBig").textContent = `${years} years`;
+    $("sinceSmall").textContent = `${days.toLocaleString("en-US")} days since the first episode`;
+  }
 }
 showFact(); setInterval(showFact, 15000); since(); setInterval(since, 60000);
 
