@@ -329,7 +329,7 @@ async function loadData() {
 let SETS = {}, MODES = [], mi = 0, idx = {}, layer = 0;
 async function loadPhotos() {
   try {
-    const p = await unlock("../family/photos.enc");
+    const p = await unlock("/almanac-board-photos/photos.enc");
     SETS = {}; for (const s of p.sets || [{ name: "dublin", photos: p.photos || [] }]) if (s.photos.length) SETS[s.name] = s.photos;
     MODES = Object.keys(SETS); MODES.forEach(m => idx[m] = idx[m] || 0);
   } catch (e) {}

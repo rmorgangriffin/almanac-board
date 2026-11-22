@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Griffano Board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=DM+Serif+Display&family=Archivo+Black&family=Bricolage+Grotesque:wght@500;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Space+Mono:wght@400;700&display=swap">
 <style>
 /* Layout: 1080×1920 portrait wall board. Header + forecast across the top, work agenda beside a five-week family grid, Po's Dublin panel along the bottom. */
 :root {
@@ -124,9 +124,61 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
   .dub { padding: 1rem; }
 }
 @media (prefers-reduced-motion: reduce) { .photo img { transition: none; } }
+
+/* ---------- Strip: forecast + game ---------- */
+.strip { display: grid; grid-template-columns: minmax(0, 1fr) 17rem; gap: 1rem; }
+.game { padding: .6rem; display: grid; grid-template-rows: auto 1fr; gap: .35rem; }
+.game .gh { display: flex; justify-content: space-between; align-items: baseline; }
+.game canvas { width: 100%; height: auto; aspect-ratio: 16 / 9; image-rendering: pixelated; image-rendering: crisp-edges; border-radius: .35rem; background: var(--gamebg, #070a16); display: block; }
+@media (max-width: 700px) { .strip { grid-template-columns: 1fr; } .game canvas { aspect-ratio: 16 / 9; height: auto; } }
+
+/* ---------- Look tag ---------- */
+#looktag { position: fixed; right: max(.6rem, env(safe-area-inset-right, 0px)); bottom: .35rem; z-index: 5; font-family: var(--mono); font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); opacity: .75; }
+
+/* ---------- Looks: same blocks, different palettes and arrangements. One per hour. ---------- */
+/* 2 Harbor: sea-glass on deep navy, work column on the right */
+html[data-look="harbor"] { --ink: #0b1c26; --panel: #102a37; --line: #1d4252; --fg: #e6f1f0; --muted: #86a8ad; --amber: #f4b860; --sage: #7fd1c1; --lilac: #9fb6ff; --display: "DM Serif Display", Georgia, serif; --gamebg: #061219; }
+html[data-look="harbor"] .main { grid-template-columns: minmax(0, 1fr) 19rem; }
+html[data-look="harbor"] .work { order: 2; }
+
+/* 3 Paper: light, inky, a red accent; photos up top */
+html[data-look="paper"] { --ink: #eef0f3; --panel: #ffffff; --line: #d5d9e0; --fg: #1b2230; --muted: #687387; --amber: #d6452f; --sage: #2f8f6b; --lilac: #6a5acd; --rose: #c2185b; --display: "Fraunces", Georgia, serif; --gamebg: #1b2230; color-scheme: light; }
+html[data-look="paper"] .panel { box-shadow: 0 1px 2px rgba(27, 34, 48, .06); }
+@media (min-width: 900px) { html[data-look="paper"] .board { grid-template-rows: auto auto 22rem minmax(0, 1fr); } }
+html[data-look="paper"] .po { order: 3; } html[data-look="paper"] .main { order: 4; }
+html[data-look="paper"] .photo .cap { color: #fff; }
+
+/* 4 Orchard: deep green, apple red and gold */
+html[data-look="orchard"] { --ink: #10201a; --panel: #163027; --line: #2a4a3c; --fg: #f1eedf; --muted: #9db3a3; --amber: #f0c24b; --sage: #e2674f; --lilac: #b7d47a; --display: "Fraunces", Georgia, serif; --gamebg: #0a1611; }
+
+/* 5 Ember: charcoal and orange, clock centered */
+html[data-look="ember"] { --ink: #161412; --panel: #211d1a; --line: #3a322c; --fg: #f3ece4; --muted: #a8998b; --amber: #ff8a3d; --sage: #e8c07a; --lilac: #c99bd6; --display: "Bricolage Grotesque", system-ui, sans-serif; --gamebg: #0e0c0a; }
+html[data-look="ember"] .head { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: .6rem; }
+html[data-look="ember"] .head .time { order: -1; font-size: clamp(3rem, 12vw, 6rem); font-weight: 700; }
+html[data-look="ember"] .now { text-align: center; } html[data-look="ember"] .now .t { justify-content: center; }
+html[data-look="ember"] .latin { font-size: 2rem; }
+
+/* 6 Bauhaus: off-white, primary blocks, square corners */
+html[data-look="bauhaus"] { --ink: #f2efe8; --panel: #fbfaf6; --line: #111111; --fg: #111111; --muted: #555555; --amber: #e63b2e; --sage: #1d5bd6; --lilac: #f2b705; --rose: #e63b2e; --display: "Archivo Black", Impact, sans-serif; --body: "Bricolage Grotesque", system-ui, sans-serif; --gamebg: #111111; color-scheme: light; }
+html[data-look="bauhaus"] .panel { border-radius: 0; border: 3px solid #111; }
+html[data-look="bauhaus"] .latin em { color: #1d5bd6; }
+html[data-look="bauhaus"] .photo .cap { color: #fff; }
+html[data-look="bauhaus"] .cell.today { box-shadow: inset 0 0 0 3px var(--amber); border-radius: 0; }
+
+/* 7 Phosphor: green-screen terminal */
+html[data-look="phosphor"] { --ink: #030805; --panel: #06110a; --line: #12391f; --fg: #9dfcb5; --muted: #4f9a66; --amber: #d6ff6b; --sage: #59e3ff; --lilac: #ffb3f0; --rose: #ff7a7a; --display: "Space Mono", ui-monospace, monospace; --body: "Space Mono", ui-monospace, monospace; --mono: "Space Mono", ui-monospace, monospace; --gamebg: #010402; }
+html[data-look="phosphor"] body { text-shadow: 0 0 .35rem rgba(157, 252, 181, .35); }
+html[data-look="phosphor"] .photo img { filter: saturate(.6) contrast(1.05); }
+
+/* 8 Dusk: violet-to-rose sky with glass panels, grid and work swapped */
+html[data-look="dusk"] { --ink: #1a1030; --panel: rgba(255, 255, 255, .07); --line: rgba(255, 255, 255, .14); --fg: #fbefff; --muted: #c4b0de; --amber: #ffcf70; --sage: #8ff0d2; --lilac: #ff9ed1; --display: "DM Serif Display", Georgia, serif; --gamebg: #12081f; }
+html[data-look="dusk"] body { background: linear-gradient(170deg, #1a1030 0%, #3b1d52 55%, #6b2f5b 100%); }
+html[data-look="dusk"] .panel { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+html[data-look="dusk"] .main { grid-template-columns: minmax(0, 1fr) 19rem; } html[data-look="dusk"] .work { order: 2; }
 </style>
 </head>
 <body>
+<div id="looktag"></div>
 <div class="board">
   <header class="head">
     <div>
@@ -137,7 +189,13 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
     <div class="now" id="now"><div class="t">--°</div><div class="s">Northampton</div></div>
   </header>
 
-  <section class="panel fc" id="fc" aria-label="Six-day forecast"></section>
+  <div class="strip">
+    <section class="panel fc" id="fc" aria-label="Six-day forecast"></section>
+    <section class="panel game" aria-label="Arcade">
+      <div class="gh"><span class="label" id="gname">Arcade</span><span class="label num" id="gscore">0 · 0</span></div>
+      <canvas id="game" width="160" height="90"></canvas>
+    </section>
+  </div>
 
   <div class="main">
     <section class="panel work" id="work">
@@ -294,7 +352,7 @@ async function loadData() {
 let SETS = {}, MODES = [], mi = 0, idx = {}, layer = 0;
 async function loadPhotos() {
   try {
-    const p = await unlock("photos.enc");
+    const p = await unlock("/almanac-board-photos/photos.enc");
     SETS = {}; for (const s of p.sets || [{ name: "dublin", photos: p.photos || [] }]) if (s.photos.length) SETS[s.name] = s.photos;
     MODES = Object.keys(SETS); MODES.forEach(m => idx[m] = idx[m] || 0);
   } catch (e) {}
@@ -326,6 +384,103 @@ function tick() {
   if (today !== lastDay) { lastDay = today; renderGrid(); }
   renderWork();
 }
+
+/* ---------- looks: a different arrangement each hour ---------- */
+const LOOKS = [["midnight", "Midnight"], ["harbor", "Harbor"], ["paper", "Paper"], ["orchard", "Orchard"], ["ember", "Ember"], ["bauhaus", "Bauhaus"], ["phosphor", "Phosphor"], ["dusk", "Dusk"]];
+const forcedLook = new URLSearchParams(location.search).get("look");
+let lookNow = "";
+function applyLook() {
+  const p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", hourCycle: "h23" }).formatToParts(new Date())) p[x.type] = x.value;
+  const t = isoToday(), doy = Math.round((Date.parse(t) - Date.parse(t.slice(0, 4) + "-01-01")) / DAY);
+  const i = forcedLook ? Math.max(0, LOOKS.findIndex(l => l[0] === forcedLook)) : (doy * 24 + +p.hour) % LOOKS.length;
+  const [id, name] = LOOKS[i];
+  if (id === lookNow) return;
+  lookNow = id;
+  if (id === "midnight") delete document.documentElement.dataset.look; else document.documentElement.dataset.look = id;
+  $("looktag").textContent = `Look ${i + 1} · ${name}`;
+}
+applyLook(); setInterval(applyLook, 60000);
+
+/* ---------- arcade: computer vs computer, Pong and a cowboy duel, swapping every 3 minutes ---------- */
+(function arcade() {
+  const c = $("game"), x = c.getContext("2d"), W = 160, H = 90;
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  let mode = 0, score = [0, 0], st = null, flash = 0;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  function startPong() { st = { bx: W / 2, by: H / 2, vx: (Math.random() < .5 ? -1 : 1) * 1.1, vy: rnd(-.7, .7), p: [H / 2, H / 2], miss: [0, 0] }; }
+  function startDuel() { st = { y: [30, 60], vy: [.5, -.5], shots: [], cool: [rnd(40, 90), rnd(40, 90)], cactus: rnd(28, 62), wag: [0, 0] }; }
+  function begin() { score = [0, 0]; mode ? startDuel() : startPong(); $("gname").textContent = mode ? "Showdown" : "Pong"; }
+
+  function pong() {
+    const s = st;
+    s.bx += s.vx; s.by += s.vy;
+    if (s.by < 3 || s.by > H - 3) s.vy *= -1;
+    for (let i = 0; i < 2; i++) {
+      const toward = i === 0 ? s.vx < 0 : s.vx > 0;
+      const target = toward ? s.by + s.miss[i] : H / 2;
+      s.p[i] += Math.max(-1.05, Math.min(1.05, (target - s.p[i]) * .12));
+    }
+    const hit = (i, px) => Math.abs(s.by - s.p[i]) < 9 && Math.abs(s.bx - px) < 2.5;
+    if (s.vx < 0 && hit(0, 6)) { s.vx = Math.min(2.4, -s.vx * 1.05); s.vy += (s.by - s.p[0]) * .08; s.miss[1] = Math.random() < .18 ? rnd(12, 18) * (Math.random() < .5 ? -1 : 1) : 0; }
+    if (s.vx > 0 && hit(1, W - 6)) { s.vx = Math.max(-2.4, -s.vx * 1.05); s.vy += (s.by - s.p[1]) * .08; s.miss[0] = Math.random() < .18 ? rnd(12, 18) * (Math.random() < .5 ? -1 : 1) : 0; }
+    if (s.bx < -4 || s.bx > W + 4) { score[s.bx < 0 ? 1 : 0]++; flash = 12; const keep = score; startPong(); score = keep; }
+    // draw
+    x.fillStyle = css("--gamebg") || "#070a16"; x.fillRect(0, 0, W, H);
+    x.fillStyle = css("--line"); for (let y = 2; y < H; y += 6) x.fillRect(W / 2 - .5, y, 1, 3);
+    x.fillStyle = css("--amber"); x.fillRect(4, s.p[0] - 8, 2, 16);
+    x.fillStyle = css("--sage"); x.fillRect(W - 6, s.p[1] - 8, 2, 16);
+    x.fillStyle = flash > 0 ? css("--amber") : css("--fg"); x.fillRect(Math.round(s.bx) - 1, Math.round(s.by) - 1, 3, 3);
+  }
+
+  function cowboy(px, py, dir, col, wag) {
+    x.fillStyle = col;
+    x.fillRect(px - 4, py - 11, 8, 2);           // hat brim
+    x.fillRect(px - 2, py - 14, 4, 3);           // hat crown
+    x.fillRect(px - 2, py - 9, 4, 3);            // head
+    x.fillRect(px - 3, py - 6, 6, 7);            // body
+    x.fillRect(px + dir * 3, py - 5, dir * 4, 2); // gun arm
+    x.fillRect(px - 3, py + 1, 2, 5 + (wag & 1)); // legs
+    x.fillRect(px + 1, py + 1, 2, 5 + ((wag + 1) & 1));
+  }
+  function duel() {
+    const s = st, X = [12, W - 12];
+    for (let i = 0; i < 2; i++) {
+      s.y[i] += s.vy[i]; s.wag[i]++;
+      if (s.y[i] < 18 || s.y[i] > H - 10 || Math.random() < .01) s.vy[i] *= -1;
+      if (--s.cool[i] <= 0) { s.shots.push({ x: X[i] + (i ? -8 : 8), y: s.y[i] - 4, v: i ? -2.2 : 2.2, by: i }); s.cool[i] = rnd(45, 110); }
+    }
+    for (const b of s.shots) {
+      b.x += b.v;
+      if (Math.abs(b.x - W / 2) < 3 && Math.abs(b.y - s.cactus) < 12) b.dead = true;  // cactus soaks it up
+      const t = b.by ? 0 : 1;
+      if (Math.abs(b.x - X[t]) < 4 && Math.abs(b.y - (s.y[t] - 4)) < 9) { b.dead = true; score[b.by]++; flash = 14; s.cactus = rnd(26, 64); }
+      if (b.x < 0 || b.x > W) b.dead = true;
+    }
+    s.shots = s.shots.filter(b => !b.dead);
+    // draw
+    x.fillStyle = css("--gamebg") || "#070a16"; x.fillRect(0, 0, W, H);
+    x.fillStyle = css("--line"); x.fillRect(0, H - 3, W, 3);
+    x.fillStyle = css("--sage"); // cactus
+    x.fillRect(W / 2 - 1.5, s.cactus - 11, 3, 22); x.fillRect(W / 2 - 6, s.cactus - 4, 3, 7); x.fillRect(W / 2 - 6, s.cactus - 4, 5, 2); x.fillRect(W / 2 + 3, s.cactus - 8, 3, 6); x.fillRect(W / 2 + 1, s.cactus - 3, 5, 2);
+    cowboy(X[0], s.y[0], 1, flash > 0 && score[1] > score[0] ? css("--fg") : css("--amber"), s.wag[0] >> 3);
+    cowboy(X[1], s.y[1], -1, css("--lilac"), s.wag[1] >> 3);
+    x.fillStyle = css("--fg"); for (const b of s.shots) x.fillRect(Math.round(b.x), Math.round(b.y), 2, 1);
+  }
+
+  begin();
+  let last = 0, swapAt = Date.now() + 180000;
+  function frame(t) {
+    if (t - last >= 33) {
+      last = t; if (flash > 0) flash--;
+      mode ? duel() : pong();
+      $("gscore").textContent = `${score[0]} · ${score[1]}`;
+      if (Date.now() > swapAt || Math.max(...score) >= 11) { mode = 1 - mode; begin(); swapAt = Date.now() + 180000; }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
 
 tick(); setInterval(tick, 30000);
 renderWeather(); setInterval(renderWeather, 30 * 60000);
