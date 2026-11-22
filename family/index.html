@@ -133,6 +133,12 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 @media (max-width: 700px) { .strip { grid-template-columns: 1fr; } .game canvas { aspect-ratio: 16 / 9; height: auto; } }
 
 /* ---------- Look tag ---------- */
+.ifbox { margin: 0; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: var(--gamebg, #070a16); color: var(--fg); font-family: var(--mono); font-size: .6rem; line-height: 1.32; padding: .35rem .5rem; border-radius: .35rem; display: flex; flex-direction: column; justify-content: flex-end; white-space: normal; }
+.ifbox div { margin: 0; }
+.ifbox .cmd { color: var(--amber); margin-top: .3rem; }
+.ifbox .room { color: var(--sage); font-weight: 600; }
+.ifbox .cur::after { content: "▌"; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
 #looktag { position: fixed; right: max(.6rem, env(safe-area-inset-right, 0px)); bottom: .35rem; z-index: 5; font-family: var(--mono); font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); opacity: .75; }
 
 /* ---------- Looks: same blocks, different palettes and arrangements. One per hour. ---------- */
@@ -194,6 +200,7 @@ html[data-look="dusk"] .main { grid-template-columns: minmax(0, 1fr) 19rem; } ht
     <section class="panel game" aria-label="Arcade">
       <div class="gh"><span class="label" id="gname">Arcade</span><span class="label num" id="gscore">0 · 0</span></div>
       <canvas id="game" width="160" height="90"></canvas>
+      <div class="ifbox" id="ifbox" hidden></div>
     </section>
   </div>
 
@@ -405,16 +412,22 @@ function applyLook() {
 }
 applyLook(); setInterval(applyLook, 60000);
 
-/* ---------- arcade: computer vs computer, Pong and a cowboy duel, swapping every 3 minutes ---------- */
+/* ---------- arcade: computer plays Pong, a cowboy duel, and a text adventure in turn ---------- */
 (function arcade() {
   const c = $("game"), x = c.getContext("2d"), W = 160, H = 90;
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-  let mode = 0, score = [0, 0], st = null, flash = 0;
+  let mode = +(new URLSearchParams(location.search).get("game") || 0) % 3, score = [0, 0], st = null, flash = 0;
   const rnd = (a, b) => a + Math.random() * (b - a);
 
   function startPong() { st = { bx: W / 2, by: H / 2, vx: (Math.random() < .5 ? -1 : 1) * 1.9, vy: rnd(-1.1, 1.1), p: [H / 2, H / 2], miss: [0, 0] }; }
   function startDuel() { st = { y: [30, 60], vy: [.5, -.5], shots: [], cool: [rnd(40, 90), rnd(40, 90)], cactus: rnd(28, 62), wag: [0, 0] }; }
-  function begin() { score = [0, 0]; mode ? startDuel() : startPong(); $("gname").textContent = mode ? "Showdown" : "Pong"; }
+  const NAMES = ["Pong", "Showdown", "Adventure"], LENGTH = [180000, 180000, 300000];
+  function begin() {
+    score = [0, 0]; $("gname").textContent = NAMES[mode];
+    const text = mode === 2; c.hidden = text; $("ifbox").hidden = !text;
+    if (typeof ADV !== "undefined") { if (text) ADV.start(); else ADV.stop(); }
+    if (mode === 0) startPong(); else if (mode === 1) startDuel();
+  }
 
   function pong(draw) {
     const s = st;
@@ -472,15 +485,123 @@ applyLook(); setInterval(applyLook, 60000);
     x.fillStyle = css("--fg"); for (const b of s.shots) x.fillRect(Math.round(b.x), Math.round(b.y), 2, 1);
   }
 
+
+  /* ---------- Adventure: an original self-playing text adventure ---------- */
+  const ADV = (() => {
+    const box = $("ifbox");
+    const ROOMS = {
+      porch:   { name: "Front Porch", desc: "You are on a sagging front porch. The doormat says GO AWAY in friendly letters. A door leads north; a path wanders east.", exits: { north: "hall", east: "garden" } },
+      hall:    { name: "Hallway", desc: "A narrow hall of coats nobody has worn since 2019. Above a cold fireplace runs a long, empty mantel. Doors lead north and west; stairs go down.", exits: { south: "porch", north: "kitchen", west: "study", down: "cellar" } },
+      kitchen: { name: "Kitchen", desc: "The kitchen smells of coffee and ambition. A cat on the counter watches you with open suspicion.", exits: { south: "hall" } },
+      study:   { name: "Study", desc: "Books in four languages, two of them dead. On the desk sits a fat herbarium, its cover tied shut.", exits: { east: "hall" } },
+      garden:  { name: "Garden", desc: "Raised beds asleep under straw. An old elm leans over the fence as if eavesdropping.", exits: { west: "porch" } },
+      cellar:  { name: "Cellar", dark: true, desc: "Shelves of canning jars catch the lamplight. Something long and pale is wedged behind the pickles.", exits: { up: "hall" } }
+    };
+    const ITEMS = {
+      lamp:   { name: "oil lamp", where: "kitchen", seen: "A dented oil lamp sits by the toaster.", taken: "Taken. It sloshes. There's oil enough." },
+      type:   { name: "piece of type", where: "garden", treasure: true, seen: "Something glints in the mud by the elm.", taken: "Taken: a tiny slug of metal type, a lowercase g, worn smooth by a river somewhere." },
+      violet: { name: "pressed violet", where: null, treasure: true, seen: "A pressed violet lies on the open page.", taken: "Taken. It is labeled, in a very small hand, Viola." },
+      tally:  { name: "tally stick", where: "cellar", treasure: true, seen: "A notched hazel stick is wedged behind the pickles.", taken: "Taken. It was split down the middle long ago. Someone, somewhere, has the other half." }
+    };
+    const FLAVOR = {
+      kitchen: [["pet cat", "The cat permits this, briefly, then looks away as if it never happened."], ["open fridge", "Leftover stuffing, three lemons, and a note that says DON'T."]],
+      garden:  [["listen", "The elm creaks. Somewhere a dog disagrees with the mail."], ["climb elm", "You get one boot up before the elm makes its feelings clear."]],
+      porch:   [["read doormat", "GO AWAY, it says, in a cheerful serif."], ["knock", "No one answers. You live here."]],
+      hall:    [["examine coats", "In one pocket: a ticket stub from a film nobody remembers."], ["xyzzy", "A hollow voice says, \"Wrong house.\""]],
+      study:   [["read books", "You read a line of Latin. The Latin reads you back."]],
+      cellar:  [["smell", "Vinegar, dust, and a faint note of 1994."]]
+    };
+    let S, timer = null, running = false;
+    const lines = [];
+    function out(text, cls) { const d = document.createElement("div"); if (cls) d.className = cls; d.textContent = text; box.appendChild(d); while (box.children.length > 40) box.firstChild.remove(); return d; }
+    const here = () => ROOMS[S.room];
+    const lit = () => !here().dark || (S.inv.includes("lamp") && S.lampOn);
+    const itemsHere = () => Object.keys(ITEMS).filter(k => S.where[k] === S.room);
+    const score = () => S.mantel.length * 10;
+    function describe() {
+      if (!lit()) return ["It is pitch dark. Something small scuttles off into the black. Better not wander here without a light."];
+      const r = here(), o = [r.name.toUpperCase() + "|room", r.desc];
+      if (S.room === "study" && S.herbOpen) o.push("The herbarium lies open.");
+      for (const k of itemsHere()) o.push(ITEMS[k].seen);
+      if (S.room === "hall" && S.mantel.length) o.push("On the mantel: " + S.mantel.map(k => "the " + ITEMS[k].name).join(", ") + ".");
+      return o;
+    }
+    function path(to) { // breadth-first route to a room
+      const q = [[S.room, []]], seen = { [S.room]: 1 };
+      while (q.length) { const [r, p] = q.shift(); if (r === to) return p; for (const [d, n] of Object.entries(ROOMS[r].exits)) if (!seen[n]) { seen[n] = 1; q.push([n, [...p, d]]); } }
+      return [];
+    }
+    function decide() {
+      const carrying = S.inv.filter(k => ITEMS[k].treasure);
+      if (here().dark && !lit()) return S.inv.includes("lamp") ? "light lamp" : "up";
+      if (S.room === "hall" && carrying.length) return "put " + ITEMS[carrying[0]].name + " on mantel";
+      const take = itemsHere()[0]; if (take && lit()) return "take " + ITEMS[take].name;
+      if (S.room === "study" && !S.herbOpen) return "open herbarium";
+      if (Math.random() < .22 && FLAVOR[S.room]) { const f = FLAVOR[S.room][Math.floor(Math.random() * FLAVOR[S.room].length)]; return f[0]; }
+      if (Math.random() < .06) return S.moves % 2 ? "inventory" : "look";
+      let goal = null;
+      if (carrying.length) goal = "hall";
+      else if (!S.inv.includes("lamp")) goal = Object.keys(ITEMS).includes("lamp") && S.where.lamp ? S.where.lamp : null;
+      if (!goal) { const left = Object.keys(ITEMS).filter(k => ITEMS[k].treasure && !S.mantel.includes(k) && !S.inv.includes(k)); const k = left.find(k => S.where[k]); goal = k ? S.where[k] : left.includes("violet") ? "study" : null; }
+      if (goal && goal !== S.room) return path(goal)[0];
+      const ex = Object.keys(here().exits); return ex[Math.floor(Math.random() * ex.length)];
+    }
+    function act(cmd) {
+      S.moves++;
+      const r = here();
+      if (r.exits[cmd] !== undefined || ["north", "south", "east", "west", "up", "down"].includes(cmd)) {
+        if (!r.exits[cmd]) return ["You can't go that way."];
+        if (here().dark && !lit() && cmd !== "up") return ["You stumble into a shelf. Jars rattle ominously. You think better of it."];
+        S.room = r.exits[cmd]; return describe();
+      }
+      if (cmd === "light lamp") { S.lampOn = true; return ["The lamp flickers, then steadies.", ...describe()]; }
+      if (cmd === "open herbarium") { S.herbOpen = true; S.where.violet = "study"; return ["You untie the ribbon. Pages of pressed flowers, each with a Latin name. One falls loose."]; }
+      if (cmd.startsWith("take ")) { const k = Object.keys(ITEMS).find(k => cmd === "take " + ITEMS[k].name); S.where[k] = null; S.inv.push(k); return [ITEMS[k].taken]; }
+      if (cmd.startsWith("put ")) { const k = Object.keys(ITEMS).find(k => cmd.startsWith("put " + ITEMS[k].name)); S.inv = S.inv.filter(i => i !== k); S.mantel.push(k); return [`Done. The ${ITEMS[k].name} looks right at home. [Your score just went up by 10.]`]; }
+      if (cmd === "inventory") return [S.inv.length ? "You are carrying: " + S.inv.map(k => "a " + ITEMS[k].name + (k === "lamp" && S.lampOn ? " (lit)" : "")).join(", ") + "." : "You are empty-handed."];
+      if (cmd === "look") return describe();
+      const f = (FLAVOR[S.room] || []).find(f => f[0] === cmd); return [f ? f[1] : "Nothing happens."];
+    }
+    function show(text) { const [t, c] = text.split("|"); out(t, c); }
+    function turn() {
+      if (!running) return;
+      if (score() >= 30) {
+        out(`*** You have put every treasure on the mantel. Your score is 30 of 30, in ${S.moves} moves. ***`, "room");
+        timer = setTimeout(() => { if (running) { out("— Another day dawns. —"); newGame(); } }, 7000);
+        return;
+      }
+      const cmd = decide(), line = out("> ", "cmd cur");
+      let i = 0;
+      const typeIt = () => {
+        if (!running) return;
+        if (i < cmd.length) { line.textContent = "> " + cmd.slice(0, ++i); timer = setTimeout(typeIt, 55 + Math.random() * 60); return; }
+        line.classList.remove("cur");
+        timer = setTimeout(() => { act(cmd).forEach(show); $("gscore").textContent = `Score ${score()}/30`; timer = setTimeout(turn, 1900); }, 350);
+      };
+      timer = setTimeout(typeIt, 400);
+    }
+    function newGame() {
+      S = { room: "porch", inv: [], mantel: [], lampOn: false, herbOpen: false, moves: 0, where: Object.fromEntries(Object.entries(ITEMS).map(([k, v]) => [k, v.where])) };
+      describe().forEach(show); $("gscore").textContent = "Score 0/30";
+      timer = setTimeout(turn, 1500);
+    }
+    return {
+      start() { running = true; box.innerHTML = ""; out("THE HOUSE ON THE HILL"); out("An interactive fiction. Release 1."); newGame(); },
+      stop() { running = false; clearTimeout(timer); }
+    };
+  })();
+
   begin();
   let last = 0, prev = performance.now(), swapAt = Date.now() + 180000;
   function frame(t) {
     if (t - last >= 33) {
       last = t; if (flash > 0) flash--;
       const steps = Math.min(4, Math.max(1, Math.round((t - prev) / 33))); prev = t;
-      for (let k = 1; k <= steps; k++) mode ? duel(k === steps) : pong(k === steps);
-      $("gscore").textContent = `${score[0]} · ${score[1]}`;
-      if (Date.now() > swapAt || Math.max(...score) >= 11) { mode = 1 - mode; begin(); swapAt = Date.now() + 180000; }
+      if (mode < 2) {
+        for (let k = 1; k <= steps; k++) mode ? duel(k === steps) : pong(k === steps);
+        $("gscore").textContent = `${score[0]} · ${score[1]}`;
+      }
+      if (Date.now() > swapAt || (mode < 2 && Math.max(...score) >= 11)) { mode = (mode + 1) % 3; begin(); swapAt = Date.now() + LENGTH[mode]; }
     }
     requestAnimationFrame(frame);
   }
