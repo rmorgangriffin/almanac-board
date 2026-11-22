@@ -103,6 +103,17 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 .dub .mini .i { font-size: 1.4rem; margin: .2rem 0; }
 .dub .mini span { color: var(--muted); }
 
+/* Two photo modes, alternating each minute */
+.po { transition: grid-template-columns 1.2s ease; }
+.po[data-mode="quad"] { grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); }
+.side { position: relative; min-width: 0; }
+.side > .mode { position: absolute; inset: 0; transition: opacity 1s ease; }
+.po[data-mode="dublin"] .mode.quad, .po[data-mode="quad"] .mode.dublin { opacity: 0; pointer-events: none; }
+.quadtext { padding: 1.4rem 1.4rem 1.2rem 0; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+.quadtext blockquote { margin: 0; font-family: var(--display); font-size: 1.55rem; line-height: 1.35; color: var(--fg); text-wrap: balance; }
+.quadtext blockquote::before { content: "“"; display: block; font-size: 3.2rem; line-height: .6; color: var(--lilac); margin-bottom: .4rem; }
+.quadtext .label { color: var(--lilac); }
+
 .msg { padding: 2rem; color: var(--muted); text-align: center; font-size: 1rem; }
 
 @media (max-width: 700px) {
@@ -136,16 +147,23 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
     <section class="panel grid" id="grid" aria-label="Family calendar, next five weeks"></section>
   </div>
 
-  <section class="panel po">
+  <section class="panel po" id="po" data-mode="dublin">
     <div class="photo" id="photo"><div class="cap" id="cap"></div></div>
-    <div class="dub">
-      <div>
-        <h2>Po in Dublin</h2>
-        <div class="ga">Po i mBaile Átha Cliath</div>
+    <div class="side">
+      <div class="mode dublin dub">
+        <div>
+          <h2>Po in Dublin</h2>
+          <div class="ga">Po i mBaile Átha Cliath</div>
+        </div>
+        <div class="dt num" id="dubtime"></div>
+        <div class="wnow" id="dubnow"></div>
+        <div class="mini" id="dubfc"></div>
       </div>
-      <div class="dt num" id="dubtime"></div>
-      <div class="wnow" id="dubnow"></div>
-      <div class="mini" id="dubfc"></div>
+      <div class="mode quad quadtext">
+        <div class="label">Precious days</div>
+        <blockquote>Oh, those precious days amongst the ivy, beneath the stately elms upon the quad!</blockquote>
+        <div class="label num" id="quadcap"></div>
+      </div>
     </div>
   </section>
 </div>
@@ -271,18 +289,31 @@ async function loadData() {
 }
 
 /* ---------- Po's photos ---------- */
-let PHOTOS = [], pi = 0;
+// Two sets (Ada's Dublin photos, the "precious days" album). The panel switches set
+// every minute and changes photo every 12 seconds within the set.
+let SETS = {}, MODES = [], mi = 0, idx = {}, layer = 0;
 async function loadPhotos() {
-  try { const p = await unlock("photos.enc"); PHOTOS = p.photos || []; } catch (e) {}
-  const box = $("photo"); box.querySelectorAll("img").forEach(i => i.remove());
-  PHOTOS.forEach((p, i) => { const img = new Image(); img.src = p.src; img.alt = ""; if (i === 0) img.className = "on"; box.insertBefore(img, $("cap")); });
-  pi = 0; caption();
+  try {
+    const p = await unlock("photos.enc");
+    SETS = {}; for (const s of p.sets || [{ name: "dublin", photos: p.photos || [] }]) if (s.photos.length) SETS[s.name] = s.photos;
+    MODES = Object.keys(SETS); MODES.forEach(m => idx[m] = idx[m] || 0);
+  } catch (e) {}
+  const box = $("photo");
+  if (!box.querySelector("img")) for (let i = 0; i < 2; i++) { const img = new Image(); img.alt = ""; box.insertBefore(img, $("cap")); }
+  showPhoto();
 }
-function caption() { const p = PHOTOS[pi]; $("cap").textContent = p && p.date ? p.date : ""; }
-function nextPhoto() {
-  const imgs = $("photo").querySelectorAll("img"); if (imgs.length < 2) return;
-  imgs[pi].classList.remove("on"); pi = (pi + 1) % imgs.length; imgs[pi].classList.add("on"); caption();
+function showPhoto() {
+  const mode = MODES[mi % MODES.length]; if (!mode) return;
+  $("po").dataset.mode = mode;
+  const list = SETS[mode], p = list[idx[mode] % list.length];
+  const imgs = $("photo").querySelectorAll("img"), next = imgs[1 - layer], cur = imgs[layer];
+  next.onload = () => { next.classList.add("on"); cur.classList.remove("on"); layer = 1 - layer; };
+  next.src = p.src;
+  $("cap").textContent = p.date || "";
+  if (mode === "quad") $("quadcap").textContent = p.date || "";
 }
+function nextPhoto() { const m = MODES[mi % MODES.length]; if (m) idx[m]++; showPhoto(); }
+function nextMode() { mi++; showPhoto(); }
 
 /* ---------- clock ---------- */
 let lastDay = "";
@@ -300,7 +331,9 @@ tick(); setInterval(tick, 30000);
 renderWeather(); setInterval(renderWeather, 30 * 60000);
 loadData(); setInterval(loadData, 10 * 60000);
 loadPhotos(); setInterval(loadPhotos, 6 * 3600000);
-setInterval(nextPhoto, 20000);
+// 12s per photo, 5 photos per set, then switch sets: one minute each
+let ticks = 0;
+setInterval(() => { ticks++; if (ticks % 5 === 0) nextMode(); else nextPhoto(); }, 12000);
 </script>
 </body>
 </html>
