@@ -419,7 +419,7 @@ applyLook(); setInterval(applyLook, 60000);
   let mode = +(new URLSearchParams(location.search).get("game") || 0) % 3, score = [0, 0], st = null, flash = 0;
   const rnd = (a, b) => a + Math.random() * (b - a);
 
-  function startPong() { st = { bx: W / 2, by: H / 2, vx: (Math.random() < .5 ? -1 : 1) * 1.9, vy: rnd(-1.1, 1.1), p: [H / 2, H / 2], miss: [0, 0] }; }
+  function startPong() { st = { bx: W / 2, by: H / 2, vx: (Math.random() < .5 ? -1 : 1) * 2.9, vy: rnd(-1.6, 1.6), p: [H / 2, H / 2], miss: [0, 0] }; }
   function startDuel() { st = { y: [30, 60], vy: [.5, -.5], shots: [], cool: [rnd(40, 90), rnd(40, 90)], cactus: rnd(28, 62), wag: [0, 0] }; }
   const NAMES = ["Pong", "Showdown", "Adventure"], LENGTH = [180000, 180000, 300000];
   function begin() {
@@ -431,16 +431,16 @@ applyLook(); setInterval(applyLook, 60000);
 
   function pong(draw) {
     const s = st;
-    s.bx += s.vx; s.by += s.vy;
+    const ox = s.bx; s.bx += s.vx; s.by += s.vy;
     if (s.by < 3 || s.by > H - 3) s.vy *= -1;
     for (let i = 0; i < 2; i++) {
       const toward = i === 0 ? s.vx < 0 : s.vx > 0;
       const target = toward ? s.by + s.miss[i] : H / 2;
-      s.p[i] += Math.max(-1.9, Math.min(1.9, (target - s.p[i]) * .2));
+      s.p[i] += Math.max(-3, Math.min(3, (target - s.p[i]) * .3));
     }
-    const hit = (i, px) => Math.abs(s.by - s.p[i]) < 9 && Math.abs(s.bx - px) < 2.5;
-    if (s.vx < 0 && hit(0, 6)) { s.vx = Math.min(3.6, -s.vx * 1.06); s.vy += (s.by - s.p[0]) * .08; s.miss[1] = Math.random() < .18 ? rnd(12, 18) * (Math.random() < .5 ? -1 : 1) : 0; }
-    if (s.vx > 0 && hit(1, W - 6)) { s.vx = Math.max(-3.6, -s.vx * 1.06); s.vy += (s.by - s.p[1]) * .08; s.miss[0] = Math.random() < .18 ? rnd(12, 18) * (Math.random() < .5 ? -1 : 1) : 0; }
+    const hit = (i, px) => Math.abs(s.by - s.p[i]) < 9 && (i ? ox < px && s.bx >= px - 1 : ox > px && s.bx <= px + 1);
+    if (s.vx < 0 && hit(0, 6)) { s.vx = Math.min(5.2, -s.vx * 1.07); s.vy += (s.by - s.p[0]) * .08; s.miss[1] = Math.random() < .18 ? rnd(12, 18) * (Math.random() < .5 ? -1 : 1) : 0; }
+    if (s.vx > 0 && hit(1, W - 6)) { s.vx = Math.max(-5.2, -s.vx * 1.07); s.vy += (s.by - s.p[1]) * .08; s.miss[0] = Math.random() < .18 ? rnd(12, 18) * (Math.random() < .5 ? -1 : 1) : 0; }
     if (s.bx < -4 || s.bx > W + 4) { score[s.bx < 0 ? 1 : 0]++; flash = 12; const keep = score; startPong(); score = keep; }
     if (!draw) return;
     x.fillStyle = css("--gamebg") || "#070a16"; x.fillRect(0, 0, W, H);
