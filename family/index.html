@@ -409,7 +409,7 @@ function nextMode() { mi++; showPhoto(); }
 
 
 /* ---------- This month in past years ---------- */
-// A band of three photos from this month in earlier years; one tile changes every 12 seconds.
+// A band of three photos from this month in earlier years; one tile changes every 10 minutes, so each stays ~30.
 let PAST = [], pastNext = 0, pastTile = 0;
 async function loadPast() {
   try { PAST = (await unlock("/almanac-board-photos/past.enc")).photos || []; } catch (e) { PAST = []; }
@@ -434,7 +434,7 @@ async function pastShow(i) {
   };
   next.dataset.url = url; next.src = url;
 }
-setInterval(() => { pastTile = (pastTile + 1) % 3; pastShow(pastTile); }, 12000);
+setInterval(() => { pastTile = (pastTile + 1) % 3; pastShow(pastTile); }, 10 * 60000);   // each photo stays about half an hour
 
 /* ---------- clock ---------- */
 let lastDay = "";
