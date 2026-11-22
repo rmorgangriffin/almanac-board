@@ -27,7 +27,7 @@ html { font-size: 16px; }
 body { margin: 0; background: var(--ink); color: var(--fg); font-family: var(--body);
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 1.25rem; }
 .board { display: grid; gap: 1rem; max-width: 64rem; margin: 0 auto; }
-@media (min-width: 900px) { body { height: 100vh; overflow: hidden; } .board { height: 100%; grid-template-rows: auto auto minmax(0, 1fr) 25rem; } }
+@media (min-width: 900px) { body { height: 100vh; overflow: hidden; } .board { height: 100%; grid-template-rows: auto auto 12.5rem minmax(0, 1fr) 25rem; } .board.nopast { grid-template-rows: auto auto minmax(0, 1fr) 25rem; } }
 .label { font-family: var(--mono); font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: .9rem; padding: 1rem 1.2rem; min-width: 0; min-height: 0; }
 .num { font-variant-numeric: tabular-nums; }
@@ -132,6 +132,21 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 .game canvas { width: 100%; height: auto; aspect-ratio: 16 / 9; image-rendering: pixelated; image-rendering: crisp-edges; border-radius: .35rem; background: var(--gamebg, #070a16); display: block; }
 @media (max-width: 700px) { .strip { grid-template-columns: 1fr; } .game canvas { aspect-ratio: 16 / 9; height: auto; } }
 
+
+/* ---------- This month in past years ---------- */
+.past { display: grid; grid-template-columns: 7.5rem repeat(3, minmax(0, 1fr)); gap: .6rem; padding: .6rem; }
+.past .ttl { display: flex; flex-direction: column; justify-content: center; padding-left: .5rem; }
+.past .ttl b { font-family: var(--display); font-weight: 400; font-size: 1.55rem; line-height: 1.05; color: var(--amber); }
+.past .ttl span { font-family: var(--display); font-size: 1.15rem; line-height: 1.1; color: var(--fg); }
+.past .ttl .label { margin-top: .5rem; }
+.past .tile { position: relative; overflow: hidden; border-radius: .5rem; background: #0b0e1d; min-height: 0; }
+.past .tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 2s ease; }
+.past .tile img.on { opacity: 1; }
+.past .tile .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.2rem .55rem .4rem; font-family: var(--mono); font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.6)); text-shadow: 0 1px 3px #000; }
+.past .tile .cap b { font-size: .85rem; font-weight: 500; margin-right: .35rem; }
+@media (max-width: 900px) { .past { grid-template-columns: repeat(3, minmax(0, 1fr)); height: 10rem; } .past .ttl { display: none; } }
+@media (prefers-reduced-motion: reduce) { .past .tile img { transition: none; } }
+
 /* ---------- Look tag ---------- */
 .ifbox { margin: 0; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: var(--gamebg, #070a16); color: var(--fg); font-family: var(--mono); font-size: .6rem; line-height: 1.32; padding: .35rem .5rem; border-radius: .35rem; display: flex; flex-direction: column; justify-content: flex-end; white-space: normal; }
 .ifbox div { margin: 0; }
@@ -150,7 +165,7 @@ html[data-look="harbor"] .work { order: 2; }
 /* 3 Paper: light, inky, a red accent; photos up top */
 html[data-look="paper"] { --ink: #eef0f3; --panel: #ffffff; --line: #d5d9e0; --fg: #1b2230; --muted: #687387; --amber: #d6452f; --sage: #2f8f6b; --lilac: #6a5acd; --rose: #c2185b; --display: "Fraunces", Georgia, serif; --gamebg: #1b2230; color-scheme: light; }
 html[data-look="paper"] .panel { box-shadow: 0 1px 2px rgba(27, 34, 48, .06); }
-@media (min-width: 900px) { html[data-look="paper"] .board { grid-template-rows: auto auto 22rem minmax(0, 1fr); } }
+@media (min-width: 900px) { html[data-look="paper"] .board { grid-template-rows: auto auto 12.5rem 22rem minmax(0, 1fr); } html[data-look="paper"] .board.nopast { grid-template-rows: auto auto 22rem minmax(0, 1fr); } }
 html[data-look="paper"] .po { order: 3; } html[data-look="paper"] .main { order: 4; }
 html[data-look="paper"] .photo .cap { color: #fff; }
 
@@ -185,7 +200,7 @@ html[data-look="dusk"] .main { grid-template-columns: minmax(0, 1fr) 19rem; } ht
 </head>
 <body>
 <div id="looktag"></div>
-<div class="board">
+<div class="board nopast">
   <header class="head">
     <div>
       <div class="latin" id="latin">dies <em>Solis</em></div>
@@ -203,6 +218,14 @@ html[data-look="dusk"] .main { grid-template-columns: minmax(0, 1fr) 19rem; } ht
       <div class="ifbox" id="ifbox" hidden></div>
     </section>
   </div>
+
+
+  <section class="panel past" id="past" aria-label="This month in past years" hidden>
+    <div class="ttl"><b id="pastmonth">Novembers</b><span>past</span><div class="label">from our photos</div></div>
+    <div class="tile"><div class="cap"></div></div>
+    <div class="tile"><div class="cap"></div></div>
+    <div class="tile"><div class="cap"></div></div>
+  </section>
 
   <div class="main">
     <section class="panel work" id="work">
@@ -383,6 +406,35 @@ async function showPhoto() {
 }
 function nextPhoto() { const m = MODES[mi % MODES.length]; if (m) idx[m]++; showPhoto(); }
 function nextMode() { mi++; showPhoto(); }
+
+
+/* ---------- This month in past years ---------- */
+// A band of three photos from this month in earlier years; one tile changes every 12 seconds.
+let PAST = [], pastNext = 0, pastTile = 0;
+async function loadPast() {
+  try { PAST = (await unlock("/almanac-board-photos/past.enc")).photos || []; } catch (e) { PAST = []; }
+  const band = $("past");
+  if (!PAST.length) { band.hidden = true; document.querySelector(".board").classList.add("nopast"); return; }
+  band.hidden = false; document.querySelector(".board").classList.remove("nopast");
+  $("pastmonth").textContent = new Intl.DateTimeFormat("en-US", { timeZone: TZ, month: "long" }).format(new Date()) + "s";
+  band.querySelectorAll(".tile").forEach(t => { if (!t.querySelector("img")) for (let i = 0; i < 2; i++) { const img = new Image(); img.alt = ""; t.insertBefore(img, t.firstChild); } });
+  pastNext = Math.floor(Math.random() * PAST.length);
+  for (let i = 0; i < 3; i++) await pastShow(i);
+}
+async function pastShow(i) {
+  if (!PAST.length) return;
+  const tile = $("past").querySelectorAll(".tile")[i], p = PAST[pastNext++ % PAST.length];
+  const imgs = tile.querySelectorAll("img"), cur = tile.querySelector("img.on"), next = cur === imgs[0] ? imgs[1] : imgs[0];
+  let url;
+  try { url = URL.createObjectURL(new Blob([await unlock(PHOTO_DIR + p.file, true)], { type: "image/jpeg" })); } catch (e) { return; }
+  next.onload = () => {
+    next.classList.add("on"); if (cur) cur.classList.remove("on");
+    setTimeout(() => { if (cur && cur.dataset.url) { URL.revokeObjectURL(cur.dataset.url); delete cur.dataset.url; cur.removeAttribute("src"); } }, 2500);
+    tile.querySelector(".cap").innerHTML = `<b>${p.year}</b>${[p.where, p.ago].filter(Boolean).join(" · ")}`;
+  };
+  next.dataset.url = url; next.src = url;
+}
+setInterval(() => { pastTile = (pastTile + 1) % 3; pastShow(pastTile); }, 12000);
 
 /* ---------- clock ---------- */
 let lastDay = "";
@@ -612,6 +664,7 @@ tick(); setInterval(tick, 30000);
 renderWeather(); setInterval(renderWeather, 30 * 60000);
 loadData(); setInterval(loadData, 10 * 60000);
 loadPhotos(); setInterval(loadPhotos, 6 * 3600000);
+loadPast(); setInterval(loadPast, 6 * 3600000);
 // 20s per photo, 3 photos per set, then switch sets: one minute each
 let ticks = 0;
 setInterval(() => { ticks++; if (ticks % 3 === 0) nextMode(); else nextPhoto(); }, 20000);
