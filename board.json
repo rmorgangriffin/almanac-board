@@ -1,0 +1,13 @@
+{
+  "curio": {
+    "title": "The tally sticks that burned down Parliament",
+    "body": "A tally stick was a wooden receipt: squared hazel, notched to record a sum, then split lengthwise so each party kept a half. Only the two original halves fit back together, so added notches would show. In 1834 the Exchequer ordered two cartloads of old tallies burned in the stoves under the House of Lords. By evening both chambers were lost, and J. M. W. Turner was in the crowd that watched.",
+    "source": "Wikipedia: Tally stick · MoneyWeek"
+  },
+  "picks": [
+    { "kind": "Book", "title": "The End of Everything", "why": "M. John Harrison. Won the 2026 Booker Prize on Nov 9." },
+    { "kind": "Film", "title": "Nashville", "why": "Altman, 1975. Criterion's new 4K edition is out Dec 1." },
+    { "kind": "TV", "title": "Blade Runner 2099", "why": "All eight episodes arrive on Prime Video Nov 25." }
+  ],
+  "groceries": ["Salt flakes", "American cheese", "Confectioners' sugar", "Stuffing popcorn (TJ's)", "Christmas cheese (TJ's)"]
+}
