@@ -18,18 +18,20 @@
 // Picks a board from schedule.json and shows it full screen.
 // The secret after # is handed to the board so it can unlock its private data.
 // Add ?board=name to force one board (handy for previewing).
+// Rules are checked in order; each may limit by dates ["YYYY-MM-DD"], days [0=Sun..6], and from/to "HH:MM".
 const key = location.hash.slice(1);
 const forced = new URLSearchParams(location.search).get("board");
 let schedule = { default: "almanac", rules: [] }, current = null, front = "a";
 
 function nowParts() {
-  const p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date())) p[x.type] = x.value;
-  return { dow: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.weekday), hm: `${p.hour}:${p.minute}` };
+  const p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date())) p[x.type] = x.value;
+  return { dow: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.weekday), hm: `${p.hour}:${p.minute}`, date: `${p.year}-${p.month}-${p.day}` };
 }
 function pick() {
   if (forced) return forced;
-  const { dow, hm } = nowParts();
+  const { dow, hm, date } = nowParts();
   for (const r of schedule.rules || []) {
+    if (r.dates && !r.dates.includes(date)) continue;
     if (r.days && !r.days.includes(dow)) continue;
     const from = r.from || "00:00", to = r.to || "24:00";
     if (from <= to ? (hm >= from && hm < to) : (hm >= from || hm < to)) return r.board;
