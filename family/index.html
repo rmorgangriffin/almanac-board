@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Griffano Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 1080×1920 portrait wall board. Header + forecast across the top, work agenda beside a five-week family grid, Po's Dublin panel along the bottom. */
+:root {
+  --ink: #11152a; --panel: #191e38; --line: #2a3156; --fg: #e9e6dc; --muted: #9097b8;
+  --amber: #f2a93b;   /* Morgan, and the accent */
+  --sage: #7fc8a9;    /* Corey */
+  --lilac: #b9a3ff;   /* Griffano family */
+  --rose: #ef8a8a;    /* holidays */
+  --display: "Young Serif", Georgia, serif;
+  --body: "Figtree", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { font-size: 16px; }
+@media (min-width: 900px) { html { font-size: calc(100vw / 67.5); } }
+body { margin: 0; background: var(--ink); color: var(--fg); font-family: var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 1.25rem; }
+.board { display: grid; gap: 1rem; max-width: 64rem; margin: 0 auto; }
+@media (min-width: 900px) { body { height: 100vh; overflow: hidden; } .board { height: 100%; grid-template-rows: auto auto minmax(0, 1fr) 25rem; } }
+.label { font-family: var(--mono); font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: .9rem; padding: 1rem 1.2rem; min-width: 0; min-height: 0; }
+.num { font-variant-numeric: tabular-nums; }
+svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Header */
+.head { display: grid; grid-template-columns: 1fr auto auto; gap: 2rem; align-items: end; padding: .25rem .2rem 0; }
+.latin { font-family: var(--display); font-size: clamp(2.2rem, 8vw, 4.2rem); line-height: 1; }
+.latin em { font-style: normal; color: var(--amber); }
+.date { margin-top: .4rem; font-size: 1.1rem; color: var(--muted); }
+.time { font-family: var(--display); font-size: clamp(2.2rem, 8vw, 4.2rem); line-height: 1; }
+.time small { font-family: var(--body); font-size: .32em; color: var(--muted); margin-left: .25rem; }
+.now { text-align: right; }
+.now .t { font-family: var(--display); font-size: 3rem; line-height: 1; display: flex; gap: .6rem; align-items: center; justify-content: flex-end; }
+.now .t svg { color: var(--amber); font-size: 2.6rem; }
+.now .s { margin-top: .4rem; color: var(--muted); font-size: 1rem; }
+
+/* Forecast */
+.fc { display: grid; grid-template-columns: repeat(6, 1fr); gap: .5rem; }
+.fc .d { text-align: center; padding: .2rem 0; }
+.fc .d + .d { border-left: 1px solid var(--line); }
+.fc .n { font-family: var(--mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.fc .i { font-size: 2rem; margin: .35rem 0 .2rem; color: var(--fg); }
+.fc .hl { font-size: 1.05rem; } .fc .hl span { color: var(--muted); }
+.fc .p { font-size: .8rem; color: var(--sage); margin-top: .15rem; min-height: 1em; }
+
+/* Main */
+.main { display: grid; grid-template-columns: 19rem minmax(0, 1fr); gap: 1rem; min-height: 0; }
+.work { display: flex; flex-direction: column; gap: .9rem; overflow: hidden; }
+.work h3 { font-family: var(--display); font-weight: 400; font-size: 1.25rem; margin: 0 0 .4rem; display: flex; justify-content: space-between; align-items: baseline; }
+.work h3 span { font-family: var(--mono); font-size: .68rem; letter-spacing: .12em; color: var(--muted); text-transform: uppercase; }
+.work ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; }
+.work li { display: grid; grid-template-columns: 3.6rem 1fr; gap: .5rem; font-size: .92rem; line-height: 1.25; padding: .25rem .4rem; border-radius: .4rem; }
+.work li .tm { font-family: var(--mono); font-size: .78rem; color: var(--muted); padding-top: .1rem; }
+.work li .ti { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.work li.past { opacity: .4; }
+.work li.nowon { background: color-mix(in srgb, var(--amber) 18%, transparent); }
+.work li.nowon .tm { color: var(--amber); }
+.work .free { color: var(--muted); font-size: .9rem; font-style: italic; padding-left: .4rem; }
+
+.grid { display: grid; grid-template-rows: auto repeat(5, minmax(0, 1fr)); min-height: 0; padding: .8rem; }
+.grid .wk { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); min-height: 0; }
+.grid .dow { font-family: var(--mono); font-size: .7rem; letter-spacing: .14em; color: var(--muted); text-align: center; padding-bottom: .4rem; }
+.cell { border-top: 1px solid var(--line); padding: .3rem .25rem; min-width: 0; min-height: 0; overflow: hidden; }
+.cell + .cell { border-left: 1px solid var(--line); }
+.cell .dn { font-family: var(--display); font-size: 1.15rem; line-height: 1; margin-bottom: .25rem; display: flex; align-items: baseline; gap: .3rem; }
+.cell .dn small { font-family: var(--mono); font-size: .6rem; letter-spacing: .1em; color: var(--amber); text-transform: uppercase; }
+.cell.past { opacity: .35; }
+.cell.today { background: color-mix(in srgb, var(--amber) 10%, transparent); border-radius: .4rem; }
+.cell.today .dn { color: var(--amber); }
+.ev { font-size: .72rem; line-height: 1.2; margin-top: .18rem; padding-left: .4rem; border-left: 3px solid var(--c, var(--muted)); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.ev b { font-weight: 600; color: var(--muted); font-family: var(--mono); font-size: .64rem; }
+.ev.allday { background: color-mix(in srgb, var(--c) 22%, transparent); border-radius: .2rem; }
+.more { font-size: .66rem; color: var(--muted); margin-top: .15rem; padding-left: .4rem; }
+.legend { display: flex; gap: 1rem; justify-content: flex-end; margin-top: .4rem; font-size: .72rem; color: var(--muted); }
+.legend i { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; background: var(--c); margin-right: .3rem; vertical-align: 0; }
+
+/* Po */
+.po { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 1.2rem; padding: 0; overflow: hidden; }
+.photo { position: relative; background: #0b0e1d; min-height: 14rem; }
+.photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 2s ease; }
+.photo img.on { opacity: 1; }
+.photo .cap { position: absolute; left: .8rem; bottom: .6rem; font-family: var(--mono); font-size: .65rem; letter-spacing: .1em; color: #fff; text-shadow: 0 1px 4px #000; text-transform: uppercase; }
+.dub { padding: 1.2rem 1.2rem 1.2rem 0; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+.dub h2 { font-family: var(--display); font-weight: 400; font-size: 2rem; margin: 0; line-height: 1.1; }
+.dub .ga { color: var(--sage); font-style: italic; margin-top: .3rem; }
+.dub .dt { font-family: var(--display); font-size: 2.6rem; line-height: 1; }
+.dub .dt small { font-family: var(--body); font-size: .35em; color: var(--muted); margin-left: .2rem; }
+.dub .wnow { display: flex; align-items: center; gap: .6rem; font-size: 1.5rem; font-family: var(--display); }
+.dub .wnow svg { color: var(--amber); font-size: 1.9rem; }
+.dub .wnow span { font-family: var(--body); font-size: .95rem; color: var(--muted); }
+.dub .mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; text-align: center; font-size: .85rem; }
+.dub .mini .i { font-size: 1.4rem; margin: .2rem 0; }
+.dub .mini span { color: var(--muted); }
+
+.msg { padding: 2rem; color: var(--muted); text-align: center; font-size: 1rem; }
+
+@media (max-width: 700px) {
+  .head { grid-template-columns: 1fr; gap: 1rem; } .now { text-align: left; } .now .t { justify-content: flex-start; }
+  .fc { grid-template-columns: repeat(3, 1fr); row-gap: 1rem; } .fc .d:nth-child(4) { border-left: 0; }
+  .main, .po { grid-template-columns: 1fr; }
+  .grid .wk { grid-template-columns: repeat(7, minmax(0, 1fr)); } .ev { font-size: .6rem; }
+  .dub { padding: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) { .photo img { transition: none; } }
+</style>
+</head>
+<body>
+<div class="board">
+  <header class="head">
+    <div>
+      <div class="latin" id="latin">dies <em>Solis</em></div>
+      <div class="date" id="date"></div>
+    </div>
+    <div class="time num" id="time"></div>
+    <div class="now" id="now"><div class="t">--°</div><div class="s">Northampton</div></div>
+  </header>
+
+  <section class="panel fc" id="fc" aria-label="Six-day forecast"></section>
+
+  <div class="main">
+    <section class="panel work" id="work">
+      <div class="label">Bloom Works</div>
+      <div class="msg">Loading the work calendar…</div>
+    </section>
+    <section class="panel grid" id="grid" aria-label="Family calendar, next five weeks"></section>
+  </div>
+
+  <section class="panel po">
+    <div class="photo" id="photo"><div class="cap" id="cap"></div></div>
+    <div class="dub">
+      <div>
+        <h2>Po in Dublin</h2>
+        <div class="ga">Po i mBaile Átha Cliath</div>
+      </div>
+      <div class="dt num" id="dubtime"></div>
+      <div class="wnow" id="dubnow"></div>
+      <div class="mini" id="dubfc"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const TZ = "America/New_York", DUB = "Europe/Dublin";
+const HOME = { lat: 42.3251, lon: -72.6412 }, DUBLIN = { lat: 53.3494, lon: -6.2606 };
+const KEY = location.hash.slice(1);
+const LATIN = ["Solis", "Lunae", "Martis", "Mercurii", "Iovis", "Veneris", "Saturni"];
+const CAL = { morgan: "var(--amber)", corey: "var(--sage)", family: "var(--lilac)", holiday: "var(--rose)" };
+const $ = id => document.getElementById(id);
+const DAY = 86400000;
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function parts(date, tz) {
+  const o = {}; for (const p of new Intl.DateTimeFormat("en-US", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit", weekday: "short", hour: "numeric", minute: "2-digit", hour12: true }).formatToParts(date)) o[p.type] = p.value;
+  return o;
+}
+const isoToday = () => { const p = parts(new Date(), TZ); return `${p.year}-${p.month}-${p.day}`; };
+const isoAdd = (iso, n) => new Date(Date.parse(iso + "T12:00:00Z") + n * DAY).toISOString().slice(0, 10);
+const dowOf = iso => new Date(iso + "T12:00:00Z").getUTCDay();
+const nowHM = () => { const p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date())) p[x.type] = x.value; return `${p.hour}:${p.minute}`; };
+const t12 = hm => { if (!hm) return ""; let [h, m] = hm.split(":").map(Number); const ap = h >= 12 ? "p" : "a"; h = h % 12 || 12; return m ? `${h}:${String(m).padStart(2, "0")}${ap}` : `${h}${ap}`; };
+
+/* ---------- weather icons ---------- */
+const ICON = {
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  part: '<path d="M8 3v1.5M3.5 5.5l1 1M2 10h1.5M12.5 5.5l-1 1"/><path d="M5.6 11.5A3 3 0 1 1 11 8.2"/><path d="M8 20h9a4 4 0 0 0 .5-8 5.5 5.5 0 0 0-10.4 1.6A3.2 3.2 0 0 0 8 20z"/>',
+  cloud: '<path d="M7 19h10a4.5 4.5 0 0 0 .6-9A6 6 0 0 0 6.2 11.6 3.8 3.8 0 0 0 7 19z"/>',
+  rain: '<path d="M7 15h10a4.5 4.5 0 0 0 .6-9A6 6 0 0 0 6.2 7.6 3.8 3.8 0 0 0 7 15z"/><path d="M8 18l-1 3M12 18l-1 3M16 18l-1 3"/>',
+  snow: '<path d="M7 15h10a4.5 4.5 0 0 0 .6-9A6 6 0 0 0 6.2 7.6 3.8 3.8 0 0 0 7 15z"/><path d="M8 19h.01M12 21h.01M16 19h.01M10 22h.01M14 18h.01"/>',
+  storm: '<path d="M7 15h10a4.5 4.5 0 0 0 .6-9A6 6 0 0 0 6.2 7.6 3.8 3.8 0 0 0 7 15z"/><path d="M13 15l-2 4h3l-2 4"/>',
+  fog: '<path d="M4 9h16M3 13h18M5 17h14"/>'
+};
+function kind(code) {
+  if (code <= 0) return ["sun", "Clear"]; if (code <= 2) return ["part", "Partly cloudy"]; if (code === 3) return ["cloud", "Cloudy"];
+  if (code <= 48) return ["fog", "Fog"]; if (code <= 57) return ["rain", "Drizzle"]; if (code <= 67) return ["rain", "Rain"];
+  if (code <= 77) return ["snow", "Snow"]; if (code <= 82) return ["rain", "Showers"]; if (code <= 86) return ["snow", "Snow showers"]; return ["storm", "Thunderstorms"];
+}
+const icon = code => `<svg class="wx" viewBox="0 0 24 24" aria-hidden="true">${ICON[kind(code)[0]]}</svg>`;
+
+async function weather(loc, tz) {
+  const u = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,apparent_temperature,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=${encodeURIComponent(tz)}&forecast_days=6`;
+  const r = await fetch(u); if (!r.ok) throw new Error("weather"); return r.json();
+}
+async function renderWeather() {
+  try {
+    const w = await weather(HOME, TZ), c = w.current, d = w.daily;
+    $("now").innerHTML = `<div class="t">${icon(c.weather_code)}<span class="num">${Math.round(c.temperature_2m)}°</span></div><div class="s">Feels like ${Math.round(c.apparent_temperature)}° · ${kind(c.weather_code)[1]}</div>`;
+    $("fc").innerHTML = d.time.map((t, i) => {
+      const n = i === 0 ? "Today" : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dowOf(t)];
+      const p = d.precipitation_probability_max[i];
+      return `<div class="d"><div class="n">${n}</div><div class="i">${icon(d.weather_code[i])}</div><div class="hl num">${Math.round(d.temperature_2m_max[i])}° <span>${Math.round(d.temperature_2m_min[i])}°</span></div><div class="p num">${p >= 20 ? p + "%" : ""}</div></div>`;
+    }).join("");
+  } catch (e) { /* keep last good */ }
+  try {
+    const w = await weather(DUBLIN, DUB), c = w.current, d = w.daily;
+    $("dubnow").innerHTML = `${icon(c.weather_code)}<b class="num">${Math.round(c.temperature_2m)}°</b><span>${kind(c.weather_code)[1]}</span>`;
+    $("dubfc").innerHTML = d.time.slice(1, 4).map((t, i) => `<div><div class="label">${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dowOf(t)]}</div><div class="i">${icon(d.weather_code[i + 1])}</div><div class="num">${Math.round(d.temperature_2m_max[i + 1])}° <span>${Math.round(d.temperature_2m_min[i + 1])}°</span></div></div>`).join("");
+  } catch (e) {}
+}
+
+/* ---------- private data ---------- */
+const b64 = s => { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return Uint8Array.from(atob(s), c => c.charCodeAt(0)); };
+let cryptoKey = null;
+async function unlock(file) {
+  if (!KEY) throw new Error("nokey");
+  cryptoKey = cryptoKey || await crypto.subtle.importKey("raw", b64(KEY), "AES-GCM", false, ["decrypt"]);
+  const r = await fetch(file + "?v=" + Date.now(), { cache: "no-store" }); if (!r.ok) throw new Error("missing");
+  const { iv, ct } = await r.json();
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(iv) }, cryptoKey, b64(ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+let DATA = null;
+function renderWork() {
+  const el = $("work");
+  if (!DATA) return;
+  const today = isoToday(), hm = nowHM();
+  const days = (DATA.work || []).filter(d => d.date >= today).slice(0, 3);
+  el.innerHTML = `<div class="label">Bloom Works</div>` + days.map(d => {
+    const rel = d.date === today ? "Today" : d.date === isoAdd(today, 1) ? "Tomorrow" : "";
+    const name = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][dowOf(d.date)];
+    const evs = d.events || [];
+    const items = evs.map(e => {
+      let cls = "";
+      if (d.date === today && !e.allDay) { if (e.end && e.end <= hm) cls = "past"; else if (e.start <= hm) cls = "nowon"; }
+      return `<li class="${cls}"><span class="tm num">${e.allDay ? "all day" : t12(e.start)}</span><span class="ti">${esc(e.title)}</span></li>`;
+    }).join("");
+    return `<div><h3>${name} ${+d.date.slice(8)}<span>${rel}</span></h3>${evs.length ? `<ul>${items}</ul>` : `<div class="free">Nothing scheduled</div>`}</div>`;
+  }).join("");
+}
+function renderGrid() {
+  const el = $("grid");
+  const today = isoToday(), start = isoAdd(today, -dowOf(today));
+  const byDate = {};
+  for (const e of (DATA && DATA.grid) || []) (byDate[e.date] = byDate[e.date] || []).push(e);
+  const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  let html = `<div class="wk">${["S", "M", "T", "W", "T", "F", "S"].map(d => `<div class="dow">${d}</div>`).join("")}</div>`;
+  for (let w = 0; w < 5; w++) {
+    html += `<div class="wk">`;
+    for (let i = 0; i < 7; i++) {
+      const iso = isoAdd(start, w * 7 + i), dn = +iso.slice(8), first = dn === 1 || (w === 0 && i === 0);
+      const evs = (byDate[iso] || []).sort((a, b) => (a.time ? 1 : 0) - (b.time ? 1 : 0) || String(a.time).localeCompare(String(b.time)));
+      const max = 3, shown = evs.slice(0, max);
+      const cls = iso < today ? "past" : iso === today ? "today" : "";
+      html += `<div class="cell ${cls}"><div class="dn num">${dn}${first ? `<small>${MON[+iso.slice(5, 7) - 1]}</small>` : ""}</div>` +
+        shown.map(e => `<div class="ev ${e.time ? "" : "allday"}" style="--c:${CAL[e.cal] || "var(--muted)"}">${e.time ? `<b>${t12(e.time)}</b> ` : ""}${esc(e.title)}</div>`).join("") +
+        (evs.length > max ? `<div class="more">+${evs.length - max} more</div>` : "") + `</div>`;
+    }
+    html += `</div>`;
+  }
+  el.innerHTML = html;
+  el.insertAdjacentHTML("beforeend", `<div class="legend"><span><i style="--c:var(--amber)"></i>Morgan</span><span><i style="--c:var(--sage)"></i>Corey</span><span><i style="--c:var(--lilac)"></i>Griffano</span></div>`);
+  el.style.gridTemplateRows = "auto repeat(5, minmax(0, 1fr)) auto";
+}
+async function loadData() {
+  try { DATA = await unlock("data.enc"); }
+  catch (e) {
+    if (!DATA) $("work").innerHTML = `<div class="label">Bloom Works</div><div class="msg">${e.message === "nokey" ? "This board needs its key in the address (after #)." : "Calendar data isn't available yet."}</div>`;
+  }
+  renderWork(); renderGrid();
+}
+
+/* ---------- Po's photos ---------- */
+let PHOTOS = [], pi = 0;
+async function loadPhotos() {
+  try { const p = await unlock("photos.enc"); PHOTOS = p.photos || []; } catch (e) {}
+  const box = $("photo"); box.querySelectorAll("img").forEach(i => i.remove());
+  PHOTOS.forEach((p, i) => { const img = new Image(); img.src = p.src; img.alt = ""; if (i === 0) img.className = "on"; box.insertBefore(img, $("cap")); });
+  pi = 0; caption();
+}
+function caption() { const p = PHOTOS[pi]; $("cap").textContent = p && p.date ? p.date : ""; }
+function nextPhoto() {
+  const imgs = $("photo").querySelectorAll("img"); if (imgs.length < 2) return;
+  imgs[pi].classList.remove("on"); pi = (pi + 1) % imgs.length; imgs[pi].classList.add("on"); caption();
+}
+
+/* ---------- clock ---------- */
+let lastDay = "";
+function tick() {
+  const now = new Date(), p = parts(now, TZ), today = isoToday();
+  $("latin").innerHTML = `dies <em>${LATIN[dowOf(today)]}</em>`;
+  $("date").textContent = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, weekday: "long", day: "numeric", month: "long" }).format(now).replace(/^(\w+) /, "$1, ");
+  $("time").innerHTML = `${p.hour}:${p.minute}<small>${p.dayPeriod}</small>`;
+  const d = parts(now, DUB); $("dubtime").innerHTML = `${d.hour}:${d.minute}<small>${d.dayPeriod.toLowerCase()} in Dublin</small>`;
+  if (today !== lastDay) { lastDay = today; renderGrid(); }
+  renderWork();
+}
+
+tick(); setInterval(tick, 30000);
+renderWeather(); setInterval(renderWeather, 30 * 60000);
+loadData(); setInterval(loadData, 10 * 60000);
+loadPhotos(); setInterval(loadPhotos, 6 * 3600000);
+setInterval(nextPhoto, 20000);
+</script>
+</body>
+</html>

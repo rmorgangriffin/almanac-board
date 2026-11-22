@@ -2,361 +2,57 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}[hidden]{display:none!important}</style>
-<title>Almanac Board</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<title>Boards</title>
 <style>
-/* Layout: a portrait almanac page for a 1080×1920 wall screen — header, sky band, then a two-column grid of daily things; stacks to one column on a phone. */
-:root {
-  --ink: #11152a;        /* night ground */
-  --panel: #191e38;      /* raised panel */
-  --line: #2a3156;       /* hairlines */
-  --fg: #e9e6dc;         /* parchment text */
-  --muted: #9097b8;      /* quiet text */
-  --amber: #f2a93b;      /* sun, the one accent */
-  --silver: #c9d1ee;     /* moon */
-  --display: "Young Serif", Georgia, "Times New Roman", serif;
-  --body: "Figtree", system-ui, -apple-system, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
-  color-scheme: dark;
-}
-html { font-size: 16px; }
-@media (min-width: 900px) { html { font-size: calc(100vw / 67.5); } }
-body {
-  background: var(--ink); color: var(--fg); font-family: var(--body);
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 1.5rem;
-}
-.board { display: grid; gap: 1.25rem; max-width: 64rem; margin: 0 auto; }
-.label { font-family: var(--mono); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: .9rem; padding: 1.25rem 1.4rem; min-width: 0; }
-.sample { font-family: var(--mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); background: var(--muted); border-radius: .3rem; padding: .1rem .35rem; margin-left: .4rem; vertical-align: middle; }
-.num { font-variant-numeric: tabular-nums; }
-
-/* Header */
-.head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap; padding: .5rem .2rem 0; }
-.latin { font-family: var(--display); font-size: clamp(2.6rem, 9vw, 5.2rem); line-height: 1; letter-spacing: -.01em; }
-.latin em { font-style: normal; color: var(--amber); }
-.date { margin-top: .5rem; font-size: 1.15rem; color: var(--muted); }
-.clock { text-align: right; }
-.time { font-family: var(--display); font-size: clamp(2.4rem, 8vw, 4.6rem); line-height: 1; }
-.time small { font-family: var(--body); font-size: .32em; color: var(--muted); margin-left: .25rem; letter-spacing: .05em; }
-.dublin { margin-top: .5rem; font-size: 1rem; color: var(--muted); }
-.dublin b { color: var(--fg); font-weight: 600; }
-
-/* Sky */
-.sky { display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: center; }
-.sky canvas { width: 100%; height: auto; display: block; }
-#arc { aspect-ratio: 3 / 1; }
-.moonbox { text-align: center; display: grid; gap: .4rem; justify-items: center; }
-#moon { width: 7.5rem; height: 7.5rem; }
-.moonname { font-family: var(--display); font-size: 1.15rem; }
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-top: 1rem; }
-.stat .v { font-family: var(--display); font-size: 1.5rem; margin-top: .2rem; }
-.stat .v.amber { color: var(--amber); }
-
-/* Grid of daily things */
-.row { display: grid; grid-template-columns: 7fr 5fr; gap: 1.25rem; }
-.row.even { grid-template-columns: 1fr 1fr; }
-h2 { font-family: var(--display); font-weight: 400; font-size: 1.6rem; line-height: 1.2; margin: .5rem 0 .6rem; text-wrap: balance; }
-p { margin: 0; line-height: 1.5; font-size: 1rem; max-width: 65ch; }
-.src { margin-top: .7rem; font-size: .85rem; color: var(--muted); }
-
-.count { list-style: none; margin: .6rem 0 0; padding: 0; display: grid; gap: .55rem; }
-.count li { display: grid; grid-template-columns: 3.6rem 1fr; align-items: baseline; gap: .75rem; }
-.count .d { font-family: var(--display); font-size: 1.9rem; text-align: right; line-height: 1; }
-.count li:first-child .d { color: var(--amber); }
-.count .w { font-size: 1rem; }
-.count .w span { display: block; font-size: .8rem; color: var(--muted); }
-
-.word { font-family: var(--display); font-size: 2.1rem; margin-top: .4rem; }
-.gloss { color: var(--muted); font-style: italic; margin-top: .1rem; }
-.pair { display: grid; gap: 1.1rem; }
-.pair > div + div { border-top: 1px solid var(--line); padding-top: 1rem; }
-
-.otd { list-style: none; padding: 0; margin: .6rem 0 0; display: grid; gap: .8rem; }
-.otd li { display: grid; grid-template-columns: 3.4rem 1fr; gap: .6rem; line-height: 1.4; }
-.otd .y { font-family: var(--mono); color: var(--amber); font-size: .95rem; }
-
-.picks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: .6rem; }
-.pick { border-top: 2px solid var(--line); padding-top: .7rem; }
-.pick .k { font-family: var(--mono); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
-.pick .t { font-family: var(--display); font-size: 1.2rem; margin: .3rem 0 .25rem; line-height: 1.25; }
-.pick .why { font-size: .9rem; color: var(--muted); line-height: 1.4; }
-
-.groc { columns: 2; column-gap: 1.5rem; list-style: none; padding: 0; margin: .6rem 0 0; }
-.groc li { break-inside: avoid; padding: .3rem 0; border-bottom: 1px dashed var(--line); font-size: 1rem; }
-.foot { text-align: center; font-family: var(--mono); font-size: .7rem; color: var(--muted); letter-spacing: .08em; }
-
-@media (max-width: 700px) {
-  .row, .row.even, .sky { grid-template-columns: 1fr; }
-  .stats { grid-template-columns: repeat(2, 1fr); }
-  .picks { grid-template-columns: 1fr; }
-  .clock { text-align: left; }
-}
+  html, body { margin: 0; height: 100%; background: #11152a; overflow: hidden; }
+  iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; transition: opacity .8s; }
+  iframe.hide { opacity: 0; }
 </style>
-
-<div class="board">
-  <header class="head">
-    <div>
-      <div class="latin" id="latin">dies <em>Solis</em></div>
-      <div class="date" id="date">Sunday, 22 November</div>
-    </div>
-    <div class="clock">
-      <div class="time num" id="time">8:26<small>AM</small></div>
-      <div class="dublin">Po in Dublin · <b class="num" id="dub">1:26 pm</b></div>
-    </div>
-  </header>
-
-  <section class="panel">
-    <div class="label">The sky over Northampton</div>
-    <div class="sky">
-      <canvas id="arc" width="1200" height="400" aria-label="The sun's path across today's sky"></canvas>
-      <div class="moonbox">
-        <canvas id="moon" width="240" height="240" aria-label="Tonight's moon"></canvas>
-        <div class="moonname" id="moonname">Waxing gibbous</div>
-        <div class="label num" id="moonpct">88% lit</div>
-      </div>
-    </div>
-    <div class="stats">
-      <div class="stat"><div class="label">Sunrise</div><div class="v num" id="rise">6:46</div></div>
-      <div class="stat"><div class="label">Sunset</div><div class="v num" id="set">4:19</div></div>
-      <div class="stat"><div class="label">Daylight</div><div class="v num" id="len">9h 33m</div></div>
-      <div class="stat"><div class="label">Vs. yesterday</div><div class="v num amber" id="delta">−1m 40s</div></div>
-    </div>
-  </section>
-
-  <div class="row">
-    <section class="panel">
-      <div class="label">Today's curio <span class="sample">sample</span></div>
-      <h2 id="curioT"></h2>
-      <p id="curioB"></p>
-      <div class="src" id="curioS"></div>
-    </section>
-    <section class="panel">
-      <div class="label">Days until</div>
-      <ul class="count" id="count"></ul>
-    </section>
-  </div>
-
-  <div class="row even">
-    <section class="panel pair">
-      <div>
-        <div class="label">Verbum diei · Latin</div>
-        <div class="word" id="la">lux</div>
-        <div class="gloss" id="laG">light</div>
-      </div>
-      <div>
-        <div class="label">Focal an lae · Irish, for Po</div>
-        <div class="word" id="ga">solas</div>
-        <div class="gloss" id="gaG">light</div>
-      </div>
-    </section>
-    <section class="panel">
-      <div class="label">On this day</div>
-      <ul class="otd" id="otd"></ul>
-    </section>
-  </div>
-
-  <section class="panel">
-    <div class="label">Worth a look this week <span class="sample">sample</span></div>
-    <div class="picks" id="picks"></div>
-  </section>
-
-  <section class="panel">
-    <div class="label">On the grocery list <span class="sample">sample</span></div>
-    <ul class="groc" id="groc"></ul>
-  </section>
-
-  <div class="foot" id="foot">Mockup · live sky, clocks and countdowns · other panels show sample content</div>
-</div>
-
+</head>
+<body>
+<iframe id="a" title="Board"></iframe>
+<iframe id="b" title="Board" class="hide"></iframe>
 <script>
-const LAT = 42.3251, LON = -72.6412, TZ = "America/New_York";
+// Picks a board from schedule.json and shows it full screen.
+// The secret after # is handed to the board so it can unlock its private data.
+// Add ?board=name to force one board (handy for previewing).
+const key = location.hash.slice(1);
+const forced = new URLSearchParams(location.search).get("board");
+let schedule = { default: "almanac", rules: [] }, current = null, front = "a";
 
-// Sample content. On the real board this comes from board.json, written by the Mac mini.
-let DATA = {
-  curio: {
-    title: "A young godwit flew 13,560 km without landing once",
-    body: "In October 2022 a five-month-old bar-tailed godwit, tagged 234684, left Alaska and flew to Tasmania in about eleven days, never stopping to eat, drink or rest. It had never made the trip before and had no adult to follow.",
-    source: "Birds Tasmania / Pacific Shorebird Migration Project"
-  },
-  dates: [
-    { name: "Thanksgiving", m: 11, d: 26, note: "Thursday" },
-    { name: "Kathy's birthday", m: 12, d: 2 },
-    { name: "Ben's birthday", m: 12, d: 20 },
-    { name: "Winter solstice", m: 12, d: 21, note: "the light turns" },
-    { name: "Christmas", m: 12, d: 25 },
-    { name: "Little Christmas", m: 1, d: 6, note: "end of the season" }
-  ],
-  words: [
-    { la: ["lux", "light"], ga: ["solas", "light"] },
-    { la: ["hiems", "winter"], ga: ["geimhreadh", "winter"] },
-    { la: ["stella", "star"], ga: ["réalta", "star"] },
-    { la: ["focus", "hearth"], ga: ["teallach", "hearth"] },
-    { la: ["nix, nivis", "snow"], ga: ["sneachta", "snow"] },
-    { la: ["luna", "moon"], ga: ["gealach", "moon"] },
-    { la: ["gratia", "thanks, grace"], ga: ["go raibh maith agat", "thank you"] }
-  ],
-  onThisDay: {
-    "11-22": [
-      ["1968", "The Beatles release the double album known as the White Album."],
-      ["1995", "Toy Story opens in US theaters, the first fully computer-animated feature film."],
-      ["1990", "Margaret Thatcher announces she will step down as Britain's prime minister."]
-    ]
-  },
-  picks: [
-    { kind: "Book", title: "Middlemarch", why: "Long, warm, and made for a dark December." },
-    { kind: "Film", title: "Paddington 2", why: "The one everyone in the house will agree on." },
-    { kind: "TV", title: "Slow Horses", why: "Gary Oldman, grubby spies, short seasons." }
-  ],
-  groceries: ["Turkey (14 lb)", "Fresh cranberries", "Heavy cream", "Celery", "Yellow onions", "Butter ×2", "Sage", "Pie crusts"]
-};
-
-const $ = id => document.getElementById(id);
-const DAY = 86400000;
-const LATIN = ["Solis", "Lunae", "Martis", "Mercurii", "Iovis", "Veneris", "Saturni"];
-
-function parts(date, tz) {
-  const f = new Intl.DateTimeFormat("en-US", { timeZone: tz, year: "numeric", month: "numeric", day: "numeric", weekday: "short", hour: "numeric", minute: "2-digit", hour12: true });
-  const o = {}; for (const p of f.formatToParts(date)) o[p.type] = p.value; return o;
+function nowParts() {
+  const p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date())) p[x.type] = x.value;
+  return { dow: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.weekday), hm: `${p.hour}:${p.minute}` };
 }
-function hm(date, withAmPm) {
-  const p = parts(date, TZ); return withAmPm ? `${p.hour}:${p.minute} ${p.dayPeriod.toLowerCase()}` : `${p.hour}:${p.minute}`;
-}
-
-// Sunrise/sunset (NOAA-style approximation), returns Date objects
-function sun(y, m, d) {
-  const rad = Math.PI / 180;
-  const n = Math.round(Date.UTC(y, m - 1, d, 12) / DAY + 2440587.5 - 2451545.0 + 0.0008);
-  const Js = n - LON / 360;
-  const M = (357.5291 + 0.98560028 * Js) % 360;
-  const C = 1.9148 * Math.sin(M * rad) + 0.02 * Math.sin(2 * M * rad) + 0.0003 * Math.sin(3 * M * rad);
-  const L = (M + C + 180 + 102.9372) % 360;
-  const Jt = 2451545.0 + Js + 0.0053 * Math.sin(M * rad) - 0.0069 * Math.sin(2 * L * rad);
-  const sd = Math.sin(L * rad) * Math.sin(23.4397 * rad), cd = Math.cos(Math.asin(sd));
-  const cw = (Math.sin(-0.833 * rad) - Math.sin(LAT * rad) * sd) / (Math.cos(LAT * rad) * cd);
-  const w = Math.acos(cw) / rad;
-  const toDate = J => new Date((J - 2440587.5) * DAY);
-  return { rise: toDate(Jt - w / 360), set: toDate(Jt + w / 360) };
-}
-
-function fmtDur(ms) { const m = Math.round(ms / 60000); return `${Math.floor(m / 60)}h ${m % 60}m`; }
-
-function drawArc(now, rise, set) {
-  const c = $("arc"), x = c.getContext("2d"), W = c.width, H = c.height;
-  const css = getComputedStyle(document.documentElement);
-  const amber = css.getPropertyValue("--amber").trim(), line = css.getPropertyValue("--line").trim(), muted = css.getPropertyValue("--muted").trim();
-  x.clearRect(0, 0, W, H);
-  const pad = 60, base = H - 70, rx = (W - pad * 2) / 2, ry = base - 40, cx = W / 2;
-  // horizon
-  x.strokeStyle = line; x.lineWidth = 3; x.beginPath(); x.moveTo(20, base); x.lineTo(W - 20, base); x.stroke();
-  // path
-  x.setLineDash([10, 12]); x.strokeStyle = muted; x.lineWidth = 3;
-  x.beginPath(); x.ellipse(cx, base, rx, ry, 0, Math.PI, 2 * Math.PI); x.stroke(); x.setLineDash([]);
-  const t = (now - rise) / (set - rise);
-  if (t > 0 && t < 1) {
-    const a = Math.PI + t * Math.PI, sx = cx + rx * Math.cos(a), sy = base + ry * Math.sin(a);
-    // travelled part
-    x.strokeStyle = amber; x.lineWidth = 5; x.beginPath(); x.ellipse(cx, base, rx, ry, 0, Math.PI, a); x.stroke();
-    const g = x.createRadialGradient(sx, sy, 0, sx, sy, 70); g.addColorStop(0, amber + "88"); g.addColorStop(1, amber + "00");
-    x.fillStyle = g; x.beginPath(); x.arc(sx, sy, 70, 0, 2 * Math.PI); x.fill();
-    x.fillStyle = amber; x.beginPath(); x.arc(sx, sy, 22, 0, 2 * Math.PI); x.fill();
-  } else {
-    x.fillStyle = muted; x.font = "500 30px 'IBM Plex Mono', monospace"; x.textAlign = "center";
-    x.fillText(t <= 0 ? "Sun rises at " + hm(rise, true) : "Sun has set", cx, base - ry / 2);
+function pick() {
+  if (forced) return forced;
+  const { dow, hm } = nowParts();
+  for (const r of schedule.rules || []) {
+    if (r.days && !r.days.includes(dow)) continue;
+    const from = r.from || "00:00", to = r.to || "24:00";
+    if (from <= to ? (hm >= from && hm < to) : (hm >= from || hm < to)) return r.board;
   }
-  x.fillStyle = muted; x.font = "500 28px 'IBM Plex Mono', monospace";
-  x.textAlign = "left"; x.fillText("E", pad - 12, base + 45);
-  x.textAlign = "right"; x.fillText("W", W - pad + 12, base + 45);
+  return schedule.default;
 }
-
-function drawMoon(now) {
-  const P = 29.530588853, ref = Date.UTC(2000, 0, 6, 18, 14);
-  const age = (((now - ref) / DAY) % P + P) % P, f = age / P;
-  const lit = (1 - Math.cos(2 * Math.PI * f)) / 2;
-  const names = ["New moon", "Waxing crescent", "First quarter", "Waxing gibbous", "Full moon", "Waning gibbous", "Last quarter", "Waning crescent"];
-  $("moonname").textContent = names[Math.round(f * 8) % 8];
-  $("moonpct").textContent = Math.round(lit * 100) + "% lit";
-  const c = $("moon"), x = c.getContext("2d"), r = 108, cx = 120, cy = 120;
-  const css = getComputedStyle(document.documentElement);
-  const silver = css.getPropertyValue("--silver").trim(), dark = css.getPropertyValue("--line").trim();
-  x.clearRect(0, 0, 240, 240);
-  x.fillStyle = dark; x.beginPath(); x.arc(cx, cy, r, 0, 2 * Math.PI); x.fill();
-  const waxing = f < .5, k = Math.cos(2 * Math.PI * f); // 1 new, -1 full
-  x.fillStyle = silver; x.beginPath();
-  // lit half-disc on the lit side
-  if (waxing) x.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2); else x.arc(cx, cy, r, Math.PI / 2, 3 * Math.PI / 2);
-  x.fill();
-  // terminator ellipse: dark for crescent, lit for gibbous
-  x.fillStyle = k > 0 ? dark : silver; x.beginPath(); x.ellipse(cx, cy, Math.abs(k) * r, r, 0, 0, 2 * Math.PI); x.fill();
-  if (k > 0) { // re-draw the dark side we just overlapped
-    x.fillStyle = dark; x.beginPath();
-    if (waxing) x.arc(cx, cy, r, Math.PI / 2, 3 * Math.PI / 2); else x.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2);
-    x.fill();
-  }
+function show(board) {
+  if (board === current) return;
+  current = board;
+  const next = front === "a" ? "b" : "a", el = document.getElementById(next), old = document.getElementById(front);
+  el.onload = () => { el.classList.remove("hide"); old.classList.add("hide"); setTimeout(() => { old.src = "about:blank"; }, 1000); };
+  el.src = `${board}/?v=${Date.now()}#${key}`;
+  front = next;
 }
-
-function renderStatic(now) {
-  const p = parts(now, TZ), y = +p.year, m = +p.month, d = +p.day;
-  const today = Date.UTC(y, m - 1, d);
-  // countdowns
-  const items = DATA.dates.map(e => {
-    let t = Date.UTC(y, e.m - 1, e.d); if (t < today) t = Date.UTC(y + 1, e.m - 1, e.d);
-    return { ...e, days: Math.round((t - today) / DAY) };
-  }).sort((a, b) => a.days - b.days).slice(0, 5);
-  $("count").innerHTML = items.map(e => `<li><span class="d num">${e.days === 0 ? "★" : e.days}</span><span class="w">${e.name}${e.days === 0 ? "<span>today!</span>" : e.note ? `<span>${e.note}</span>` : ""}</span></li>`).join("");
-  // words, rotating daily
-  const doy = Math.floor((today - Date.UTC(y, 0, 1)) / DAY);
-  const w = DATA.words[doy % DATA.words.length];
-  $("la").textContent = w.la[0]; $("laG").textContent = w.la[1];
-  $("ga").textContent = w.ga[0]; $("gaG").textContent = w.ga[1];
-  // on this day
-  const key = `${m}-${d}`, otd = DATA.onThisDay[key] || Object.values(DATA.onThisDay)[0] || [];
-  $("otd").innerHTML = otd.map(([yr, t]) => `<li><span class="y">${yr}</span><span>${t}</span></li>`).join("");
-  // curio, picks, groceries
-  $("curioT").textContent = DATA.curio.title; $("curioB").textContent = DATA.curio.body; $("curioS").textContent = DATA.curio.source;
-  $("picks").innerHTML = DATA.picks.map(k => `<div class="pick"><div class="k">${k.kind}</div><div class="t">${k.title}</div><div class="why">${k.why}</div></div>`).join("");
-  $("groc").innerHTML = DATA.groceries.map(g => `<li>${g}</li>`).join("");
-  // sky numbers
-  const s = sun(y, m, d), yd = new Date(today - DAY), sy = sun(yd.getUTCFullYear(), yd.getUTCMonth() + 1, yd.getUTCDate());
-  const len = s.set - s.rise, dl = len - (sy.set - sy.rise), sec = Math.round(Math.abs(dl) / 1000);
-  $("rise").textContent = hm(s.rise); $("set").textContent = hm(s.set); $("len").textContent = fmtDur(len);
-  $("delta").textContent = `${dl < 0 ? "−" : "+"}${Math.floor(sec / 60)}m ${sec % 60}s`;
-  return s;
+async function loadSchedule() {
+  try { const r = await fetch("schedule.json?v=" + Date.now(), { cache: "no-store" }); if (r.ok) schedule = await r.json(); } catch (e) {}
+  show(pick());
 }
-
-let sunToday = null, lastDay = "";
-function tick() {
-  const now = new Date(), p = parts(now, TZ);
-  const dayKey = `${p.year}-${p.month}-${p.day}`;
-  if (dayKey !== lastDay) { sunToday = renderStatic(now); lastDay = dayKey; }
-  const dow = new Date(Date.UTC(+p.year, +p.month - 1, +p.day)).getUTCDay();
-  $("latin").innerHTML = `dies <em>${LATIN[dow]}</em>`;
-  $("date").textContent = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, weekday: "long", day: "numeric", month: "long" }).format(now).replace(/^(\w+) /, "$1, ");
-  $("time").innerHTML = `${p.hour}:${p.minute}<small>${p.dayPeriod}</small>`;
-  const dp = parts(now, "Europe/Dublin"); $("dub").textContent = `${dp.hour}:${dp.minute} ${dp.dayPeriod.toLowerCase()}`;
-  drawArc(now, sunToday.rise, sunToday.set);
-  drawMoon(now);
-}
-
-async function load() {
-  try {
-    const r = await fetch("board.json", { cache: "no-store" });
-    if (r.ok) { DATA = { ...DATA, ...(await r.json()) }; lastDay = ""; document.querySelectorAll(".sample").forEach(e => e.hidden = true); $("foot").textContent = "Updated " + hm(new Date(), true); }
-  } catch (e) { /* keep sample content */ }
-}
-
-tick();
-setInterval(tick, 15000);
-load(); setInterval(load, 15 * 60000);
-// reload the whole page once a day so code updates arrive
-setTimeout(() => location.reload(), 6 * 3600000);
+loadSchedule();
+setInterval(() => show(pick()), 60000);
+setInterval(loadSchedule, 10 * 60000);
+// pick up page changes once a night
+setInterval(() => { const { hm } = nowParts(); if (hm === "03:30") location.reload(); }, 60000);
 </script>
-
+</body>
 </html>
