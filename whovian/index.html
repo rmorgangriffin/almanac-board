@@ -405,10 +405,10 @@ showFact(); setInterval(showFact, 15000); since(); setInterval(since, 60000);
   const c = $("vortex"), x = c.getContext("2d");
   const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let W, H, R, P = [];
-  function size() { const d = Math.min(window.devicePixelRatio || 1, 1.5); W = c.width = innerWidth * d; H = c.height = innerHeight * d; R = Math.hypot(W, H) / 2; }
+  function size() { const d = .6; W = c.width = innerWidth * d; H = c.height = innerHeight * d; R = Math.hypot(W, H) / 2; }
   size(); addEventListener("resize", size);
   const COLS = ["127,214,255", "90,140,255", "170,120,255", "255,179,71"];
-  for (let i = 0; i < 380; i++) P.push({ a: Math.random() * Math.PI * 2, r: Math.random(), s: .0015 + Math.random() * .004, c: COLS[i % 9 === 0 ? 3 : i % 3], w: .6 + Math.random() * 2.2 });
+  for (let i = 0; i < 200; i++) P.push({ a: Math.random() * Math.PI * 2, r: Math.random(), s: .0015 + Math.random() * .004, c: COLS[i % 9 === 0 ? 3 : i % 3], w: .6 + Math.random() * 2.2 });
   let last = 0;
   function frame(t) {
     if (t - last < 33 && !still) { requestAnimationFrame(frame); return; }
