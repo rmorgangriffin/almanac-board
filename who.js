@@ -8,10 +8,9 @@
   st.textContent = `
 #vortex { display: none !important; }
 #vx { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #040817; pointer-events: none; }
-#vx i { position: absolute; left: 50%; top: 42%; width: 160vmax; height: 160vmax; margin: -80vmax 0 0 -80vmax; background-size: 100% 100%; will-change: transform, opacity; }
-#vx .base { animation: vx-spin 14s linear infinite; opacity: .75; }
-#vx .zoom { animation: vx-zoom 4.5s linear infinite; opacity: 0; }
-#vx .zoom.b { animation-delay: -2.25s; }
+#vx i { position: absolute; left: 50%; top: 42%; width: 116vmax; height: 116vmax; margin: -58vmax 0 0 -58vmax; background-size: 100% 100%; will-change: transform, opacity; }
+#vx .base { animation: vx-spin 12s linear infinite; opacity: .8; }
+#vx .zoom { animation: vx-zoom 3.5s linear infinite; opacity: 0; }
 #vx .core { width: 40vmax; height: 40vmax; margin: -20vmax 0 0 -20vmax; border-radius: 50%; background: radial-gradient(circle, rgba(220,240,255,.55), rgba(127,214,255,.15) 40%, transparent 70%); animation: vx-pulse 3s ease-in-out infinite alternate; }
 @keyframes vx-spin { to { transform: rotate(360deg); } }
 @keyframes vx-zoom { 0% { transform: scale(.25) rotate(0deg); opacity: 0; } 25% { opacity: .8; } 80% { opacity: .5; } 100% { transform: scale(1.5) rotate(-140deg); opacity: 0; } }
@@ -61,7 +60,7 @@
   const vx = document.createElement("div"); vx.id = "vx";
   document.body.prepend(vx);
   const url = spiral();
-  vx.innerHTML = `<i class="base"></i><i class="zoom"></i><i class="zoom b"></i><i class="core"></i>`;
+  vx.innerHTML = `<i class="base"></i><i class="zoom"></i><i class="core"></i>`;
   vx.querySelectorAll("i:not(.core)").forEach(i => i.style.backgroundImage = `url(${url})`);
 
   // --- the cast ---
