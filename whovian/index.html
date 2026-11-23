@@ -410,7 +410,13 @@ const FACTS = [
   ["William Hartnell played the first Doctor.", "1963"],
   ["Verity Lambert was the show's founding producer.", "Behind the scenes"],
   ["Ron Grainer wrote the theme. Delia Derbyshire of the BBC Radiophonic Workshop realised it as electronic sound, built from tape loops and oscillators.", "The theme"],
-  ["The original series ran until 1989. It came back in 2005.", "Then and now"]
+  ["The original series ran until 1989. It came back in 2005.", "Then and now"],
+  ["Allons-y!", "The Tenth Doctor"],
+  ["Geronimo!", "The Eleventh Doctor"],
+  ["Fantastic!", "The Ninth Doctor"],
+  ["Bow ties are cool.", "The Eleventh Doctor"],
+  ["Reverse the polarity of the neutron flow.", "The Third Doctor"],
+  ["Don't blink. Blink and you're dead.", "Blink, 2007"]
 ];
 let fi = 0;
 function showFact() {
@@ -436,6 +442,7 @@ showFact(); setInterval(showFact, 15000); since(); setInterval(since, 60000);
 
 /* ---------- time vortex ---------- */
 (function vortex() {
+  return;   // replaced by the GPU vortex in who.js (the canvas was too slow on the Pi)
   const c = $("vortex"), x = c.getContext("2d");
   const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let W, H, R, P = [];
@@ -474,6 +481,7 @@ setInterval(() => { ticks++; if (ticks % 3 === 0) nextMode(); else nextPhoto(); 
 </script>
 <script>window.WALK_SEASON = "whovian";</script>
 <script src="../walk.js"></script>
+<script src="../who.js"></script>
 <script src="../greet.js"></script>
 </body>
 </html>
