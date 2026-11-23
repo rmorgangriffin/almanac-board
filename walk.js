@@ -122,13 +122,11 @@
       <circle cx="50" cy="40" r="19" fill="#c48a4a"/>
       <path d="M50 40 m0 -3 a3 3 0 1 1 -3 3 a7 7 0 1 1 7 7 a11 11 0 1 1 -11 -11 a15 15 0 1 1 15 15" stroke="#8a5a2b" stroke-width="2.2" fill="none"/>
     </svg>` },
-    tardis: { motion: "tumble", h: 6, dur: 17, svg: () => `<svg viewBox="0 0 44 72">
-      <rect x="20" y="0" width="4" height="5" fill="#fff8c4"/><rect x="5" y="5" width="34" height="5" fill="#1d3f86"/>
-      <rect x="3" y="10" width="38" height="60" rx="1.5" fill="#2556b0"/>
-      <rect x="6" y="12" width="32" height="5" fill="#122a5c"/>
-      <g fill="#dfeaff"><rect x="8" y="21" width="5" height="5"/><rect x="14" y="21" width="5" height="5"/><rect x="25" y="21" width="5" height="5"/><rect x="31" y="21" width="5" height="5"/></g>
-      <g fill="none" stroke="#1d3f86" stroke-width="1.2"><rect x="8" y="30" width="11" height="10"/><rect x="25" y="30" width="11" height="10"/><rect x="8" y="44" width="11" height="10"/><rect x="25" y="44" width="11" height="10"/><rect x="8" y="58" width="11" height="9"/><rect x="25" y="58" width="11" height="9"/></g>
-      <path d="M22 18 V70" stroke="#1d3f86" stroke-width="1.5"/>
+    hourglass: { motion: "tumble", h: 5.5, dur: 17, svg: () => `<svg viewBox="0 0 40 64">
+      <rect x="2" y="1" width="36" height="5" rx="1.5" fill="#b8862f"/><rect x="2" y="58" width="36" height="5" rx="1.5" fill="#b8862f"/>
+      <rect x="4" y="6" width="3" height="52" fill="#8a6220"/><rect x="33" y="6" width="3" height="52" fill="#8a6220"/>
+      <path d="M9 7 H31 Q31 24 20 32 Q31 40 31 57 H9 Q9 40 20 32 Q9 24 9 7 Z" fill="rgba(200,230,255,.45)" stroke="#dfeaff" stroke-width="1"/>
+      <path d="M13 13 H27 Q26 22 20 27 Q14 22 13 13 Z" fill="#f0c060"/><path d="M11 57 Q20 44 29 57 Z" fill="#f0c060"/>
     </svg>` },
     ghost: { motion: "float", h: 6, dur: 18, months: [10], seasons: ["halloween"], svg: () => `<svg viewBox="0 0 60 72">
       <path d="M6 32 Q6 4 30 4 Q54 4 54 32 L54 66 Q49 60 44 66 Q39 72 34 66 Q30 60 26 66 Q21 72 16 66 Q11 60 6 66 Z" fill="#f7f7ff" opacity=".93"/>
