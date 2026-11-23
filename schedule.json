@@ -1,6 +1,54 @@
 {
   "default": "family",
   "rules": [
-    { "board": "whovian", "dates": ["2026-11-23"], "note": "Doctor Who anniversary, all day" }
+    {
+      "board": "whovian",
+      "dates": [
+        "2026-11-23"
+      ],
+      "note": "Doctor Who anniversary, all day"
+    },
+    {
+      "board": "christmas",
+      "start": "2026-12-01",
+      "end": "2026-12-26",
+      "note": "Christmas, Dec 1 to St. Stephen's Day"
+    },
+    {
+      "board": "newyear",
+      "start": "2026-12-31",
+      "end": "2027-01-01",
+      "note": "New Year's Eve and Day"
+    },
+    {
+      "board": "stpatrick",
+      "dates": [
+        "2027-03-17"
+      ],
+      "note": "St. Patrick's Day"
+    },
+    {
+      "board": "bloomsday",
+      "dates": [
+        "2027-06-16"
+      ],
+      "note": "Bloomsday"
+    },
+    {
+      "board": "halloween",
+      "start": "2027-10-24",
+      "end": "2027-10-31",
+      "note": "Halloween week"
+    },
+    {
+      "board": "christmas",
+      "start": "2027-12-01",
+      "end": "2027-12-26"
+    },
+    {
+      "board": "newyear",
+      "start": "2027-12-31",
+      "end": "2028-01-01"
+    }
   ]
 }

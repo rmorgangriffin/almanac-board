@@ -88,8 +88,13 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 /* Po */
 .po { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 1.2rem; padding: 0; overflow: hidden; }
 .photo { position: relative; background: #0b0e1d; min-height: 14rem; }
-.photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 2s ease; }
-.photo img.on { opacity: 1; }
+.photo .layer { position: absolute; inset: 0; display: flex; gap: 4px; opacity: 0; transition: opacity 2.5s ease; }
+.photo .layer.on { opacity: 1; }
+.photo .slot { position: relative; flex: 1; overflow: hidden; }
+.photo .slot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 35%; }
+.photo .slot.fit img.fg { object-fit: contain; object-position: center; }   /* verticals: whole photo, nothing cut off */
+.photo .slot img.bg { inset: -6%; width: 112%; height: 112%; object-fit: cover; filter: blur(20px) brightness(.55); }
+.photo .cap { z-index: 2; }
 .photo .cap { position: absolute; left: .8rem; bottom: .6rem; font-family: var(--mono); font-size: .65rem; letter-spacing: .1em; color: #fff; text-shadow: 0 1px 4px #000; text-transform: uppercase; }
 .dub { padding: 1.2rem 1.2rem 1.2rem 0; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
 .dub h2 { font-family: var(--display); font-weight: 400; font-size: 2rem; margin: 0; line-height: 1.1; }
@@ -123,7 +128,7 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
   .grid .wk { grid-template-columns: repeat(7, minmax(0, 1fr)); } .ev { font-size: .6rem; }
   .dub { padding: 1rem; }
 }
-@media (prefers-reduced-motion: reduce) { .photo img { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .photo .layer { transition: none; } }
 </style>
 <style>
 /* Anniversary theme: deep-space blues over an animated time vortex. Overrides the family board's tokens. */
@@ -333,23 +338,52 @@ async function loadPhotos() {
     SETS = {}; for (const s of p.sets || [{ name: "dublin", photos: p.photos || [] }]) if (s.photos.length) SETS[s.name] = s.photos;
     MODES = Object.keys(SETS); MODES.forEach(m => idx[m] = idx[m] || 0);
   } catch (e) {}
-  const box = $("photo");
-  if (!box.querySelector("img")) for (let i = 0; i < 2; i++) { const img = new Image(); img.alt = ""; box.insertBefore(img, $("cap")); }
   showPhoto();
 }
 const PHOTO_DIR = "/almanac-board-photos/";
+// Landscape photos fill the panel. A vertical is shown whole; when the next photo in the set
+// is vertical too, the two sit side by side.
+async function loadImg(p) {
+  const url = p.src || URL.createObjectURL(new Blob([await unlock(PHOTO_DIR + p.file, true)], { type: "image/jpeg" }));
+  const img = new Image(); img.alt = ""; img.className = "fg"; img.src = url;
+  await img.decode();
+  return { p, url, img, tall: img.naturalHeight > img.naturalWidth * 1.05 };
+}
+function dropImg(x) { if (x && !x.p.src) URL.revokeObjectURL(x.url); }
+let showing = false;
 async function showPhoto() {
-  const mode = MODES[mi % MODES.length]; if (!mode) return;
-  $("po").dataset.mode = mode;
-  const list = SETS[mode], p = list[idx[mode] % list.length];
-  const imgs = $("photo").querySelectorAll("img"), next = imgs[1 - layer], cur = imgs[layer];
-  let url;
-  try { url = p.src || URL.createObjectURL(new Blob([await unlock(PHOTO_DIR + p.file, true)], { type: "image/jpeg" })); } catch (e) { return; }
-  next.onload = () => { next.classList.add("on"); cur.classList.remove("on"); layer = 1 - layer; if (cur.dataset.url) { URL.revokeObjectURL(cur.dataset.url); delete cur.dataset.url; } };
-  if (!p.src) next.dataset.url = url;
-  next.src = url;
-  $("cap").textContent = p.date || "";
-  if (mode === "quad") $("quadcap").textContent = p.date || "";
+  const mode = MODES[mi % MODES.length]; if (!mode || showing) return;
+  showing = true;
+  try {
+    $("po").dataset.mode = mode;
+    const list = SETS[mode];
+    let first, second = null;
+    try { first = await loadImg(list[idx[mode] % list.length]); } catch (e) { return; }
+    if (first.tall && list.length > 1) {
+      try {
+        const n = await loadImg(list[(idx[mode] + 1) % list.length]);
+        if (n.tall) { second = n; idx[mode]++; } else dropImg(n);
+      } catch (e) {}
+    }
+    const box = $("photo"), old = box.querySelector(".layer.on"), layer = document.createElement("div");
+    layer.className = "layer";
+    const shots = second ? [first, second] : [first];
+    for (const x of shots) {
+      const slot = document.createElement("div"); slot.className = "slot";
+      if (x.tall) {   // fit the whole photo; a blurred copy fills any gap at the sides
+        slot.classList.add("fit");
+        const bg = new Image(); bg.alt = ""; bg.className = "bg"; bg.src = x.url; slot.appendChild(bg);
+      }
+      slot.appendChild(x.img); layer.appendChild(slot);
+    }
+    box.insertBefore(layer, $("cap"));
+    requestAnimationFrame(() => requestAnimationFrame(() => { layer.classList.add("on"); if (old) old.classList.remove("on"); }));
+    setTimeout(() => { if (old) { old._shots.forEach(dropImg); old.remove(); } }, 3000);
+    layer._shots = shots;
+    const dates = [...new Set(shots.map(x => x.p.date).filter(Boolean))].join(" · ");
+    $("cap").textContent = dates;
+    if (mode === "quad") $("quadcap").textContent = dates;
+  } finally { showing = false; }
 }
 function nextPhoto() { const m = MODES[mi % MODES.length]; if (m) idx[m]++; showPhoto(); }
 function nextMode() { mi++; showPhoto(); }
@@ -435,9 +469,10 @@ tick(); setInterval(tick, 30000);
 renderWeather(); setInterval(renderWeather, 30 * 60000);
 loadData(); setInterval(loadData, 10 * 60000);
 loadPhotos(); setInterval(loadPhotos, 6 * 3600000);
-// 12s per photo, 5 photos per set, then switch sets: one minute each
 let ticks = 0;
-setInterval(() => { ticks++; if (ticks % 3 === 0) nextMode(); else nextPhoto(); }, 20000);
+setInterval(() => { ticks++; if (ticks % 3 === 0) nextMode(); else nextPhoto(); }, 10 * 60000);   // each photo ~10 minutes; the album switches every half hour
 </script>
+<script>window.WALK_SEASON = "whovian";</script>
+<script src="../walk.js"></script>
 </body>
 </html>

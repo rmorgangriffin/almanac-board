@@ -1,0 +1,8 @@
+<!doctype html>
+<meta charset="utf-8"><meta name="robots" content="noindex"><title>Halloween Board</title>
+<style>html,body{margin:0;background:#11152a}</style>
+<script>
+// Seasonal board: the family board with ?season=halloween. Passes along any other ?options and the key after #.
+const q = new URLSearchParams(location.search); q.set("season", "halloween");
+location.replace("../family/?" + q + location.hash);
+</script>

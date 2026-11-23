@@ -18,7 +18,7 @@
 // Picks a board from schedule.json and shows it full screen.
 // The secret after # is handed to the board so it can unlock its private data.
 // Add ?board=name to force one board (handy for previewing).
-// Rules are checked in order; each may limit by dates ["YYYY-MM-DD"], days [0=Sun..6], and from/to "HH:MM".
+// Rules are checked in order; each may limit by dates ["YYYY-MM-DD"], a range start/end "YYYY-MM-DD" (inclusive), days [0=Sun..6], and from/to "HH:MM".
 const key = location.hash.slice(1);
 const forced = new URLSearchParams(location.search).get("board");
 let schedule = { default: "almanac", rules: [] }, current = null, front = "a", first = true;
@@ -32,6 +32,7 @@ function pick() {
   const { dow, hm, date } = nowParts();
   for (const r of schedule.rules || []) {
     if (r.dates && !r.dates.includes(date)) continue;
+    if ((r.start && date < r.start) || (r.end && date > r.end)) continue;
     if (r.days && !r.days.includes(dow)) continue;
     const from = r.from || "00:00", to = r.to || "24:00";
     if (from <= to ? (hm >= from && hm < to) : (hm >= from || hm < to)) return r.board;

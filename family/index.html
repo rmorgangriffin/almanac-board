@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Griffano Board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=DM+Serif+Display&family=Archivo+Black&family=Bricolage+Grotesque:wght@500;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Space+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=DM+Serif+Display&family=Archivo+Black&family=Bricolage+Grotesque:wght@500;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Space+Mono:wght@400;700&family=UnifrakturMaguntia&family=IM+Fell+English:ital@0;1&family=Graduate&family=Baloo+2:wght@500;700&display=swap">
 <style>
 /* Layout: 1080×1920 portrait wall board. Header + forecast across the top, work agenda beside a five-week family grid, Po's Dublin panel along the bottom. */
 :root {
@@ -117,7 +117,26 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 .quadtext { padding: 1.4rem 1.4rem 1.2rem 0; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
 .quadtext blockquote { margin: 0; font-family: var(--display); font-size: 1.55rem; line-height: 1.35; color: var(--fg); text-wrap: balance; }
 .quadtext blockquote::before { content: "“"; display: block; font-size: 3.2rem; line-height: .6; color: var(--lilac); margin-bottom: .4rem; }
-.quadtext .label { color: var(--lilac); }
+
+/* ---------- "Beneath the elms": the precious-days album as a sepia college yearbook ---------- */
+#po[data-mode="quad"] { background: #eadcbc; border-color: #a8875a; }
+#po[data-mode="quad"] .photo { background: #4a3826; }
+#po[data-mode="quad"] .photo .slot img { filter: sepia(.65) saturate(.85) contrast(.95) brightness(1.02); }
+#po[data-mode="quad"] .photo::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; box-shadow: inset 0 0 4rem rgba(60, 38, 14, .55); }
+#po[data-mode="quad"] .photo .cap { font-family: "IM Fell English", Georgia, serif; font-style: italic; text-transform: none; letter-spacing: 0; font-size: .95rem; color: #f6ecd2; }
+.quadtext { color: #3a2814; text-shadow: none; padding: 1.1rem 1.3rem 1.1rem .2rem; }
+.quadtext .elmshead { display: flex; align-items: center; gap: .8rem; }
+.quadtext .crest { width: 3.6rem; height: 4.2rem; flex: none; }
+.quadtext .elmsk { font-family: "UnifrakturMaguntia", "Old English Text MT", serif; font-size: 2.3rem; line-height: 1; color: #6e1a1a; }
+.quadtext .estd { font-family: "Graduate", Georgia, serif; font-size: .72rem; letter-spacing: .12em; color: #7a6040; margin-top: .3rem; }
+.quadtext blockquote { font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 1.5rem; line-height: 1.3; color: #3a2814; }
+.quadtext blockquote::before { color: #6e1a1a; font-family: "IM Fell English", Georgia, serif; font-style: normal; }
+.quadtext .foot { display: flex; align-items: center; justify-content: space-between; gap: .8rem; }
+.quadtext .pennant { position: relative; width: 11rem; height: 2.6rem; background: #6e1a1a; clip-path: polygon(0 0, 100% 50%, 0 100%); display: flex; align-items: center; padding-left: 1.1rem; font-family: "Graduate", Georgia, serif; font-size: .95rem; letter-spacing: .14em; color: #f3e6c4; transform: rotate(-4deg); transform-origin: left center; animation: wave 4s ease-in-out infinite; }
+.quadtext .pennant::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: .45rem; background: #c9a24a; }
+@keyframes wave { 50% { transform: rotate(-1deg) skewY(-1.5deg); } }
+.quadtext #quadcap { font-family: "IM Fell English", Georgia, serif; font-style: italic; text-transform: none; letter-spacing: 0; font-size: .95rem; color: #7a6040; text-align: right; }
+@media (prefers-reduced-motion: reduce) { .quadtext .pennant { animation: none; } }
 
 .msg { padding: 2rem; color: var(--muted); text-align: center; font-size: 1rem; }
 
@@ -167,13 +186,6 @@ html[data-look="harbor"] { --ink: #0b1c26; --panel: #102a37; --line: #1d4252; --
 html[data-look="harbor"] .main { grid-template-columns: minmax(0, 1fr) 19rem; }
 html[data-look="harbor"] .work { order: 2; }
 
-/* 3 Paper: light, inky, a red accent; photos up top */
-html[data-look="paper"] { --ink: #eef0f3; --panel: #ffffff; --line: #d5d9e0; --fg: #1b2230; --muted: #687387; --amber: #d6452f; --sage: #2f8f6b; --lilac: #6a5acd; --rose: #c2185b; --display: "Fraunces", Georgia, serif; --gamebg: #1b2230; color-scheme: light; }
-html[data-look="paper"] .panel { box-shadow: 0 1px 2px rgba(27, 34, 48, .06); }
-@media (min-width: 900px) { html[data-look="paper"] .board { grid-template-rows: auto auto 22rem 22rem minmax(0, 1fr); } html[data-look="paper"] .board.nopast { grid-template-rows: auto auto 22rem minmax(0, 1fr); } }
-html[data-look="paper"] .po { order: 3; } html[data-look="paper"] .main { order: 4; }
-html[data-look="paper"] .photo .cap { color: #fff; }
-
 /* 4 Orchard: deep green, apple red and gold */
 html[data-look="orchard"] { --ink: #10201a; --panel: #163027; --line: #2a4a3c; --fg: #f1eedf; --muted: #9db3a3; --amber: #f0c24b; --sage: #e2674f; --lilac: #b7d47a; --display: "Fraunces", Georgia, serif; --gamebg: #0a1611; }
 
@@ -191,6 +203,23 @@ html[data-look="bauhaus"] .latin em { color: #1d5bd6; }
 html[data-look="bauhaus"] .photo .cap { color: #fff; }
 html[data-look="bauhaus"] .cell.today { box-shadow: inset 0 0 0 3px var(--amber); border-radius: 0; }
 
+/* Tropic: deep lagoon teal with coral, mango and aqua; each panel carries a colored top edge */
+html[data-look="tropic"] { --ink: #062a30; --panel: #0b3a41; --line: #17575f; --fg: #fdf6e8; --muted: #8fc2bf; --amber: #ffb627; --sage: #ff7b5c; --lilac: #5fe0d0; --rose: #ff8fb8; --display: "Baloo 2", system-ui, sans-serif; --gamebg: #031a1e; }
+html[data-look="tropic"] body { background: linear-gradient(180deg, #06323a 0%, #062a30 40%, #0a2240 100%); }
+html[data-look="tropic"] .panel { border-top: 4px solid var(--c2, var(--amber)); }
+html[data-look="tropic"] .fc { --c2: #ffb627; } html[data-look="tropic"] .game { --c2: #ff7b5c; } html[data-look="tropic"] .past { --c2: #ff8fb8; }
+html[data-look="tropic"] .work { --c2: #5fe0d0; } html[data-look="tropic"] .grid { --c2: #ff7b5c; } html[data-look="tropic"] .po { --c2: #ffb627; }
+html[data-look="tropic"] .latin, html[data-look="tropic"] .time { font-weight: 700; }
+html[data-look="tropic"] .latin em { color: #ff7b5c; }
+
+/* Jewel: sapphire panels on deep plum, ruby, emerald and gold; work column on the right */
+html[data-look="jewel"] { --ink: #1c0b2b; --panel: #1b2160; --line: #343d8f; --fg: #fbf3ff; --muted: #aab0e6; --amber: #ffd34d; --sage: #3ee6a0; --lilac: #ff5c8a; --rose: #ff9f43; --display: "Fraunces", Georgia, serif; --gamebg: #0f1240; }
+html[data-look="jewel"] body { background: radial-gradient(ellipse at 50% 0%, #3a1257 0%, #1c0b2b 70%); }
+html[data-look="jewel"] .panel { border: 2px solid #4b55b8; }
+html[data-look="jewel"] .past, html[data-look="jewel"] .po { border-color: #ffd34d; }
+html[data-look="jewel"] .main { grid-template-columns: minmax(0, 1fr) 19rem; } html[data-look="jewel"] .work { order: 2; }
+html[data-look="jewel"] .latin em { color: #ff5c8a; }
+
 /* 7 Phosphor: green-screen terminal */
 html[data-look="phosphor"] { --ink: #030805; --panel: #06110a; --line: #12391f; --fg: #9dfcb5; --muted: #4f9a66; --amber: #d6ff6b; --sage: #59e3ff; --lilac: #ffb3f0; --rose: #ff7a7a; --display: "Space Mono", ui-monospace, monospace; --body: "Space Mono", ui-monospace, monospace; --mono: "Space Mono", ui-monospace, monospace; --gamebg: #010402; }
 html[data-look="phosphor"] body { text-shadow: 0 0 .35rem rgba(157, 252, 181, .35); }
@@ -201,6 +230,53 @@ html[data-look="dusk"] { --ink: #1a1030; --panel: rgba(255, 255, 255, .07); --li
 html[data-look="dusk"] body { background: linear-gradient(170deg, #1a1030 0%, #3b1d52 55%, #6b2f5b 100%); }
 html[data-look="dusk"] .panel { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 html[data-look="dusk"] .main { grid-template-columns: minmax(0, 1fr) 19rem; } html[data-look="dusk"] .work { order: 2; }
+
+/* ---------- Seasonal looks (only on the seasonal boards) ---------- */
+html[data-look="holly"] { --ink: #0d2419; --panel: #143524; --line: #2a5a40; --fg: #fbf5e6; --muted: #a9c4b0; --amber: #ffcf5a; --sage: #ff6b6b; --lilac: #9fd0ff; --rose: #ff9ec7; --display: "Fraunces", Georgia, serif; --gamebg: #08170f; }
+html[data-look="holly"] .panel { border-color: #3d6b4c; } html[data-look="holly"] .latin em { color: #ff6b6b; }
+html[data-look="frost"] { --ink: #0b1531; --panel: #142249; --line: #2b3d75; --fg: #f2f7ff; --muted: #9fb2dc; --amber: #ffd36b; --sage: #7fe3c4; --lilac: #ff7a8a; --rose: #c7a6ff; --display: "DM Serif Display", Georgia, serif; --gamebg: #070e22; }
+html[data-look="frost"] body { background: linear-gradient(180deg, #0b1531 0%, #12204a 100%); }
+html[data-look="pumpkin"] { --ink: #160e1c; --panel: #23162d; --line: #3f2a4d; --fg: #fbefe2; --muted: #b8a3c4; --amber: #ff8a1f; --sage: #9be564; --lilac: #c08bff; --rose: #ff5c5c; --display: "Fraunces", Georgia, serif; --gamebg: #0d0812; }
+html[data-look="confetti"] { --ink: #0d0d1a; --panel: #17172e; --line: #2e2e57; --fg: #fffaf0; --muted: #a9a9d6; --amber: #ffd700; --sage: #4de2c5; --lilac: #ff6ad5; --rose: #7aa7ff; --display: "Bricolage Grotesque", system-ui, sans-serif; --gamebg: #08080f; }
+html[data-look="shamrock"] { --ink: #0a2215; --panel: #10321f; --line: #23573a; --fg: #f6fbf2; --muted: #9fc7ab; --amber: #ffa94d; --sage: #7be08f; --lilac: #9fd8ff; --rose: #ff8a8a; --display: "Fraunces", Georgia, serif; --gamebg: #06150c; }
+html[data-look="bloomsday"] { --ink: #13201c; --panel: #1b2d27; --line: #345247; --fg: #f4ecd8; --muted: #a8b9a8; --amber: #e8b04b; --sage: #8fcf9f; --lilac: #c9a6e0; --rose: #e98a7a; --display: "IM Fell English", Georgia, serif; --gamebg: #0b1411; }
+html[data-look="bloomsday"] .season { font-style: italic; }
+
+/* header line on seasonal boards and special days */
+.season { margin-top: .45rem; font-family: var(--display); font-size: 1.35rem; color: var(--amber); }
+.season small { font-family: var(--body); font-size: .8rem; color: var(--muted); margin-left: .5rem; }
+
+/* string of lights in the top margin (Christmas) */
+#lights { position: fixed; left: 0; right: 0; top: 0; height: 1.1rem; z-index: 4; pointer-events: none; display: flex; justify-content: space-around; align-items: flex-start; }
+#lights::before { content: ""; position: absolute; left: 0; right: 0; top: .2rem; height: 1px; background: rgba(255,255,255,.25); }
+#lights i { width: .45rem; height: .7rem; margin-top: .25rem; border-radius: 50% 50% 45% 45%; background: var(--b); box-shadow: 0 0 .5rem var(--b); animation: twinkle 3s ease-in-out infinite alternate; }
+@keyframes twinkle { from { opacity: 1; } to { opacity: .45; } }
+
+/* snow piling on the panel tops while it's snowing at home */
+.drift { position: fixed; z-index: 3; pointer-events: none; height: 0; transition: height 40min ease, opacity 25min ease; opacity: 0;
+  background: radial-gradient(circle at 50% 100%, #fff 58%, transparent 60%) repeat-x 0 0 / 1.1rem 100%, linear-gradient(#fff, #fff) no-repeat 0 100% / 100% 40%;
+  border-radius: .4rem .4rem 0 0; filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
+html.snowing .drift { height: .55rem; opacity: .95; }
+html.snowtest .drift { transition: none; }
+
+/* rain running down the Dublin photo while it's raining there */
+.photo .drop { position: absolute; top: -10%; z-index: 2; width: 2px; height: 2.4rem; border-radius: 2px; pointer-events: none; opacity: 0;
+  background: linear-gradient(rgba(255,255,255,0), rgba(220,235,255,.55)); }
+.po.dubrain[data-mode="dublin"] .photo .drop { animation: drip var(--d, 7s) linear infinite; animation-delay: var(--w, 0s); }
+@keyframes drip { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: .8; } 85% { opacity: .6; } 100% { transform: translateY(26rem); opacity: 0; } }
+
+/* confetti for gotcha days, birthdays and New Year's */
+.confetti { position: fixed; top: -2rem; z-index: 55; width: .55rem; height: .9rem; pointer-events: none; border-radius: 2px; animation: fall var(--d) linear forwards; }
+@keyframes fall { to { transform: translate(var(--x), 110vh) rotate(var(--r)); } }
+
+/* a cuckoo at the top of each hour */
+#cuckoo { position: fixed; z-index: 50; pointer-events: none; width: 4.2rem; height: 4.6rem; opacity: 0; transition: opacity .6s ease; }
+#cuckoo.on { opacity: 1; }
+#cuckoo .bird { transform: translateX(-60%); transition: transform .5s cubic-bezier(.3,1.6,.6,1); }
+#cuckoo.out .bird { transform: translateX(0); }
+#cuckoo.out .beak { animation: peep .5s ease-in-out 3 alternate; transform-box: fill-box; transform-origin: 0 50%; }
+@keyframes peep { to { transform: rotate(-25deg); } }
+@media (prefers-reduced-motion: reduce) { .drift, #cuckoo .bird { transition: none; } .photo .drop, #lights i { animation: none; } }
 </style>
 </head>
 <body>
@@ -210,6 +286,7 @@ html[data-look="dusk"] .main { grid-template-columns: minmax(0, 1fr) 19rem; } ht
     <div>
       <div class="latin" id="latin">dies <em>Solis</em></div>
       <div class="date" id="date"></div>
+      <div class="season" id="season" hidden></div>
     </div>
     <div class="time num" id="time"></div>
     <div class="now" id="now"><div class="t">--°</div><div class="s">Northampton</div></div>
@@ -253,9 +330,12 @@ html[data-look="dusk"] .main { grid-template-columns: minmax(0, 1fr) 19rem; } ht
         <div class="mini" id="dubfc"></div>
       </div>
       <div class="mode quad quadtext">
-        <div class="label">Precious days</div>
+        <div class="elmshead">
+          <svg class="crest" viewBox="0 0 60 70" aria-hidden="true"><path d="M5 5h50v26c0 18-12 30-25 36C17 61 5 49 5 31z" fill="#6e1a1a" stroke="#c9a24a" stroke-width="3"/><path d="M5 25h50" stroke="#c9a24a" stroke-width="2"/><g fill="#f3e6c4"><circle cx="30" cy="38" r="9"/><circle cx="23" cy="43" r="6"/><circle cx="37" cy="43" r="6"/></g><rect x="28.5" y="44" width="3" height="11" fill="#f3e6c4"/><text x="30" y="19" text-anchor="middle" font-family="Graduate, Georgia, serif" font-size="10" fill="#f3e6c4">E · Q</text></svg>
+          <div><div class="elmsk">Beneath the Elms</div><div class="estd">Precious days · Est. long ago</div></div>
+        </div>
         <blockquote>Oh, those precious days amongst the ivy, beneath the stately elms upon the quad!</blockquote>
-        <div class="label num" id="quadcap"></div>
+        <div class="foot"><div class="pennant">RAH! RAH!</div><div class="num" id="quadcap"></div></div>
       </div>
     </div>
   </section>
@@ -311,10 +391,12 @@ async function renderWeather() {
       const p = d.precipitation_probability_max[i];
       return `<div class="d"><div class="n">${n}</div><div class="i">${icon(d.weather_code[i])}</div><div class="hl num">${Math.round(d.temperature_2m_max[i])}° <span>${Math.round(d.temperature_2m_min[i])}°</span></div><div class="p num">${p >= 20 ? p + "%" : ""}</div></div>`;
     }).join("");
+    if (window.wxHome) wxHome(c.weather_code);
   } catch (e) { /* keep last good */ }
   try {
     const w = await weather(DUBLIN, DUB), c = w.current, d = w.daily;
     $("dubnow").innerHTML = `${icon(c.weather_code)}<b class="num">${Math.round(c.temperature_2m)}°</b><span>${kind(c.weather_code)[1]}</span>`;
+    if (window.wxDub) wxDub(c.weather_code);
     $("dubfc").innerHTML = d.time.slice(1, 4).map((t, i) => `<div><div class="label">${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dowOf(t)]}</div><div class="i">${icon(d.weather_code[i + 1])}</div><div class="num">${Math.round(d.temperature_2m_max[i + 1])}° <span>${Math.round(d.temperature_2m_min[i + 1])}°</span></div></div>`).join("");
   } catch (e) {}
 }
@@ -483,14 +565,23 @@ function tick() {
 }
 
 /* ---------- looks: a different arrangement each hour ---------- */
-const LOOKS = [["midnight", "Midnight"], ["harbor", "Harbor"], ["paper", "Paper"], ["orchard", "Orchard"], ["ember", "Ember"], ["phosphor", "Phosphor"], ["dusk", "Dusk"]];
+const LOOKS = [["midnight", "Midnight"], ["harbor", "Harbor"], ["tropic", "Tropic"], ["orchard", "Orchard"], ["ember", "Ember"], ["jewel", "Jewel"], ["phosphor", "Phosphor"], ["dusk", "Dusk"]];
 const forcedLook = new URLSearchParams(location.search).get("look");
+// Seasonal boards (christmas/, halloween/, ...) open this page with ?season=name: their own looks, a header line and a few touches.
+const SEASON = new URLSearchParams(location.search).get("season");
+const SEASON_LOOKS = {
+  christmas: [["holly", "Holly"], ["frost", "Frost"]], halloween: [["pumpkin", "Pumpkin"]], newyear: [["confetti", "Confetti"]],
+  stpatrick: [["shamrock", "Shamrock"]], bloomsday: [["bloomsday", "Bloomsday"]]
+};
+window.WALK_SEASON = SEASON;
 let lookNow = "";
 function applyLook() {
+  const list = SEASON_LOOKS[SEASON] || LOOKS;
   const p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", hourCycle: "h23" }).formatToParts(new Date())) p[x.type] = x.value;
   const t = isoToday(), doy = Math.round((Date.parse(t) - Date.parse(t.slice(0, 4) + "-01-01")) / DAY);
-  const i = forcedLook ? Math.max(0, LOOKS.findIndex(l => l[0] === forcedLook)) : (doy * 24 + +p.hour) % LOOKS.length;
-  const [id, name] = LOOKS[i];
+  const all = [...LOOKS, ...Object.values(SEASON_LOOKS).flat()];
+  const i = forcedLook ? Math.max(0, list.findIndex(l => l[0] === forcedLook)) : (doy * 24 + +p.hour) % list.length;
+  const [id, name] = forcedLook && list.findIndex(l => l[0] === forcedLook) < 0 ? (all.find(l => l[0] === forcedLook) || list[0]) : list[i];
   if (id === lookNow) return;
   lookNow = id;
   if (id === "midnight") delete document.documentElement.dataset.look; else document.documentElement.dataset.look = id;
@@ -702,6 +793,114 @@ loadPast(); setInterval(loadPast, 6 * 3600000);
 // 20s per photo, 3 photos per set, then switch sets: one minute each
 let ticks = 0;
 setInterval(() => { ticks++; if (ticks % 3 === 0) nextMode(); else nextPhoto(); }, 10 * 60000);   // each photo ~10 minutes; the album switches every half hour
+
+/* ---------- touches: seasons, special days, live weather, the cuckoo ---------- */
+const Q = new URLSearchParams(location.search);
+const md = iso => iso.slice(5);
+// Pets' gotcha days (month-day, year they came home)
+const GOTCHA = [["07-27", 2016, "Hercules"], ["10-05", 2020, "Nimona"], ["07-01", 2022, "Buster & Lucille"]];
+function seasonLine(today) {
+  const y = +today.slice(0, 4), m = md(today);
+  const until = (mmdd, yy = y) => Math.round((Date.parse(`${yy}-${mmdd}T12:00:00Z`) - Date.parse(today + "T12:00:00Z")) / DAY);
+  if (SEASON === "christmas") {
+    if (m === "12-24") return "Christmas Eve <small>one more sleep</small>";
+    if (m === "12-25") return "Merry Christmas <small>Nollaig Shona</small>";
+    if (m === "12-26") return "St. Stephen's Day <small>Lá Fhéile Stiofáin</small>";
+    const n = until("12-25"); if (n > 0) return `${n} sleeps till Christmas`;
+  }
+  if (SEASON === "halloween") { const n = until("10-31"); return n > 0 ? `${n} night${n > 1 ? "s" : ""} till Halloween` : "Happy Halloween <small>Oíche Shamhna</small>"; }
+  if (SEASON === "newyear") return m === "12-31" ? `New Year's Eve <small>Oíche Chinn Bliana</small>` : `Happy New Year <small>${y}</small>`;
+  if (SEASON === "stpatrick") return "Lá Fhéile Pádraig sona daoibh <small>Happy St. Patrick's Day</small>";
+  if (SEASON === "bloomsday") {
+    const LINES = ["Stately, plump Buck Mulligan…", "Yes I said yes I will Yes.", "Love loves to love love.", "History is a nightmare from which I am trying to awake.", "Think you're escaping and run into yourself."];
+    return `Bloomsday <small>${LINES[new Date().getHours() % LINES.length]}</small>`;
+  }
+  return "";
+}
+function specialLine(today) {
+  const out = [], y = +today.slice(0, 4);
+  for (const [d, since, who] of GOTCHA) if (md(today) === d) { const n = y - since; out.push(`${who}: ${n} year${n > 1 ? "s" : ""} home`); }
+  for (const e of (DATA && DATA.grid) || []) if (e.date === today && e.cal === "family" && /birthday/i.test(e.title)) out.push(`Happy birthday, ${esc(e.title.replace(/[’']s\s+birthday.*$/i, "").replace(/\s*birthday.*$/i, ""))}!`);
+  return out.join(" · ");
+}
+let specialToday = false;
+function renderSeason() {
+  const today = isoToday(), s = seasonLine(today), sp = specialLine(today) || (Q.get("party") ? "Hercules: 10 years home" : "");
+  specialToday = !!sp || (SEASON === "newyear" && md(today) === "01-01");
+  const el = $("season"); el.innerHTML = [s, sp ? `🎉 ${sp}` : ""].filter(Boolean).join("<br>"); el.hidden = !el.innerHTML;
+}
+function confetti(n = 90) {
+  const cols = ["var(--amber)", "var(--sage)", "var(--lilac)", "var(--rose)", "#fff"];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement("i"); c.className = "confetti";
+    c.style.left = Math.random() * 100 + "vw"; c.style.background = cols[i % cols.length];
+    c.style.setProperty("--d", (4 + Math.random() * 4) + "s"); c.style.setProperty("--x", (Math.random() * 16 - 8) + "rem"); c.style.setProperty("--r", (Math.random() * 900 - 450) + "deg");
+    c.style.animationDelay = Math.random() * 2.5 + "s";
+    document.body.appendChild(c); setTimeout(() => c.remove(), 11000);
+  }
+}
+if (SEASON === "christmas") {
+  const l = document.createElement("div"); l.id = "lights";
+  const B = ["#ff4d4d", "#ffd84a", "#4dd68c", "#5aa8ff", "#ff8ad8"];
+  l.innerHTML = Array.from({ length: 28 }, (_, i) => `<i style="--b:${B[i % 5]};animation-delay:${-(i * 0.7) % 3}s"></i>`).join("");
+  document.body.appendChild(l);
+}
+
+// Snow piling on the panel tops at home
+function placeDrifts() {
+  document.querySelectorAll(".drift").forEach(d => d.remove());
+  document.querySelectorAll(".board > .panel, .board > .strip > .panel, .main > .panel").forEach(p => {
+    if (p.hidden) return;
+    const r = p.getBoundingClientRect(), d = document.createElement("div"); d.className = "drift";
+    d.style.left = (r.left + 6) + "px"; d.style.width = (r.width - 12) + "px"; d.style.bottom = (innerHeight - r.top - 1) + "px";
+    document.body.appendChild(d);
+  });
+}
+window.wxHome = code => {
+  const snow = (code >= 71 && code <= 77) || code === 85 || code === 86 || Q.get("snow") === "1";
+  document.documentElement.classList.toggle("snowing", snow);
+};
+// Rain running down the Dublin photo
+(function drops() {
+  const box = $("photo");
+  for (let i = 0; i < 7; i++) { const d = document.createElement("i"); d.className = "drop"; d.style.left = (8 + Math.random() * 84) + "%"; d.style.setProperty("--d", (6 + Math.random() * 5) + "s"); d.style.setProperty("--w", -(Math.random() * 10) + "s"); box.appendChild(d); }
+})();
+window.wxDub = code => { const rain = (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95 || Q.get("rain") === "1"; $("po").classList.toggle("dubrain", rain); };
+
+// The cuckoo: pops out above the clock at the top of each hour, no sound
+const cuckoo = document.createElement("div"); cuckoo.id = "cuckoo";
+cuckoo.innerHTML = `<svg viewBox="0 0 60 66" width="100%" height="100%"><path d="M4 26 L30 4 L56 26 Z" fill="#7a4a24"/><rect x="9" y="24" width="42" height="40" rx="2" fill="#a8693a"/>
+  <rect x="21" y="32" width="18" height="20" rx="9" fill="#2a170a"/>
+  <svg x="18" y="28" width="32" height="26" overflow="hidden"><g class="bird"><ellipse cx="13" cy="15" rx="8" ry="6" fill="#f2d16b"/><circle cx="20" cy="10" r="5" fill="#f2d16b"/><circle cx="21.5" cy="9" r="1" fill="#222"/>
+  <path class="beak" d="M24.5 10 L30 11 L24.5 12.5 Z" fill="#e8742a"/><path d="M8 13 Q2 11 1 16 Q6 18 10 17 Z" fill="#d9b24a"/></g></svg>
+  <path d="M9 24 h42" stroke="#5a3418" stroke-width="2"/></svg>`;
+document.body.appendChild(cuckoo);
+function doCuckoo() {
+  const t = $("time").getBoundingClientRect(), w = cuckoo.offsetWidth || 67;
+  cuckoo.style.left = (t.left + t.width / 2 - w / 2) + "px"; cuckoo.style.top = Math.max(2, t.top - w * 1.05) + "px";
+  cuckoo.classList.add("on");
+  setTimeout(() => cuckoo.classList.add("out"), 700);
+  setTimeout(() => cuckoo.classList.remove("out"), 4200);
+  setTimeout(() => cuckoo.classList.remove("on"), 5000);
+}
+
+let lastHour = null;
+function touches() {
+  const hm = nowHM(), h = hm.slice(0, 2);
+  if (hm.endsWith(":00") && h !== lastHour) {
+    lastHour = h; doCuckoo();
+    if (specialToday && +h >= 7 && +h <= 21 && +h % 2 === 1) setTimeout(confetti, 6000);
+  }
+  if (hm.endsWith("0")) renderSeason();
+}
+renderSeason(); placeDrifts();
+setTimeout(() => { renderSeason(); placeDrifts(); if (specialToday) confetti(); }, 4000);   // after the calendar has loaded
+setInterval(touches, 30000);
+setInterval(placeDrifts, 5 * 60000); addEventListener("resize", placeDrifts);
+if (Q.get("cuckoo")) setTimeout(doCuckoo, 2500);
+if (Q.get("snow") === "1") { document.documentElement.classList.add("snowtest"); wxHome(0); }
+if (Q.get("rain") === "1") wxDub(0);
 </script>
+<script src="../walk.js"></script>
 </body>
 </html>
