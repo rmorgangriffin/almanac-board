@@ -147,7 +147,7 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
   .grid .wk { grid-template-columns: repeat(7, minmax(0, 1fr)); } .ev { font-size: .6rem; }
   .dub { padding: 1rem; }
 }
-@media (prefers-reduced-motion: reduce) { .photo .layer { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .photo .layer, .side > .mode { transition: none; } }
 
 /* ---------- Strip: forecast + game ---------- */
 .strip { display: grid; grid-template-columns: minmax(0, 1fr) 17rem; gap: 1rem; }
