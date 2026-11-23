@@ -73,7 +73,7 @@
     cats: { motion: "walk", h: 4.4, dur: 11, svg: () => `<svg viewBox="0 0 210 60">
       <g>${cat("#d98e3f", "#8a4f1c", "#7ad36b", "Lucille")}</g>
       <g transform="translate(115 0)">${cat("#1b1b1f", "", "#ffd84a", "Buster")}</g></svg>` },
-    catnap: { motion: "nap", h: 3.4, dur: 22, svg: () => `<svg viewBox="0 0 150 60">
+    catnap: { motion: "nap", h: 4.4, dur: 22, svg: () => `<svg viewBox="0 0 150 60">
       <g transform="translate(0 6)">
         <ellipse cx="38" cy="32" rx="30" ry="12" fill="#1b1b1f"/>
         <path d="M14 22 L16 12 L23 20 Z M24 19 L30 10 L32 20 Z" fill="#1b1b1f"/>
