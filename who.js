@@ -17,19 +17,19 @@
 @keyframes vx-zoom { 0% { transform: scale(.25) rotate(0deg); opacity: 0; } 25% { opacity: .8; } 80% { opacity: .5; } 100% { transform: scale(1.5) rotate(-140deg); opacity: 0; } }
 @keyframes vx-pulse { from { transform: scale(.85); opacity: .7; } to { transform: scale(1.1); opacity: 1; } }
 .panel { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgba(7, 18, 48, .9) !important; }
-.who { position: fixed; z-index: 60; pointer-events: none; }
-.who svg { display: block; height: 100%; width: auto; overflow: visible; filter: drop-shadow(0 0 .3rem rgba(127,214,255,.5)); }
-.who .bubble { position: absolute; bottom: 100%; left: 40%; margin-bottom: .4rem; white-space: nowrap; background: #fff; color: #111; font-family: "Big Shoulders Display", Impact, sans-serif; font-weight: 900; font-size: 2.1rem; letter-spacing: .04em; padding: .2rem .8rem; border-radius: 1rem; animation: wk-bubble 1.4s steps(1) infinite; }
-.who .bubble::after { content: ""; position: absolute; left: 1.2rem; top: 100%; border: .6rem solid transparent; border-top-color: #fff; }
+.wcast { position: fixed; z-index: 60; pointer-events: none; }
+.wcast svg { display: block; height: 100%; width: auto; overflow: visible; filter: drop-shadow(0 0 .3rem rgba(127,214,255,.5)); }
+.wcast .bubble { position: absolute; bottom: 100%; left: 40%; margin-bottom: .4rem; white-space: nowrap; background: #fff; color: #111; font-family: "Big Shoulders Display", Impact, sans-serif; font-weight: 900; font-size: 2.1rem; letter-spacing: .04em; padding: .2rem .8rem; border-radius: 1rem; animation: wk-bubble 1.4s steps(1) infinite; }
+.wcast .bubble::after { content: ""; position: absolute; left: 1.2rem; top: 100%; border: .6rem solid transparent; border-top-color: #fff; }
 @keyframes wk-bubble { 50% { transform: scale(1.06); } }
-.who.mat { opacity: 0; }
-.who.mat.in { animation: who-mat 5s linear forwards; }
-.who.mat.out { animation: who-demat 5s linear forwards; }
+.wcast.mat { opacity: 0; }
+.wcast.mat.in { animation: who-mat 5s linear forwards; }
+.wcast.mat.out { animation: who-demat 5s linear forwards; }
 @keyframes who-mat { 0% { opacity: 0; } 15% { opacity: .5; } 25% { opacity: .1; } 40% { opacity: .7; } 50% { opacity: .25; } 65% { opacity: .9; } 75% { opacity: .5; } 100% { opacity: 1; } }
 @keyframes who-demat { 0% { opacity: 1; } 15% { opacity: .4; } 25% { opacity: .9; } 40% { opacity: .25; } 50% { opacity: .7; } 65% { opacity: .1; } 75% { opacity: .4; } 100% { opacity: 0; } }
-.who.fade { opacity: 0; transition: opacity 1.5s ease; }
-.who.fade.in { opacity: 1; }
-.who .glint { transform-box: fill-box; transform-origin: 50% 50%; animation: who-glint .6s ease-in-out infinite alternate; }
+.wcast.fade { opacity: 0; transition: opacity 1.5s ease; }
+.wcast.fade.in { opacity: 1; }
+.wcast .glint { transform-box: fill-box; transform-origin: 50% 50%; animation: who-glint .6s ease-in-out infinite alternate; }
 @keyframes who-glint { from { opacity: .3; transform: scale(.7); } to { opacity: 1; transform: scale(1.3); } }
 @media (prefers-reduced-motion: reduce) { #vx i { animation: none !important; } #vx .zoom { opacity: .4; } }
 `;
