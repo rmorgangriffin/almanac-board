@@ -109,7 +109,7 @@
     <path class="glint" d="M62 10 l2 -6 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 z" fill="#d6ffe8"/></svg>`;
 
   const rem = () => parseFloat(getComputedStyle(document.documentElement).fontSize);
-  function el(svg, h, extra = "") { const d = document.createElement("div"); d.className = "who " + extra; d.style.height = h + "rem"; d.innerHTML = svg; document.body.appendChild(d); return d; }
+  function el(svg, h, extra = "") { const d = document.createElement("div"); d.className = "wcast " + extra; d.style.height = h + "rem"; d.innerHTML = svg; document.body.appendChild(d); return d; }
   function cross(d, dur, bottom = .4) {
     d.style.bottom = bottom + "rem"; d.style.left = "0"; d.style.animation = `wk-cross ${dur}s linear forwards`;
     setTimeout(() => d.remove(), (dur + 1) * 1000);
@@ -157,7 +157,7 @@
     const m = +p.hour * 60 + +p.minute;
     if (m < 360 || m % 17 !== 0) return;
     const slot = m / 17; if (slot === lastSlot) return; lastSlot = slot;
-    if (document.querySelector(".who, .walker")) return;
+    if (document.querySelector(".wcast, .walker")) return;
     EVENTS[ORDER[slot % ORDER.length]]();
   }
   setInterval(check, 20000);
