@@ -8,7 +8,7 @@
   const style = document.createElement("style");
   style.textContent = `
 .walker { position: fixed; left: 0; z-index: 60; pointer-events: none; will-change: transform; }
-.walker svg { display: block; height: 100%; width: auto; overflow: visible; filter: drop-shadow(0 0 .12rem rgba(255,255,255,.55)) drop-shadow(0 .25rem .3rem rgba(0,0,0,.45)); }
+.walker svg { display: block; height: 100%; width: auto; overflow: visible; filter: drop-shadow(0 0 .12rem rgba(255,255,255,.6)); }
 .walker.walk, .walker.glide { bottom: .2rem; }
 .walker .bob { height: 100%; animation: wk-bob .36s ease-in-out infinite alternate; }
 .walker.waddle .bob { animation: wk-waddle .5s ease-in-out infinite alternate; transform-origin: 50% 100%; }
@@ -163,7 +163,7 @@
   };
 
   function run(name) {
-    const c = CAST[name]; if (!c) return;
+    const c = CAST[name]; if (!c || window.WALK_LITE) return;
     const el = document.createElement("div");
     el.className = "walker " + c.motion;
     el.style.height = c.h + "rem";
