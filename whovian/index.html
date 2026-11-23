@@ -94,6 +94,11 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 .photo .slot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 35%; }
 .photo .slot.fit img.fg { object-fit: contain; object-position: center; }   /* verticals: whole photo, nothing cut off */
 .photo .slot img.bg { inset: -6%; width: 112%; height: 112%; object-fit: cover; filter: blur(20px) brightness(.55); }
+#wfull { position: fixed; inset: 0; z-index: 85; background: #000; opacity: 0; transition: opacity .8s ease; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+#wfull.on { opacity: 1; }
+#wfull img { max-width: 100%; max-height: 100%; object-fit: contain; }
+#wfull b { position: absolute; top: 4vh; left: 0; right: 0; text-align: center; font-family: "Big Shoulders Display", Impact, sans-serif; font-weight: 900; font-size: 15vw; line-height: 1; letter-spacing: .02em; color: #ffd23f; text-shadow: 0 .5vw 0 #7a1010, 0 0 3vw rgba(255,60,40,.6); }
+#wfull span { position: absolute; bottom: 4vh; left: 0; right: 0; text-align: center; font-family: var(--mono); font-size: 2.4vw; letter-spacing: .14em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 6px #000; }
 .photo .cap { z-index: 2; }
 .photo .cap { position: absolute; left: .8rem; bottom: .6rem; font-family: var(--mono); font-size: .65rem; letter-spacing: .1em; color: #fff; text-shadow: 0 1px 4px #000; text-transform: uppercase; }
 .dub { padding: 1.2rem 1.2rem 1.2rem 0; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
@@ -338,8 +343,36 @@ async function loadPhotos() {
     SETS = {}; for (const s of p.sets || [{ name: "dublin", photos: p.photos || [] }]) if (s.photos.length) SETS[s.name] = s.photos;
     MODES = Object.keys(SETS); MODES.forEach(m => idx[m] = idx[m] || 0);
   } catch (e) {}
+  try {   // Morgan's own Doctor Who photos take over the panel today
+    const w = await unlock("/almanac-board-photos/who.enc");
+    if ((w.photos || []).length) { WHO = w.photos; SETS = { who: WHO }; MODES = ["who"]; idx.who = idx.who || 0; }
+  } catch (e) {}
   showPhoto();
 }
+// Every 20 minutes one of them fills the screen for about 8 seconds (one photo decoded at a time).
+let WHO = [], wf = 3, wfBusy = false, wfLast = -1;
+async function whoFull() {
+  if (!WHO.length || wfBusy || document.querySelector("#greet.on")) return;
+  wfBusy = true;
+  const p = WHO[wf++ % WHO.length];
+  try {
+    const url = URL.createObjectURL(new Blob([await unlock(PHOTO_DIR + p.file, true)], { type: "image/jpeg" }));
+    const d = document.createElement("div"); d.id = "wfull";
+    d.innerHTML = `<img alt="" src="${url}">${p.exterminate ? "<b>EXTERMINATE!</b>" : ""}<span></span>`;
+    d.querySelector("span").textContent = p.date || "";
+    await d.querySelector("img").decode();
+    document.body.appendChild(d);
+    requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add("on")));
+    setTimeout(() => d.classList.remove("on"), 8500);
+    setTimeout(() => { d.remove(); URL.revokeObjectURL(url); wfBusy = false; }, 10000);
+  } catch (e) { wfBusy = false; }
+}
+setInterval(() => {
+  const p = parts(new Date(), TZ), h = +new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", hourCycle: "h23" }).format(new Date());
+  const m = h * 60 + +p.minute;
+  if (m >= 360 && m % 20 === 10 && m !== wfLast) { wfLast = m; whoFull(); }
+}, 20000);
+if (new URLSearchParams(location.search).get("whofull")) setTimeout(() => { const n = +new URLSearchParams(location.search).get("whofull"); if (n > 1) wf = n - 1; whoFull(); }, 4000);
 const PHOTO_DIR = "/almanac-board-photos/";
 // Landscape photos fill the panel. A vertical is shown whole; when the next photo in the set
 // is vertical too, the two sit side by side.
@@ -355,7 +388,7 @@ async function showPhoto() {
   const mode = MODES[mi % MODES.length]; if (!mode || showing) return;
   showing = true;
   try {
-    $("po").dataset.mode = mode;
+    $("po").dataset.mode = mode === "who" ? "dublin" : mode;
     const list = SETS[mode];
     let first, second = null;
     try { first = await loadImg(list[idx[mode] % list.length]); } catch (e) { return; }
