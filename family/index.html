@@ -439,8 +439,7 @@ function renderGrid() {
   let html = `<div class="wk">${["S", "M", "T", "W", "T", "F", "S"].map(d => `<div class="dow">${d}</div>`).join("")}</div>`;
   for (let w = 0; w < 5; w++) {
     html += `<div class="wk">`;
-    if (LITE) return;
-  for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       const iso = isoAdd(start, w * 7 + i), dn = +iso.slice(8), first = dn === 1 || (w === 0 && i === 0);
       const evs = (byDate[iso] || []).sort((a, b) => (a.time ? 1 : 0) - (b.time ? 1 : 0) || String(a.time).localeCompare(String(b.time)));
       const max = 5, shown = evs.slice(0, max);
@@ -894,7 +893,8 @@ window.wxHome = code => {
 // Rain running down the Dublin photo
 (function drops() {
   const box = $("photo");
-  for (let i = 0; i < 7; i++) { const d = document.createElement("i"); d.className = "drop"; d.style.left = (8 + Math.random() * 84) + "%"; d.style.setProperty("--d", (6 + Math.random() * 5) + "s"); d.style.setProperty("--w", -(Math.random() * 10) + "s"); box.appendChild(d); }
+  if (LITE) return;
+  for (let i = 0; i < 6; i++) { const d = document.createElement("i"); d.className = "drop"; d.style.left = (8 + Math.random() * 84) + "%"; d.style.setProperty("--d", (6 + Math.random() * 5) + "s"); d.style.setProperty("--w", -(Math.random() * 10) + "s"); box.appendChild(d); }
 })();
 window.wxDub = code => { const rain = (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95 || Q.get("rain") === "1"; $("po").classList.toggle("dubrain", rain); };
 
