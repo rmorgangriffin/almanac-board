@@ -242,6 +242,7 @@ html[data-look="bloomsday"] .season { font-style: italic; }
 
 /* header line on seasonal boards and special days */
 .season { margin-top: .45rem; font-family: var(--display); font-size: 1.35rem; color: var(--amber); }
+.season .menorah { height: 1.9rem; width: auto; vertical-align: -.35rem; margin-right: .5rem; }
 .season small { font-family: var(--body); font-size: .8rem; color: var(--muted); margin-left: .5rem; }
 
 /* string of lights in the top margin (Christmas) */
@@ -376,7 +377,7 @@ function kind(code) {
 const icon = code => `<svg class="wx" viewBox="0 0 24 24" aria-hidden="true">${ICON[kind(code)[0]]}</svg>`;
 
 async function weather(loc, tz) {
-  const u = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,apparent_temperature,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=${encodeURIComponent(tz)}&forecast_days=6`;
+  const u = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,apparent_temperature,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunset&temperature_unit=fahrenheit&timezone=${encodeURIComponent(tz)}&forecast_days=6`;
   const r = await fetch(u); if (!r.ok) throw new Error("weather"); return r.json();
 }
 async function renderWeather() {
@@ -389,6 +390,7 @@ async function renderWeather() {
       return `<div class="d"><div class="n">${n}</div><div class="i">${icon(d.weather_code[i])}</div><div class="hl num">${Math.round(d.temperature_2m_max[i])}° <span>${Math.round(d.temperature_2m_min[i])}°</span></div><div class="p num">${p >= 20 ? p + "%" : ""}</div></div>`;
     }).join("");
     if (window.wxHome) wxHome(c.weather_code);
+    if (d.sunset) window.SUNSET = d.sunset[0].slice(11, 16);
   } catch (e) { /* keep last good */ }
   try {
     const w = await weather(DUBLIN, DUB), c = w.current, d = w.daily;
@@ -527,11 +529,12 @@ function nextMode() { mi++; showPhoto(); }
 // One large photo from this month in earlier years, changing about every half hour.
 let PAST = [], pastNext = 0;
 async function loadPast() {
-  try { PAST = (await unlock("/almanac-board-photos/past.enc")).photos || []; } catch (e) { PAST = []; }
+  let pd = {}; try { pd = await unlock("/almanac-board-photos/past.enc"); } catch (e) {}
+  PAST = pd.photos || [];
   const band = $("past"), board = document.querySelector(".board");
   if (!PAST.length) { band.hidden = true; board.classList.add("nopast"); return; }
   band.hidden = false; board.classList.remove("nopast");
-  $("pastmonth").textContent = new Intl.DateTimeFormat("en-US", { timeZone: TZ, month: "long" }).format(new Date()) + "s";
+  $("pastmonth").textContent = pd.title || (new Intl.DateTimeFormat("en-US", { timeZone: TZ, month: "long" }).format(new Date()) + "s");
   pastNext = Math.floor(Math.random() * PAST.length);
   pastShow();
 }
@@ -818,6 +821,31 @@ function seasonLine(today) {
   }
   return "";
 }
+// Hanukkah: first candle's evening each year (Hebcal). Night N starts at sunset; the day after belongs to the same night.
+const HANUKKAH = { 2026: "2026-12-04", 2027: "2027-12-24", 2028: "2028-12-12", 2029: "2029-12-01", 2030: "2030-12-20" };
+function hanukkahNight(today) {
+  if (Q.get("hanukkah")) return +Q.get("hanukkah");
+  const evening = nowHM() >= (window.SUNSET || "16:15");
+  for (const y of [+today.slice(0, 4), +today.slice(0, 4) - 1]) {
+    const s = HANUKKAH[y]; if (!s) continue;
+    const n = Math.round((Date.parse(today + "T12:00:00Z") - Date.parse(s + "T12:00:00Z")) / DAY) + (evening ? 1 : 0);
+    if (n >= 0 && n <= 8) return n;   // 0 = begins tonight; the eighth day still shows night 8 until sunset
+  }
+  return -1;
+}
+function menorah(n) {
+  const xs = [6, 16, 26, 36, 64, 74, 84, 94];   // candles lit from right to left, the newest on the left
+  let c = "";
+  xs.forEach((x, i) => { const lit = 7 - i < n; c += `<rect x="${x - 2.5}" y="22" width="5" height="16" rx="1" fill="${lit ? "#f4f1ff" : "rgba(255,255,255,.35)"}"/>` + (lit ? `<path d="M${x} 12 q4 6 0 9 q-4 -3 0 -9z" fill="#ffc94a"/>` : ""); });
+  c += `<rect x="47.5" y="14" width="5" height="24" rx="1" fill="#f4f1ff"/><path d="M50 4 q4 6 0 9 q-4 -3 0 -9z" fill="#ffc94a"/>`;   // shamash
+  return `<svg class="menorah" viewBox="0 0 100 56" aria-hidden="true">${c}<path d="M4 38 H96 M50 38 V50 M38 52 H62" stroke="var(--amber)" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
+}
+function hanukkahLine(today) {
+  const n = hanukkahNight(today);
+  if (n < 0) return "";
+  if (n === 0) return `${menorah(0)}Hanukkah begins tonight`;
+  return `${menorah(n)}Night ${n} of Hanukkah <small>Chag Sameach</small>`;
+}
 function specialLine(today) {
   const out = [], y = +today.slice(0, 4);
   for (const [d, since, who] of GOTCHA) if (md(today) === d) { const n = y - since; out.push(`${who}: ${n} year${n > 1 ? "s" : ""} home`); }
@@ -828,7 +856,7 @@ let specialToday = false;
 function renderSeason() {
   const today = isoToday(), s = seasonLine(today), sp = specialLine(today) || (Q.get("party") ? "Hercules: 10 years home" : "");
   specialToday = !!sp || (SEASON === "newyear" && md(today) === "01-01");
-  const el = $("season"); el.innerHTML = [s, sp ? `🎉 ${sp}` : ""].filter(Boolean).join("<br>"); el.hidden = !el.innerHTML;
+  const el = $("season"); el.innerHTML = [s, hanukkahLine(today), sp ? `🎉 ${sp}` : ""].filter(Boolean).map(x => `<div>${x}</div>`).join(""); el.hidden = !el.innerHTML;
 }
 function confetti(n = 40) {
   if (LITE) return;
@@ -906,5 +934,6 @@ if (Q.get("snow") === "1") { document.documentElement.classList.add("snowtest");
 if (Q.get("rain") === "1") wxDub(0);
 </script>
 <script src="../walk.js"></script>
+<script src="../greet.js"></script>
 </body>
 </html>

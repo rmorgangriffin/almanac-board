@@ -37,30 +37,37 @@
   const legs = (xs, y, h, col, w = 4) => xs.map((x, i) => `<rect class="leg ${i % 2 ? "b" : ""}" x="${x}" y="${y}" width="${w}" height="${h}" rx="${w / 2}" fill="${col}"/>`).join("");
   const eye = (x, y, r = 1.8) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#1a1a1a"/><circle cx="${x + .6}" cy="${y - .6}" r=".6" fill="#fff"/>`;
 
-  function chihuahua(sweater, letter) {
+  // Hercules: white with a dark brown mask, cap and ears, and a dark patch. Nimona: white with café-au-lait head and ears, pink-tan nose.
+  function chihuahua(sweater, letter, mark, nose, earIn) {
+    const W = "#f7f4ee";
     return `<svg viewBox="0 0 100 66">
-      <path d="M22 36 Q8 30 12 18" stroke="#d9a46b" stroke-width="4" fill="none" stroke-linecap="round"/>
-      ${legs([28, 36, 58, 66], 46, 16, "#c8915a")}
-      <ellipse cx="46" cy="40" rx="26" ry="12" fill="#d9a46b"/>
+      <path d="M22 36 Q8 30 12 18" stroke="${W}" stroke-width="4" fill="none" stroke-linecap="round"/>
+      ${legs([28, 36, 58, 66], 46, 16, "#ebe6dc", 3.4)}
+      <ellipse cx="46" cy="40" rx="26" ry="12" fill="${W}"/>
+      <ellipse cx="26" cy="38" rx="6" ry="5" fill="${mark}" opacity=".9"/>
       <path d="M30 29 Q46 24 64 29 L64 51 Q46 55 30 51 Z" fill="${sweater}"/>
       <path d="M30 34 H64 M30 46 H64" stroke="#fff" stroke-width="2" opacity=".7"/>
       <text x="47" y="44" text-anchor="middle" font-family="Graduate, Georgia, serif" font-size="9" fill="#fff">${letter}</text>
-      <path d="M68 20 L63 1 L77 15 Z M81 16 L90 0 L89 20 Z" fill="#d9a46b"/>
-      <path d="M68 17 L65 6 L74 15 Z M83 15 L88 5 L87 18 Z" fill="#f2c9a0"/>
-      <circle cx="77" cy="27" r="12" fill="#d9a46b"/>
-      <ellipse cx="88" cy="31" rx="6.5" ry="4.5" fill="#e8bb8a"/>
-      <circle cx="93.5" cy="30" r="1.8" fill="#1a1a1a"/>
+      <path d="M68 20 L63 1 L77 15 Z M81 16 L90 0 L89 20 Z" fill="${mark}"/>
+      <path d="M68 17 L65 6 L74 15 Z M83 15 L88 5 L87 18 Z" fill="${earIn}"/>
+      <circle cx="77" cy="27" r="12" fill="${W}"/>
+      <path d="M66 25 Q68 14 78 15 Q87 15 88 24 Q82 22 80 27 Q76 30 72 28 Q68 30 66 25 Z" fill="${mark}"/>
+      <ellipse cx="88" cy="31" rx="6.5" ry="4.5" fill="${W}"/>
+      <circle cx="93.5" cy="30" r="1.9" fill="${nose}"/>
       ${eye(79, 24, 2.3)}
     </svg>`;
   }
-  function cat(fur, stripes, eyes, tag) {
+  function cat(fur, stripes, eyes, tag, tan) {
     return `<g>
       <path d="M16 30 Q2 22 8 6" stroke="${fur}" stroke-width="5" fill="none" stroke-linecap="round"/>
+      ${stripes ? `<path d="M16 30 Q2 22 8 6" stroke="${stripes}" stroke-width="5" fill="none" stroke-dasharray="2.5 3.5"/>` : ""}
       ${legs([22, 30, 50, 58], 38, 14, fur)}
+      ${tan ? [22, 30, 50, 58].map(x => `<rect x="${x}" y="49" width="4" height="3" rx="1.5" fill="${tan}"/>`).join("") : ""}
       <ellipse cx="40" cy="33" rx="25" ry="10" fill="${fur}"/>
       ${stripes ? `<path d="M30 24 l3 8 M38 23 l2 9 M46 23 l1 9 M54 25 l-1 8" stroke="${stripes}" stroke-width="2.4" stroke-linecap="round"/>` : ""}
       <path d="M60 18 L62 5 L69 15 Z M71 15 L78 4 L78 18 Z" fill="${fur}"/>
       <circle cx="70" cy="23" r="10" fill="${fur}"/>
+      ${tan ? `<ellipse cx="66" cy="34" rx="6" ry="5" fill="${tan}"/><ellipse cx="72" cy="28" rx="4" ry="2.6" fill="${tan}"/>` : ""}
       <ellipse cx="67" cy="22" rx="1.8" ry="2.4" fill="${eyes}"/><ellipse cx="74" cy="22" rx="1.8" ry="2.4" fill="${eyes}"/>
       <path d="M79 25 l6 -1 M79 27 l6 1" stroke="#ddd" stroke-width=".8"/>
       <text x="40" y="58" text-anchor="middle" font-family="Figtree, sans-serif" font-size="7" fill="#fff" opacity=".8">${tag}</text>
@@ -68,10 +75,10 @@
   }
 
   const CAST = {
-    hercules: { motion: "walk", h: 5, dur: 15, svg: () => chihuahua("var(--rose, #ef8a8a)", "H") },
-    nimona: { motion: "walk", h: 5, dur: 15, svg: () => chihuahua("var(--sage, #7fc8a9)", "N") },
+    hercules: { motion: "walk", h: 5, dur: 15, svg: () => chihuahua("var(--rose, #ef8a8a)", "H", "#3a2618", "#1a1a1a", "#7a5a48") },
+    nimona: { motion: "walk", h: 5, dur: 15, svg: () => chihuahua("var(--sage, #7fc8a9)", "N", "#c9a27a", "#d4968a", "#efcfc0") },
     cats: { motion: "walk", h: 4.4, dur: 11, svg: () => `<svg viewBox="0 0 210 60">
-      <g>${cat("#d98e3f", "#8a4f1c", "#7ad36b", "Lucille")}</g>
+      <g>${cat("#3a2a1f", "#b9824e", "#c9d65a", "Lucille", "#c9a073")}</g>
       <g transform="translate(115 0)">${cat("#1b1b1f", "", "#ffd84a", "Buster")}</g></svg>` },
     catnap: { motion: "nap", h: 4.4, dur: 22, svg: () => `<svg viewBox="0 0 150 60">
       <g transform="translate(0 6)">
@@ -82,12 +89,13 @@
         <path class="tail" d="M66 36 Q74 44 70 58" stroke="#1b1b1f" stroke-width="5" fill="none" stroke-linecap="round"/>
       </g>
       <g transform="translate(70 4)">
-        <ellipse cx="40" cy="34" rx="30" ry="12" fill="#d98e3f"/>
-        <path d="M30 24 l2 8 M40 23 l1 9 M50 24 l-1 8" stroke="#8a4f1c" stroke-width="2.4" stroke-linecap="round"/>
-        <path d="M60 24 L64 13 L68 22 Z M70 22 L76 13 L76 24 Z" fill="#d98e3f"/>
-        <circle cx="68" cy="28" r="10" fill="#d98e3f"/>
-        <path d="M62 28 q3 2 6 0 M69 28 q3 2 6 0" stroke="#3a2a10" stroke-width="1.2" fill="none"/>
-        <path class="tail b" d="M12 38 Q4 46 8 60" stroke="#d98e3f" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="40" cy="34" rx="30" ry="12" fill="#3a2a1f"/>
+        <ellipse cx="62" cy="40" rx="7" ry="4" fill="#c9a073"/>
+        <path d="M30 24 l2 8 M40 23 l1 9 M50 24 l-1 8" stroke="#b9824e" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M60 24 L64 13 L68 22 Z M70 22 L76 13 L76 24 Z" fill="#3a2a1f"/>
+        <circle cx="68" cy="28" r="10" fill="#3a2a1f"/>
+        <path d="M62 30 q3 2 6 0 M69 30 q3 2 6 0" stroke="#c9a073" stroke-width="1.2" fill="none"/>
+        <path class="tail b" d="M12 38 Q4 46 8 60" stroke="#3a2a1f" stroke-width="5" fill="none" stroke-linecap="round"/>
       </g>
       <text x="80" y="8" font-family="Figtree, sans-serif" font-size="8" fill="#fff" opacity=".8">z z z</text></svg>` },
     duck: { motion: "waddle", h: 5, dur: 18, svg: () => `<svg viewBox="0 0 125 70">
@@ -121,27 +129,6 @@
       <g fill="#dfeaff"><rect x="8" y="21" width="5" height="5"/><rect x="14" y="21" width="5" height="5"/><rect x="25" y="21" width="5" height="5"/><rect x="31" y="21" width="5" height="5"/></g>
       <g fill="none" stroke="#1d3f86" stroke-width="1.2"><rect x="8" y="30" width="11" height="10"/><rect x="25" y="30" width="11" height="10"/><rect x="8" y="44" width="11" height="10"/><rect x="25" y="44" width="11" height="10"/><rect x="8" y="58" width="11" height="9"/><rect x="25" y="58" width="11" height="9"/></g>
       <path d="M22 18 V70" stroke="#1d3f86" stroke-width="1.5"/>
-    </svg>` },
-    ants: { motion: "walk", h: 4.6, dur: 19, svg: () => {
-      const ant = (x, gear) => `<g transform="translate(${x} 0)">
-        ${legs([10, 16, 22], 40, 12, "#3a2414", 2.4)}
-        <circle cx="8" cy="38" r="7" fill="#4a2c18"/><circle cx="19" cy="36" r="5" fill="#4a2c18"/><circle cx="29" cy="30" r="6" fill="#4a2c18"/>
-        <path d="M31 25 Q34 14 39 12 M28 25 Q28 14 32 10" stroke="#4a2c18" stroke-width="1.4" fill="none"/>
-        ${eye(32, 29, 1.4)}${gear}</g>`;
-      return `<svg viewBox="0 0 170 60">
-        ${ant(0, `<rect x="21" y="38" width="12" height="9" rx="2" fill="var(--rose, #ef8a8a)"/><path d="M22 38 h10 M22 47 h10" stroke="#fff" stroke-width="1.2"/><path d="M33 34 l6 -6" stroke="#ddd" stroke-width="1.2"/>`)}
-        ${ant(55, `<circle cx="38" cy="38" r="6" fill="none" stroke="var(--amber, #f2a93b)" stroke-width="3"/><path d="M34 34 l-6 -2" stroke="var(--amber, #f2a93b)" stroke-width="2.5"/>`)}
-        ${ant(110, `<path d="M34 34 L36 2" stroke="#8a6a44" stroke-width="1.6"/><path class="flap" d="M36 2 L56 7 L35 12 Z" fill="var(--lilac, #b9a3ff)"/>`)}
-      </svg>`; } },
-    sheep: { motion: "walk", h: 5.2, dur: 17, svg: () => `<svg viewBox="0 0 100 70">
-      ${legs([28, 36, 56, 64], 46, 16, "#2b2b2b")}
-      <g fill="#f4f1ea"><circle cx="30" cy="38" r="12"/><circle cx="44" cy="32" r="13"/><circle cx="58" cy="36" r="12"/><circle cx="40" cy="46" r="11"/><circle cx="56" cy="46" r="10"/><circle cx="22" cy="44" r="8"/></g>
-      <ellipse cx="78" cy="34" rx="10" ry="12" fill="#2b2b2b"/>
-      <path d="M70 26 L60 22 L68 30 Z" fill="#2b2b2b"/>
-      <path d="M66 40 Q74 46 84 42 L84 48 Q74 52 66 46 Z" fill="var(--rose, #ef8a8a)"/>
-      <path class="flap" d="M68 44 L58 58 L64 58 L72 46 Z" fill="var(--rose, #ef8a8a)"/>
-      <circle cx="81" cy="30" r="2" fill="#fff"/><circle cx="81.5" cy="30" r="1" fill="#111"/>
-      <circle cx="77" cy="18" r="5" fill="#f4f1ea"/>
     </svg>` },
     ghost: { motion: "float", h: 6, dur: 18, months: [10], seasons: ["halloween"], svg: () => `<svg viewBox="0 0 60 72">
       <path d="M6 32 Q6 4 30 4 Q54 4 54 32 L54 66 Q49 60 44 66 Q39 72 34 66 Q30 60 26 66 Q21 72 16 66 Q11 60 6 66 Z" fill="#f7f7ff" opacity=".93"/>
