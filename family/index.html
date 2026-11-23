@@ -472,6 +472,7 @@ async function loadPhotos() {
     const p = await unlock("/almanac-board-photos/photos.enc");
     SETS = {}; for (const s of p.sets || [{ name: "dublin", photos: p.photos || [] }]) if (s.photos.length) SETS[s.name] = s.photos;
     MODES = Object.keys(SETS); MODES.forEach(m => idx[m] = idx[m] || 0);
+    const fm = new URLSearchParams(location.search).get("mode"); if (fm && MODES.includes(fm)) mi = MODES.indexOf(fm);
   } catch (e) {}
   showPhoto();
 }
