@@ -306,6 +306,9 @@ html[data-look="t-rouge"] { --ink: #2a0508; --panel: #5e0912; --line: #84202b; -
 html[data-look="t-rouge"] .fc, html[data-look="t-rouge"] .work { --panel: #17b8b0; --line: #0f8f89; --fg: #021c1a; --muted: #083633; --amber: #021c1a; --sage: #083633; --lilac: #083633; }
 html[data-look="t-rouge"] .po, html[data-look="t-rouge"] .past, html[data-look="t-rouge"] .alm { --panel: #1c0306; --line: #4a0b12; }
 
+html[data-look="t-volt"] .work li.nowon, html[data-look="t-acid"] .work li.nowon, html[data-look="t-rouge"] .work li.nowon { background: rgba(0, 0, 0, .1); }
+html[data-look="t-volt"] .work li.past, html[data-look="t-acid"] .work li.past, html[data-look="t-rouge"] .work li.past { opacity: .55; }
+
 /* ---------- the almanac: one row with the "of yore" photos ---------- */
 @media (min-width: 900px) { .board.nopast { grid-template-rows: auto auto 22rem minmax(0, 1fr) 25rem; } }
 .midrow { display: grid; grid-template-columns: minmax(0, 1fr) 22rem; gap: 1rem; min-height: 0; }
