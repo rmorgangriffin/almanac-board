@@ -64,7 +64,7 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 .work li .tm { font-family: var(--mono); font-size: .78rem; color: var(--muted); padding-top: .1rem; }
 .work li .ti { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .work li.past { opacity: .4; }
-.work li.nowon { background: color-mix(in srgb, var(--amber) 18%, transparent); }
+.work li.nowon { background: rgba(255,176,0,.18); background: color-mix(in srgb, var(--amber) 18%, transparent); }
 .work li.nowon .tm { color: var(--amber); }
 .work .free { color: var(--muted); font-size: .9rem; font-style: italic; padding-left: .4rem; }
 
@@ -315,7 +315,7 @@ html[data-look="volt"] .work li.past, html[data-look="rouge"] .work li.past { op
 .alm-k { font-family: "IM Fell English", Georgia, serif; font-size: .85rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
 .moonrow { display: flex; align-items: center; gap: 1rem; margin: .35rem 0 .2rem; text-align: left; }
 .moonrow .big { width: 7rem; height: 7rem; flex: none; }
-.alm .ink { stroke: var(--ink-line); stroke-width: .8; }
+.alm .ink { stroke: var(--fg); stroke-opacity: .7; stroke-width: .8; }
 .alm-la { font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: .85rem; color: var(--muted); opacity: .8; }
 .mstrip { display: grid; grid-template-columns: repeat(4, 1fr); gap: .35rem .2rem; width: 100%; margin: .3rem 0 .35rem; }
 .mc { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
@@ -326,15 +326,17 @@ html[data-look="volt"] .work li.past, html[data-look="rouge"] .work li.past { op
 .mc.on svg { outline: 1px solid var(--amber); outline-offset: 2px; border-radius: 50%; }
 .alm .plate { width: 100%; flex: 1 1 0; min-height: 10.5rem; height: 0; object-fit: contain; margin: .15rem 0; filter: sepia(.3) saturate(.9); border-radius: .2rem; }
 /* picture cards (sky, in season, bird, meteor): the plate takes nearly all the card, the words are small */
-.almbody:has(.plate) { gap: 0; }
-.almbody:has(.plate) .alm-k { font-size: .55rem; letter-spacing: .25em; }
-.almbody:has(.plate) .alm-t { font-size: .95rem; line-height: 1.1; }
-.almbody:has(.plate) .alm-la { font-size: .62rem; }
-.almbody:has(.plate) .alm-s { font-size: .62rem; line-height: 1.2; }
-.almbody:has(.plate) .alm-c { margin-top: .1rem; font-size: .42rem; opacity: .6; }
-.alm:has(.plate) { padding: .5rem .6rem; }
+.almbody.pic { gap: 0; }
+.almbody.pic .alm-k { font-size: .55rem; letter-spacing: .25em; }
+.almbody.pic .alm-t { font-size: .95rem; line-height: 1.1; }
+.almbody.pic .alm-la { font-size: .62rem; }
+.almbody.pic .alm-s { font-size: .62rem; line-height: 1.2; }
+.almbody.pic .alm-c { margin-top: .1rem; font-size: .42rem; opacity: .6; }
+.alm.pic { padding: .5rem .6rem; }
 .alm-day { width: 100%; height: auto; margin: .4rem 0 .5rem; }
-.alm .ink, .alm .ink line { stroke: var(--ink-line); stroke-width: .8; }
+.alm .ink, .alm .ink line { stroke: var(--fg); stroke-opacity: .7; stroke-width: .8; }
+.alm .normband { fill: var(--fg); fill-opacity: .12; stroke: none; }
+.alm .normline { stroke: var(--fg); stroke-opacity: .35; stroke-width: .7; stroke-dasharray: 3 2; }
 .alm .curve { stroke-width: 1.6; }
 .alm .rule { stroke: var(--line); stroke-width: .6; stroke-dasharray: 1 2; }
 .alm .hodie { stroke: var(--amber); fill: var(--amber); stroke-width: 1.2; }
@@ -346,7 +348,7 @@ html[data-look="volt"] .work li.past, html[data-look="rouge"] .work li.past { op
 .alm-c { margin-top: auto; font-family: "IM Fell English", Georgia, serif; font-size: .62rem; color: var(--muted); opacity: .8; }
 .odd { margin-top: .3rem; font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 1.05rem; color: var(--muted); }
 .odd b { font-style: normal; font-family: var(--display); font-weight: 400; color: var(--amber); }
-.skybanner { margin-top: .4rem; padding: .35rem .7rem; border-left: 3px solid var(--amber); background: color-mix(in srgb, var(--amber) 12%, transparent); font-size: .9rem; line-height: 1.35; color: var(--fg); border-radius: .2rem; }
+.skybanner { margin-top: .4rem; padding: .35rem .7rem; border-left: 3px solid var(--amber); background: rgba(255,176,0,.12); background: color-mix(in srgb, var(--amber) 12%, transparent); font-size: .9rem; line-height: 1.35; color: var(--fg); border-radius: .2rem; }
 .skybanner b { color: var(--amber); font-weight: 600; }
 .now .s2 { margin-top: .25rem; color: var(--muted); font-size: .82rem; }
 

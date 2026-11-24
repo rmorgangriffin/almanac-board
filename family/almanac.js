@@ -134,36 +134,57 @@
   let RIVER = null, riverAt = 0;
   async function loadRiver() {
     if (RIVER && Date.now() - riverAt < 30 * 60000) return RIVER;
-    const r = await fetch("https://waterservices.usgs.gov/nwis/iv/?format=json&sites=01172010,01171500&parameterCd=00060,00065&period=P7D");
-    if (!r.ok) throw new Error("usgs");
-    const d = await r.json(), out = {};
-    for (const t of d.value.timeSeries) {
-      const site = t.sourceInfo.siteCode[0].value, v = t.variable.variableCode[0].value;
-      out[site + ":" + v] = t.values[0].value.filter(x => +x.value > -999).map(x => [Date.parse(x.dateTime), +x.value]);
+    const base = "https://waterservices.usgs.gov/nwis/";
+    const [iv, dv, st] = await Promise.all([
+      fetch(base + "iv/?format=json&sites=01172010,01171500&parameterCd=00060,00065&period=P2D").then(r => r.ok ? r.json() : null),
+      fetch(base + "dv/?format=json&sites=01172010&parameterCd=00060&period=P30D").then(r => r.ok ? r.json() : null).catch(() => null),
+      (RIVER && RIVER.norm) ? Promise.resolve(null) : fetch(base + "stat/?format=rdb&sites=01172010&statReportType=daily&statTypeCd=median,p25,p75&parameterCd=00060").then(r => r.ok ? r.text() : null).catch(() => null),
+    ]);
+    if (!iv) throw new Error("usgs");
+    const out = {};
+    for (const s of iv.value.timeSeries) {
+      const site = s.sourceInfo.siteCode[0].value, v = s.variable.variableCode[0].value;
+      out[site + ":" + v] = s.values[0].value.filter(x => +x.value > -999).map(x => [Date.parse(x.dateTime), +x.value]);
+    }
+    // the last 30 days, one mean a day (noon of each day), from the daily-values service
+    out.daily = dv ? dv.value.timeSeries[0].values[0].value.filter(x => +x.value > -999).map(x => [Date.parse(x.dateTime.slice(0, 10) + "T12:00:00"), +x.value]) : [];
+    // the normal range for each day of the year (25th to 75th percentile, and the median), 2003 onward
+    out.norm = (RIVER && RIVER.norm) || {};
+    if (st) for (const line of st.split("\n")) {
+      const f = line.split("\t"); if (f[0] !== "USGS") continue;
+      out.norm[`${f[5]}-${f[6]}`] = [+f[10], +f[11], +f[12]];
     }
     RIVER = out; riverAt = Date.now(); return out;
   }
   function riverCard() {
     const R = RIVER; if (!R) { loadRiver().then(showCardNow).catch(() => {}); throw new Error("no river yet"); }
-    const q = R["01172010:00060"] || [], h = R["01172010:00065"] || [], mill = R["01171500:00060"] || [];
-    if (!q.length) throw new Error("no flow");
-    const last = q[q.length - 1], dayAgo = q.find(x => x[0] >= last[0] - DAY) || q[0];
+    const iv = R["01172010:00060"] || [], h = R["01172010:00065"] || [], mill = R["01171500:00060"] || [];
+    if (!iv.length) throw new Error("no flow");
+    const last = iv[iv.length - 1], dayAgo = iv.find(x => x[0] >= last[0] - DAY) || iv[0];
     const ch = (last[1] - dayAgo[1]) / dayAgo[1], trend = ch > .05 ? "rising" : ch < -.05 ? "falling" : "steady";
-    const W = 300, H = 90, P = 6, lo = Math.min(...q.map(x => x[1])), hi = Math.max(...q.map(x => x[1]));
-    const X = t => P + (t - q[0][0]) / (last[0] - q[0][0]) * (W - 2 * P), Y = v => H - 16 - (v - lo) / ((hi - lo) || 1) * (H - 30);
-    const step = Math.max(1, Math.floor(q.length / 120));
-    let d = ""; q.filter((_, i) => i % step === 0 || i === q.length - 1).forEach((x, i) => d += (i ? "L" : "M") + X(x[0]).toFixed(1) + "," + Y(x[1]).toFixed(1));
-    const days = Array.from({ length: 8 }, (_, i) => last[0] - i * DAY).filter(t => t >= q[0][0]).map(t => `<line class="rule" x1="${X(t)}" x2="${X(t)}" y1="6" y2="${H - 16}"/><text x="${X(t)}" y="${H - 5}" text-anchor="middle">${fmt(new Date(t), TZ, { weekday: "narrow" })}</text>`).join("");
+    const q = [...(R.daily || []).filter(x => x[0] < last[0] - 6 * 3600000), last];   // 30 daily means, then the latest reading
+    const start = Math.min(q[0][0], last[0] - 29 * DAY);
+    const md = ts => { const d = new Date(ts); return `${d.getMonth() + 1}-${d.getDate()}`; };
+    const band = []; for (let ts = start; ts <= last[0] + 1; ts += DAY) { const n = R.norm && R.norm[md(ts)]; if (n) band.push([ts, ...n]); }
+    const vals = [...q.map(x => x[1]), ...band.flatMap(b => [b[1], b[3]])];
+    const W = 300, H = 92, P = 6, top = 6, bot = H - 16, lo = Math.min(...vals) * .9, hi = Math.max(...vals) * 1.05;
+    const X = ts => P + (ts - start) / (last[0] - start) * (W - 2 * P), Y = v => bot - (v - lo) / ((hi - lo) || 1) * (bot - top);
+    const line = pts => pts.map((x, i) => (i ? "L" : "M") + X(x[0]).toFixed(1) + "," + Y(x[1]).toFixed(1)).join("");
+    const bandD = band.length ? band.map((b, i) => (i ? "L" : "M") + X(b[0]).toFixed(1) + "," + Y(b[3]).toFixed(1)).join("") + [...band].reverse().map(b => "L" + X(b[0]).toFixed(1) + "," + Y(b[1]).toFixed(1)).join("") + "Z" : "";
+    const med = band.length ? line(band.map(b => [b[0], b[2]])) : "";
+    const ticks = [0, 7, 14, 21, 28].map(k => last[0] - k * DAY).filter(ts => ts >= start).map(ts => `<line class="rule" x1="${X(ts)}" x2="${X(ts)}" y1="${top}" y2="${bot}"/><text x="${X(ts)}" y="${H - 5}" text-anchor="middle">${fmt(new Date(ts), TZ, { month: "short", day: "numeric" })}</text>`).join("");
+    const nToday = R.norm && R.norm[md(last[0])];
+    const vsNormal = nToday ? (last[1] < nToday[0] ? `below normal for late ${fmt(new Date(last[0]), TZ, { month: "long" })} (usually ${Math.round(nToday[1]).toLocaleString("en-US")})` : last[1] > nToday[2] ? `above normal for the time of year (usually ${Math.round(nToday[1]).toLocaleString("en-US")})` : "about normal for the time of year") : "";
     return `<div class="alm-k">The River</div>
       <div class="alm-t">The Connecticut at Holyoke</div>
-      <svg class="alm-day" viewBox="0 0 ${W} ${H}" aria-hidden="true"><rect class="ink" x="${P}" y="6" width="${W - 2 * P}" height="${H - 22}" fill="none"/>${days}
-        <path d="${d}L${X(last[0])},${H - 16}L${X(q[0][0])},${H - 16}Z" fill="url(#rhatch)" opacity=".5"/><path d="${d}" class="ink curve" fill="none"/>
-        <defs><pattern id="rhatch" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="3" class="ink"/></pattern></defs>
+      <svg class="alm-day" viewBox="0 0 ${W} ${H}" aria-hidden="true"><rect class="ink" x="${P}" y="${top}" width="${W - 2 * P}" height="${bot - top}" fill="none"/>${ticks}
+        ${bandD ? `<path d="${bandD}" class="normband"/><path d="${med}" class="normline" fill="none"/>` : ""}
+        <path d="${line(q)}" class="ink curve" fill="none"/>
         <circle class="hodie" cx="${X(last[0])}" cy="${Y(last[1])}" r="3"/></svg>
       <div class="alm-s"><b class="num">${Math.round(last[1]).toLocaleString("en-US")}</b> cubic feet a second, ${trend}${h.length ? ` · gauge ${h[h.length - 1][1].toFixed(1)} ft` : ""}</div>
-      <div class="alm-s">Past week: ${Math.round(lo).toLocaleString("en-US")} to ${Math.round(hi).toLocaleString("en-US")} cfs</div>
+      <div class="alm-s">${vsNormal || `Past month: ${Math.round(Math.min(...q.map(x => x[1]))).toLocaleString("en-US")} to ${Math.round(Math.max(...q.map(x => x[1]))).toLocaleString("en-US")} cfs`}</div>
       ${mill.length ? `<div class="alm-s">The Mill River at Northampton: ${Math.round(mill[mill.length - 1][1])} cfs</div>` : ""}
-      <div class="alm-c">U.S. Geological Survey gauges 01172010 and 01171500 · provisional data</div>`;
+      <div class="alm-c">Last 30 days; shaded: the usual range for the date, 2003–now · USGS gauges 01172010 and 01171500, provisional</div>`;
   }
 
   /* ---------- shooting stars: the next major meteor shower (peak dates and rates after the IMO calendar) ---------- */
@@ -310,7 +331,7 @@
     const names = Object.keys(CARDS), pin = typeof force === "string" ? force : Q.get("alm");
     const name = CARDS[pin] ? pin : names[ci++ % names.length];
     box.classList.add("off");
-    setTimeout(() => { lastName = name; try { box.innerHTML = CARDS[name](); box.dataset.card = name; } catch (e) { if (!pin) { box.classList.remove("off"); return showCard(); } } box.classList.remove("off"); }, 700);
+    setTimeout(() => { lastName = name; try { box.innerHTML = CARDS[name](); box.dataset.card = name; box.classList.toggle("pic", !!box.querySelector(".plate")); box.parentElement.classList.toggle("pic", !!box.querySelector(".plate")); } catch (e) { if (!pin) { box.classList.remove("off"); return showCard(); } } box.classList.remove("off"); }, 700);
   }
 
   /* ---------- a quirky countdown, a different one each day ---------- */
