@@ -184,8 +184,35 @@
       <div class="alm-c">The great Leonid storm of 1833, engraving by Adolf Vollmy, 1889 · public domain</div>`;
   }
 
+
+  /* ---------- in season: a plant of western Massachusetts, changing every week or so, on an antique plate ---------- */
+  const PLANTS = [   // [from week, file, common name, binomial, note, plate credit]
+    [1, "winterberry", "Winterberry", "Ilex verticillata", "A holly that drops its leaves; the red berries hang on all winter", "The American Flora, vol. 4, 1855"],
+    [7, "hemlock", "Eastern hemlock", "Tsuga canadensis", "The dark evergreen of cool, shady ravines", "F. A. Michaux, The North American Sylva, 1819"],
+    [11, "skunk", "Skunk cabbage", "Symplocarpus foetidus", "The first to bloom, warming its own hood enough to melt the snow", "The American Flora, vol. 3, 1855"],
+    [15, "bloodroot", "Bloodroot", "Sanguinaria canadensis", "Brief white flowers; the root bleeds an orange-red sap", "Curtis's Botanical Magazine, plate 162, 1791"],
+    [17, "arbutus", "Trailing arbutus", "Epigaea repens", "The mayflower, Massachusetts's state flower", "Maria Morris, Wild Flowers of Nova Scotia, 1840"],
+    [19, "trillium", "Red trillium", "Trillium erectum", "Wake-robin: three petals over three leaves", "The Botanical Magazine, plate 470, 1800"],
+    [21, "columbine", "Wild columbine", "Aquilegia canadensis", "Nodding red-and-yellow spurs that hummingbirds love", "The Botanical Magazine, plate 246, 1794"],
+    [23, "laurel", "Mountain laurel", "Kalmia latifolia", "Clouds of pink-white cups on the wooded hillsides", "The Botanical Magazine, plate 175, 1792"],
+    [27, "ghostpipe", "Indian pipe", "Monotropa uniflora", "A ghostly white plant with no green in it at all", "Alice Lounsberry, A Guide to the Wild Flowers, 1899"],
+    [31, "cardinal", "Cardinal flower", "Lobelia cardinalis", "Scarlet spikes along the stream banks", "The Botanical Magazine, plate 320, 1795"],
+    [36, "goldenrod", "Canada goldenrod", "Solidago canadensis", "Gold along every field edge", "Step & Watson, Favourite Flowers, 1896"],
+    [40, "aster", "New England aster", "Symphyotrichum novae-angliae", "Purple asters, the last big bloom before frost", "F. S. Mathews, Field Book of American Wild Flowers, 1902"],
+    [44, "witchhazel", "Witch hazel", "Hamamelis virginiana", "Spidery yellow flowers on bare branches, in November", "C. F. Millspaugh, American Medicinal Plants, 1887"],
+    [49, "winterberry", "Winterberry", "Ilex verticillata", "A holly that drops its leaves; the red berries hang on all winter", "The American Flora, vol. 4, 1855"]];
+  function plantCard() {
+    const t = isoToday(), week = Math.floor((Date.parse(t) - Date.parse(t.slice(0, 4) + "-01-01")) / DAY / 7) + 1;
+    const p = [...PLANTS].reverse().find(x => week >= x[0]) || PLANTS[0];
+    return `<div class="alm-k">In Season</div>
+      <img class="plate" src="../img/bot/${p[1]}.jpg" alt="">
+      <div class="alm-t">${p[2]}</div><div class="alm-la">${p[3]}</div>
+      <div class="alm-s">${p[4]}</div>
+      <div class="alm-c">${p[5]} · public domain</div>`;
+  }
+
   /* ---------- the Almanac panel ---------- */
-  const CARDS = { moon: moonCard, sky: skyCard, day: dayCard, river: riverCard, meteor: meteorCard };
+  const CARDS = { moon: moonCard, sky: skyCard, day: dayCard, river: riverCard, meteor: meteorCard, plant: plantCard };
   let ci = 0, lastName = null;
   function showCardNow() { if (lastName && $("almbody")) try { $("almbody").innerHTML = CARDS[lastName](); } catch (e) {} }
   function showCard() {
