@@ -103,8 +103,34 @@
       <div class="alm-s">${today ? `Sunrise ${hm(today.rise)} · sunset ${hm(today.set)}` : ""}</div>`;
   }
 
+
+  /* ---------- tonight's sky: the constellation highest at 9 pm, on Hevelius's plate, and the planets ---------- */
+  const CONST = [["uma", "Ursa Major", "the Great Bear", 11.0, 50], ["cvn", "Canes Venatici", "the Hunting Dogs", 13.0, 40], ["crb", "Corona Borealis", "the Northern Crown", 15.8, 32],
+    ["her", "Hercules", "the strongman", 17.4, 27], ["lyr", "Lyra", "the Lyre", 18.8, 36], ["cyg", "Cygnus", "the Swan", 20.6, 42], ["del", "Delphinus", "the Dolphin", 20.7, 12],
+    ["lac", "Lacerta", "the Lizard", 22.5, 46], ["peg", "Pegasus", "the Winged Horse", 22.7, 20], ["and", "Andromeda", "the Chained Princess", 0.8, 38], ["cas", "Cassiopeia", "the Queen", 1.0, 62],
+    ["tri", "Triangulum", "the Triangle", 2.1, 32], ["per", "Perseus", "the Hero", 3.2, 45], ["ori", "Orion", "the Hunter", 5.6, 5], ["lyn", "Lynx", "the Lynx", 7.9, 47],
+    ["cnc", "Cancer", "the Crab", 8.6, 20], ["lmi", "Leo Minor", "the Little Lion", 10.2, 33], ["leo", "Leo", "the Lion", 10.7, 13]];
+  const DIRS = ["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"];
+  const where = h => h.altitude > 75 ? "overhead" : `${h.altitude < 20 ? "low in the" : h.altitude < 50 ? "in the" : "high in the"} ${DIRS[Math.round(h.azimuth / 45) % 8]}`;
+  function tonight9() { const m = midnight(isoToday()); return new Date(m.getTime() + 21 * 3600000); }
+  function skyCard() {
+    const t = tonight9();
+    const best = CONST.map(c => [c, A.Horizon(t, OBS, c[3], c[4], "normal")]).sort((a, b) => b[1].altitude - a[1].altitude)[0];
+    const [k, la, en] = best[0];
+    const planets = ["Mercury", "Venus", "Mars", "Jupiter", "Saturn"].map(n => {
+      const eq = A.Equator(A.Body[n], t, OBS, true, true), h = A.Horizon(t, OBS, eq.ra, eq.dec, "normal");
+      return h.altitude > 5 ? `${n} ${where(h)}` : null;
+    }).filter(Boolean);
+    return `<div class="alm-k">Tonight's Sky</div>
+      <img class="plate" src="../img/sky/${k}.jpg" alt="">
+      <div class="alm-t">${la}, ${en}</div>
+      <div class="alm-s">${where(best[1]).replace(/^./, c => c.toUpperCase())} at 9 pm</div>
+      <div class="alm-s">${planets.length ? planets.join(" · ") : "No bright planets up at 9 pm"}</div>
+      <div class="alm-c">Johannes Hevelius, Uranographia, 1690 (drawn as on a globe, so mirrored) · public domain</div>`;
+  }
+
   /* ---------- the Almanac panel ---------- */
-  const CARDS = { moon: moonCard, day: dayCard };
+  const CARDS = { moon: moonCard, sky: skyCard, day: dayCard };
   let ci = 0;
   function showCard() {
     const box = $("almbody"); if (!box || !A) return;
@@ -136,7 +162,6 @@
     L.push(`<b>${daysTo("2061-07-28").toLocaleString("en-US")}</b> days until Halley’s Comet swings back round the Sun`);
     let d = new Date(Date.parse(t) + DAY); while (!(d.getUTCDate() === 13 && d.getUTCDay() === 5)) d = new Date(d.getTime() + DAY);
     L.push(`<b>${daysTo(d.toISOString().slice(0, 10))}</b> days until the next Friday the 13th`);
-    const pi = daysTo(nextMD("03-14")); if (pi) L.push(`<b>${pi}</b> days until Pi Day`);
     return L;
   }
   function renderOdd() {
