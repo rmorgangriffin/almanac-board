@@ -282,8 +282,68 @@
     el.hidden = false;
   }
 
+
+  /* ---------- event banners: they show only when there's something to see ---------- */
+  // Northern lights: NOAA SWPC's 3-day Kp forecast; at about 42°N aurora is plausible from Kp 6.
+  let auroraKp = 0;
+  async function checkAurora() {
+    try {
+      const r = await fetch("https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json"); if (!r.ok) return;
+      const now = Date.now(), rows = await r.json();
+      auroraKp = Math.max(0, ...rows.filter(x => x.observed !== "observed" && Date.parse(x.time_tag + "Z") > now - 3 * 3600000 && Date.parse(x.time_tag + "Z") < now + 24 * 3600000).map(x => +x.kp));
+    } catch (e) {}
+    renderBanner();
+  }
+  // The ISS: CelesTrak's orbit elements, propagated here with satellite.js. A pass counts when the station is
+  // at least 10° up and in sunlight while the sky at Leeds is dark (Sun 6° below the horizon).
+  let issTle = null, issTleAt = 0, issPass = null;
+  async function checkISS() {
+    if (!window.satellite || !A) return;
+    try {
+      if (!issTle || Date.now() - issTleAt > 12 * 3600000) {
+        const r = await fetch("https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=TLE"); if (!r.ok) return;
+        const l = (await r.text()).trim().split(/\r?\n/); if (l.length < 3) return;
+        issTle = satellite.twoline2satrec(l[1].trim(), l[2].trim()); issTleAt = Date.now();
+      }
+      const gd = { latitude: satellite.degreesToRadians(PO.lat), longitude: satellite.degreesToRadians(PO.lon), height: .07 };
+      const start = Date.now() - 10 * 60000, passes = []; let cur = null;
+      for (let t = start; t < start + 16 * 3600000; t += 20000) {
+        const d = new Date(t), pv = satellite.propagate(issTle, d); if (!pv.position) continue;
+        const look = satellite.ecfToLookAngles(gd, satellite.eciToEcf(pv.position, satellite.gstime(d)));
+        const el = look.elevation * 180 / Math.PI;
+        let vis = false;
+        if (el >= 10 && A.Horizon(d, OBS, ...(() => { const e = A.Equator(A.Body.Sun, d, OBS, true, true); return [e.ra, e.dec]; })(), "normal").altitude < -6) {
+          const sv = A.GeoVector(A.Body.Sun, d, true), n = Math.hypot(sv.x, sv.y, sv.z), su = [sv.x / n, sv.y / n, sv.z / n];
+          const p = pv.position, dot = p.x * su[0] + p.y * su[1] + p.z * su[2];
+          const perp = Math.hypot(p.x - dot * su[0], p.y - dot * su[1], p.z - dot * su[2]);
+          vis = !(dot < 0 && perp < 6371);
+        }
+        const az = look.azimuth * 180 / Math.PI;
+        if (vis) { if (!cur) cur = { start: d, startAz: az, max: el }; cur.end = d; cur.endAz = az; cur.max = Math.max(cur.max, el); }
+        else if (cur) { passes.push(cur); cur = null; }
+      }
+      if (cur) passes.push(cur);
+      issPass = passes.find(p => p.end > Date.now() && p.max >= 20) || null;
+    } catch (e) {}
+    renderBanner();
+  }
+  const DIR16 = ["north", "north-northeast", "northeast", "east-northeast", "east", "east-southeast", "southeast", "south-southeast", "south", "south-southwest", "southwest", "west-southwest", "west", "west-northwest", "northwest", "north-northwest"];
+  const dir16 = a => DIR16[Math.round(((a % 360) + 360) % 360 / 22.5) % 16];
+  function renderBanner() {
+    const el = $("skybanner"); if (!el) return;
+    const force = Q.get("banner"), parts = [];
+    if (auroraKp >= 6 || force === "aurora") parts.push(`<b>Northern lights possible tonight.</b> NOAA forecasts a Kp of ${force === "aurora" ? "6.7" : auroraKp.toFixed(1)}; look low to the north after dark.`);
+    const p = issPass || (force === "iss" ? { start: new Date(Date.now() + 3600000), end: new Date(Date.now() + 3600000 + 300000), startAz: 300, endAz: 120, max: 54 } : null);
+    if (p) {
+      const mins = Math.max(1, Math.round((p.end - p.start) / 60000));
+      parts.push(`<b>Look up: the ISS passes over at ${hm(p.start)}</b>, from the ${dir16(p.startAz)} to the ${dir16(p.endAz)}, ${mins} minute${mins > 1 ? "s" : ""}, up to ${Math.round(p.max)}° high.`);
+    }
+    el.innerHTML = parts.join("<br>"); el.hidden = !parts.length;
+  }
+
   function daily() { renderOdd(); renderGa(); }
-  daily(); renderTide(); loadRiver().catch(() => {}); showCard();
+  daily(); renderTide(); loadRiver().catch(() => {}); showCard(); checkAurora(); checkISS();
+  setInterval(checkAurora, 3 * 3600000); setInterval(checkISS, 30 * 60000);
   let lastDay = isoToday();
   setInterval(() => { if (isoToday() !== lastDay) { lastDay = isoToday(); daily(); } renderTide(); }, 5 * 60000);
   setInterval(showCard, 3 * 60000);

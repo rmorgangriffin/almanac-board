@@ -328,7 +328,7 @@ html[data-look="t-volt"] .work li.past, html[data-look="t-acid"] .work li.past, 
 .mc .mp { font-family: "IM Fell English", Georgia, serif; font-size: .68rem; color: var(--muted); }
 .mc.on .md, .mc.on .mp { color: var(--amber); }
 .mc.on svg { outline: 1px solid var(--amber); outline-offset: 2px; border-radius: 50%; }
-.alm .plate { width: 100%; height: 12rem; object-fit: contain; margin: .3rem 0 .35rem; filter: sepia(.35) saturate(.85); border-radius: .2rem; }
+.alm .plate { width: 100%; height: 10.5rem; object-fit: contain; margin: .3rem 0 .35rem; filter: sepia(.35) saturate(.85); border-radius: .2rem; }
 .alm-day { width: 100%; height: auto; margin: .4rem 0 .5rem; }
 .alm .ink, .alm .ink line { stroke: var(--ink-line); stroke-width: .8; }
 .alm .curve { stroke-width: 1.6; }
@@ -342,6 +342,8 @@ html[data-look="t-volt"] .work li.past, html[data-look="t-acid"] .work li.past, 
 .alm-c { margin-top: auto; font-family: "IM Fell English", Georgia, serif; font-size: .62rem; color: var(--muted); opacity: .8; }
 .odd { margin-top: .3rem; font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 1.05rem; color: var(--muted); }
 .odd b { font-style: normal; font-family: var(--display); font-weight: 400; color: var(--amber); }
+.skybanner { margin-top: .4rem; padding: .35rem .7rem; border-left: 3px solid var(--amber); background: color-mix(in srgb, var(--amber) 12%, transparent); font-size: .9rem; line-height: 1.35; color: var(--fg); border-radius: .2rem; }
+.skybanner b { color: var(--amber); font-weight: 600; }
 .now .s2 { margin-top: .25rem; color: var(--muted); font-size: .82rem; }
 
 /* ---------- Po in Dublin: Rocque's 1756 map behind the text, Georgian door colors, Irish, tides ---------- */
@@ -371,6 +373,7 @@ html[data-look="t-volt"] .work li.past, html[data-look="t-acid"] .work li.past, 
       <div class="date" id="date"></div>
       <div class="season" id="season" hidden></div>
       <div class="odd" id="odd" hidden></div>
+      <div class="skybanner" id="skybanner" hidden></div>
     </div>
     <div class="time num" id="time"></div>
     <div class="now" id="now"><div class="t">--°</div><div class="s">Northampton</div></div>
@@ -1028,6 +1031,7 @@ if (Q.get("snow") === "1") { document.documentElement.classList.add("snowtest");
 if (Q.get("rain") === "1") wxDub(0);
 </script>
 <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/satellite.js@5.0.0/dist/satellite.min.js"></script>
 <script src="almanac.js"></script>
 <script src="../walk.js"></script>
 <script src="../greet.js"></script>
