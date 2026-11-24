@@ -18,14 +18,14 @@ html { font-size: 16px; }
 @media (min-width: 900px) { html { font-size: calc(100vw / 67.5); } }
 html, body { margin: 0; height: 100%; background: #010603; }
 body { font-family: "VT323", monospace; color: var(--g); overflow: hidden; }
-.crt { position: fixed; inset: 0; padding: 1rem 1.2rem; display: grid; grid-template-rows: auto auto auto auto auto auto minmax(0, 1fr) auto; gap: .6rem; }
+.crt { position: fixed; inset: 0; padding: .45rem 1.2rem .7rem; display: grid; grid-template-rows: auto auto auto auto auto auto minmax(0, 1fr) auto; gap: .5rem; }
 .classified { display: flex; justify-content: space-between; gap: 1rem; background: #2a0505; color: #ff6b61; border: 1px solid #7a1a14; padding: .1rem .6rem; font-size: 1.1rem; letter-spacing: .12em; }
-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--gd); padding-bottom: .35rem; }
+header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--gd); padding-bottom: .3rem; margin-top: -.15rem; }
 header h1 { margin: 0; font-size: 2.6rem; letter-spacing: .06em; font-weight: normal; line-height: 1; }
 header .sub { font-size: 1.15rem; color: var(--gd); }
 header .clock { font-size: 2.5rem; text-align: right; }
 .consoles { display: grid; grid-template-columns: repeat(24, 1fr); gap: .3rem; }
-.btn { height: 1.35rem; border-radius: 3px; border: 1px solid #0a2a15; background: #08200f; }
+.btn { height: 1.2rem; border-radius: 3px; border: 1px solid #0a2a15; background: #08200f; }
 .btn.g { background: #1fd760; } .btn.a { background: #ffb000; } .btn.r { background: #ff3b30; } .btn.w { background: #e8f0ff; }
 .lamps { display: flex; gap: .3rem .9rem; flex-wrap: wrap; align-items: center; font-size: 1.05rem; }
 .lamp { display: flex; align-items: center; gap: .35rem; }
@@ -34,7 +34,13 @@ header .clock { font-size: 2.5rem; text-align: right; }
 .blink { animation: bl 1s steps(1) infinite; } @keyframes bl { 50% { opacity: .15; } }
 .feed { display: none; background: #2a1a00; border: 2px solid var(--amber); color: var(--amber); font-size: 1.45rem; text-align: center; padding: .2rem; letter-spacing: .05em; }
 .feed.on { display: block; animation: bl 1.2s steps(1) infinite; }
-.protos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
+.protos { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .55rem; }
+.protos .w2 { grid-column: span 2; } .protos .w3 { grid-column: span 3; } .protos .w6 { grid-column: span 6; }
+.lampbox { display: flex; flex-direction: column; align-items: center; gap: .35rem; text-align: center; font-size: 1.3rem; color: var(--gd); padding-top: .2rem; }
+.lampbox i { width: 2.4rem; height: 2.4rem; border-radius: 50%; border: 2px solid var(--gd); background: #08200f; }
+.lampbox.on { color: var(--amber); } .lampbox.on i { background: var(--amber); border-color: var(--amber); }
+.lampbox.on.t i { background: var(--g); border-color: var(--g); } .lampbox.on.t { color: var(--g); }
+.lampbox.on.f i { background: var(--red); border-color: var(--red); } .lampbox.on.f { color: var(--red); }
 .p { border: 1px solid var(--gd); background: var(--panel); padding: .55rem .7rem; position: relative; min-height: 0; overflow: hidden; }
 .p h2 { margin: 0 0 .45rem; font-weight: normal; font-size: 1.3rem; letter-spacing: .08em; border-bottom: 1px dashed var(--gd); padding-bottom: .15rem; display: flex; justify-content: space-between; gap: .5rem; white-space: nowrap; overflow: hidden; }
 .p h2 span { color: var(--gd); font-size: 1rem; }
@@ -63,6 +69,14 @@ header .clock { font-size: 2.5rem; text-align: right; }
 .log { font-family: "Share Tech Mono", monospace; font-size: .92rem; line-height: 1.35; color: #7dffaa; display: flex; flex-direction: column; justify-content: flex-end; height: calc(100% - 2rem); overflow: hidden; }
 .log div { overflow: hidden; }
 .log .am { color: var(--amber); } .log .rd { color: var(--red); }
+.fillp { min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.aux { flex: 1; display: grid; grid-template-columns: repeat(10, 1fr); grid-auto-rows: 1.15rem; gap: .35rem; overflow: hidden; align-content: start; }
+.aux b { border-radius: 50%; border: 1px solid #0a2a15; background: #08200f; aspect-ratio: 1; height: 100%; justify-self: center; }
+.aux b.g { background: #1fd760; } .aux b.a { background: #ffb000; } .aux b.r { background: #ff3b30; } .aux b.w { background: #e8f0ff; }
+.ann { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: minmax(2.2rem, 1fr); gap: .3rem; overflow: hidden; }
+.ann div { border: 1px solid var(--gd); display: flex; align-items: center; justify-content: center; text-align: center; font-size: .95rem; line-height: 1; color: var(--gd); background: #03100a; padding: .1rem; }
+.ann div.on { background: var(--amber); color: #1a0d00; border-color: var(--amber); } .ann div.rd { background: var(--red); color: #1a0202; border-color: var(--red); }
+.log { font-size: 1.05rem; }
 .redact { background: #7dffaa; color: #7dffaa; padding: 0 3px; }
 canvas { width: 100%; height: 6.8rem; display: block; }
 footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.05rem; color: var(--gd); border-top: 2px solid var(--gd); padding-top: .35rem; }
@@ -83,11 +97,12 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   <div class="feed" id="feed"></div>
   <div class="protos" id="protos"></div>
   <div class="grid">
-    <div class="p sys"><h2 id="sysT"></h2><div id="rows"></div></div>
-    <div class="p mid" style="display:grid;grid-template-rows:auto auto 1fr;gap:.35rem">
+    <div style="display:grid;grid-template-rows:auto minmax(0,1fr);gap:.6rem;min-height:0"><div class="p sys"><h2 id="sysT"></h2><div id="rows"></div></div><div class="p fillp"><h2 id="auxT"></h2><div class="aux" id="aux"></div></div></div>
+    <div class="p mid" style="display:grid;grid-template-rows:auto auto auto minmax(0,1fr);gap:.35rem">
       <div><h2 id="chartT"></h2><canvas id="chart" width="600" height="150"></canvas></div>
       <div class="dials" id="dials"></div>
       <div id="contain"></div>
+      <div class="fillp"><h2 id="annT"></h2><div class="ann" id="ann"></div></div>
     </div>
     <div class="p"><h2 id="logT"></h2><div class="log" id="log"></div></div>
   </div>
@@ -119,7 +134,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   /* header, consoles, lamps */
   $("classified").innerHTML = D.strip.map(s => `<span>${esc(s)}</span>`).join("");
   $("ttl").textContent = D.title; $("sub").textContent = D.subtitle;
-  const NB = 72, CLS = ["g", "g", "g", "g", "a", "w", "", "", "", "r"];
+  const NB = 120, CLS = ["g", "g", "g", "g", "a", "w", "", "", "", "r"];
   $("consoles").innerHTML = Array.from({ length: NB }, () => `<div class="btn ${pick(CLS)}"></div>`).join("");
   const BTN = [...$("consoles").children];
   $("lamps").innerHTML = D.lamps.map(n => `<span class="lamp"><i></i>${esc(n)}</span>`).join("");
@@ -129,12 +144,13 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   /* the protocol panels */
   const P = D.protos;
   $("protos").innerHTML = `
-    <div class="p"><h2>${H(P.table)}</h2><div class="tt" id="ttMode">${esc(P.tableStates[0])}</div></div>
-    <div class="p"><h2>${H(P.acoustic)}</h2><div class="binary"><div class="bin on" id="binA">${esc(P.acousticOpts[0])}</div><div class="bin" id="binB">${esc(P.acousticOpts[1])}</div></div></div>
-    <div class="p"><h2>${H(P.spirits)}</h2><div class="binary"><div class="bin on" id="spT">${esc(P.spiritsOpts[0])}</div><div class="bin" id="spF">${esc(P.spiritsOpts[1])}</div></div></div>
-    <div class="p"><h2>${H(P.ohyes)}</h2><div class="ohyes"><span id="ohyes">${esc(P.ohyesWords[1])}</span></div></div>
-    <div class="p"><h2>${H(P.mail)}</h2><div class="inbox" id="inbox"></div><div class="small2">+<span id="rate">0</span> ${esc(P.mailSince)}</div></div>
-    <div class="p"><h2>${H(P.restaurant)}</h2><div class="row" style="grid-template-columns:1fr 6rem;margin-top:.9rem"><div class="bar" style="height:1.25rem"><b id="restB"></b></div><span class="st" id="restS"></span></div></div>`;
+    <div class="p w2"><h2>${H(P.table)}</h2><div class="tt" id="ttMode">${esc(P.tableStates[0])}</div></div>
+    <div class="p w2"><h2>${H([P.acoustic[0], "A"])}</h2><div class="lampbox" id="binA"><i></i>${esc(P.acousticOpts[0])}</div></div>
+    <div class="p w2"><h2>${H([P.acoustic[0], "B"])}</h2><div class="lampbox" id="binB"><i></i>${esc(P.acousticOpts[1])}</div></div>
+    <div class="p w2"><h2>${H([P.spirits[0], ""])}</h2><div class="binary"><div class="lampbox t" id="spT"><i></i>${esc(P.spiritsOpts[0])}</div><div class="lampbox f" id="spF"><i></i>${esc(P.spiritsOpts[1])}</div></div></div>
+    <div class="p w2"><h2>${H(P.ohyes)}</h2><div class="ohyes"><span id="ohyes">${esc(P.ohyesWords[1])}</span></div></div>
+    <div class="p w2"><h2>${H(P.mail)}</h2><div class="inbox" id="inbox"></div><div class="small2">+<span id="rate">0</span> ${esc(P.mailSince)}</div></div>
+    <div class="p w6"><h2>${H(P.restaurant)}</h2><div class="row" style="grid-template-columns:1fr 7rem;margin:.1rem 0"><div class="bar" style="height:1.5rem"><b id="restB"></b></div><span class="st" id="restS" style="font-size:1.6rem"></span></div></div>`;
 
   /* primary systems: private rows plus live ones (live rows without data are left out) */
   $("sysT").innerHTML = H(D.systems);
@@ -171,6 +187,14 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
     D.dials.forEach((d, i) => { const [v, t] = (DV[d[1]] || (() => [0, "--"]))(); $("nd" + i).style.transform = `rotate(${(Math.min(100, Math.max(0, v)) * 1.8).toFixed(1)}deg)`; $("dv" + i).textContent = t; });
   }
 
+  /* auxiliary bank and annunciator panel: fill the columns */
+  $("auxT").innerHTML = H(D.aux || ["AUXILIARY BANK", ""]);
+  $("aux").innerHTML = Array.from({ length: 300 }, () => `<b class="${pick(CLS)}"></b>`).join("");
+  const AUX = [...$("aux").children];
+  $("annT").innerHTML = H(D.annTitle || ["ANNUNCIATOR PANEL", ""]);
+  $("ann").innerHTML = (D.annunciators || []).map(n => `<div>${esc(n)}</div>`).join("");
+  const ANN = [...$("ann").children];
+
   /* containment */
   const C = D.containment;
   $("contain").innerHTML = `<h2>${H(C.title)}</h2>
@@ -201,7 +225,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   function addLog(m = pick(msgs)) {
     const t = new Date().toLocaleTimeString("en-GB", { timeZone: TZ, hour12: false });
     lines.push(`<div class="${m[0]}">${t} ${m[0] === "rd" ? "**" : ">"} ${esc(fill(m[1])).replace(/█+/g, x => `<span class="redact">${x}</span>`)}</div>`);
-    if (lines.length > 30) lines.shift(); $("log").innerHTML = lines.join("");
+    if (lines.length > 40) lines.shift(); $("log").innerHTML = lines.join("");
   }
 
   /* critical alerts and the breach flash: rare on the wall */
@@ -234,18 +258,20 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
     const c = rest > 100 ? "rd" : rest > 70 ? "am" : ""; $("restB").style.transform = `scaleX(${Math.min(1, rest / 100).toFixed(3)})`; $("restB").className = c; $("restS").textContent = rest > 9999 ? "∞" : Math.round(rest).toLocaleString("en-US") + "%"; $("restS").className = "st " + c; }
   function ohTick() { const s = .45 + Math.random() * 1.6, e = $("ohyes"); e.style.transform = `scale(${s.toFixed(2)})`; e.textContent = s > 1.45 ? P.ohyesWords[2] : s > .85 ? P.ohyesWords[1] : P.ohyesWords[0]; e.style.color = s > 1.45 ? "#ffb000" : "#39ff7a"; }
   function flips() {
-    const a = Math.random() < .5; $("binA").className = "bin" + (a ? " on" : ""); $("binB").className = "bin" + (a ? "" : " on");
-    const t = Math.random() < .5; $("spT").className = "bin" + (t ? " on" : ""); $("spF").className = "bin" + (t ? "" : " on");
+    const a = Math.random() < .5; $("binA").className = "lampbox" + (a ? " on" : ""); $("binB").className = "lampbox" + (a ? "" : " on");
+    const t = Math.random() < .5; $("spT").className = "lampbox t" + (t ? " on" : ""); $("spF").className = "lampbox f" + (t ? "" : " on");
     const y = Math.random() < .35; $("nimY").className = "bin" + (y ? " on" : ""); $("nimN").className = "bin" + (y ? "" : " on");
   }
   function bark() { const v = Math.random(); $("barkB").style.transform = `scaleX(${(.15 + v * .8).toFixed(2)})`; $("barkB").className = v > .75 ? "am" : ""; $("barkS").textContent = v > .75 ? C.bark[2] : C.bark[1]; $("barkS").className = "st" + (v > .75 ? " am" : ""); }
-  setInterval(() => { for (let k = 0; k < 4; k++) pick(BTN).className = "btn " + pick(CLS); }, 300);
+  setInterval(() => { for (let k = 0; k < 4; k++) pick(BTN).className = "btn " + pick(CLS); for (let k = 0; k < 3; k++) pick(AUX).className = pick(CLS); }, 300);
+  setInterval(() => { const e = pick(ANN); if (!e) return; const r = Math.random(); e.className = r < .55 ? "" : r < .92 ? "on" : "rd"; }, 700);
+  ANN.forEach(e => { const r = Math.random(); e.className = r < .6 ? "" : r < .93 ? "on" : "rd"; });
   setInterval(() => { const r = Math.random(); pick(LAMP).className = r < .1 ? "am blink" : r < .14 ? "rd blink" : ""; }, 900);
   setInterval(tick, 1000); setInterval(drawChart, 1000); setInterval(restTick, 2000); setInterval(ohTick, 1800);
   setInterval(() => { drawRows(); drawDials(); }, 3000); setInterval(flips, 3500); setInterval(bark, 4000);
   setInterval(() => { const s = pick(P.tableStates); $("ttMode").textContent = s; $("ttMode").style.color = s === "STANDBY" || s === "CONCLUDED" ? "#1d8c45" : "#ffb000"; }, 7000);
   setInterval(() => addLog(), 2400);
-  for (let i = 0; i < 12; i++) addLog();
+  for (let i = 0; i < 40; i++) addLog();
   tick(); drawChart(); drawRows(); restTick(); ohTick(); bark(); loadWx();
 })();
 </script>
