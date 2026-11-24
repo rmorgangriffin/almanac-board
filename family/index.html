@@ -659,6 +659,7 @@ function tick() {
 /* ---------- looks: a different arrangement each hour ---------- */
 const LOOKS = [["midnight", "Midnight"], ["harbor", "Harbor"], ["tropic", "Tropic"], ["orchard", "Orchard"], ["ember", "Ember"], ["jewel", "Jewel"], ["phosphor", "Phosphor"], ["dusk", "Dusk"], ["canyon", "Canyon"], ["quilt", "Quilt"], ["coral", "Coral"], ["walnut", "Walnut"], ["volt", "Volt"], ["rouge", "Rouge"]];
 // Trial looks: preview only (?look=t-split etc.), not in the rotation.
+const TRIAL_LOOKS = [];   // preview-only looks (?look=name), none at the moment
 const forcedLook = new URLSearchParams(location.search).get("look");
 // Seasonal boards (christmas/, halloween/, ...) open this page with ?season=name: their own looks, a header line and a few touches.
 const SEASON = new URLSearchParams(location.search).get("season");
