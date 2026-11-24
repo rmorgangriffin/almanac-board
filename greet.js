@@ -6,9 +6,9 @@
   const st = document.createElement("style");
   st.textContent = `
 #greet { position: fixed; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 6vw;
-  background: color-mix(in srgb, var(--ink, #11152a) 86%, transparent); opacity: 0; transition: opacity 1.5s ease; pointer-events: none; }
+  background: rgba(17, 21, 42, .86); opacity: 0; transition: opacity 1.5s ease; pointer-events: none; }
 #greet.on { opacity: 1; }
-#greet div { font-family: var(--display, Georgia, serif); font-size: 7.5vw; line-height: 1.1; color: var(--fg, #e9e6dc); text-wrap: balance; }
+#greet div { font-family: var(--display, Georgia, serif); font-size: 7.5vw; line-height: 1.1; color: var(--fg, #e9e6dc); }
 #greet em { font-style: normal; color: var(--amber, #f2a93b); }`;
   document.head.appendChild(st);
   const el = document.createElement("div"); el.id = "greet"; el.hidden = true;

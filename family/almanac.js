@@ -95,7 +95,7 @@
         <rect class="ink" x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="none"/>
         ${hours}<path d="${fill}" fill="url(#hatch)" opacity=".55"/><path d="${d}" class="ink curve" fill="none"/>
         <line class="hodie" x1="${tx}" x2="${tx}" y1="${T}" y2="${H - B}"/><circle class="hodie" cx="${tx}" cy="${ty}" r="3.2"/>
-        <text class="lbl" x="${tx + (doy > 300 ? -5 : 5)}" y="${ty - 6}" text-anchor="${doy > 300 ? "end" : "start"}">hodie</text>
+        <text class="lbl" x="${tx + (doy > 300 ? -5 : 5)}" y="${ty - 6}" text-anchor="${doy > 300 ? "end" : "start"}">today</text>
         <g class="axis">${months}</g>
       </svg>
       <div class="alm-t">${today ? hmLen(today.len) : ""} of daylight</div>

@@ -64,7 +64,7 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 .work li .tm { font-family: var(--mono); font-size: .78rem; color: var(--muted); padding-top: .1rem; }
 .work li .ti { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .work li.past { opacity: .4; }
-.work li.nowon { background: rgba(255,176,0,.18); background: color-mix(in srgb, var(--amber) 18%, transparent); }
+.work li.nowon { background: rgba(255,176,0,.18); }
 .work li.nowon .tm { color: var(--amber); }
 .work .free { color: var(--muted); font-size: .9rem; font-style: italic; padding-left: .4rem; }
 
@@ -80,7 +80,8 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 .cell.today .dn { color: var(--amber); }
 .ev { font-size: .68rem; line-height: 1.18; margin-top: .18rem; padding-left: .3rem; border-left: 3px solid var(--c, var(--muted)); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .ev b { font-weight: 500; color: var(--muted); font-family: var(--mono); font-size: .6rem; }
-.ev.allday { background: color-mix(in srgb, var(--c) 22%, transparent); border-radius: .2rem; }
+.ev.allday::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--c); opacity: .22; border-radius: .2rem; }
+.ev.allday { position: relative; isolation: isolate; border-radius: .2rem; }
 .more { font-size: .62rem; color: var(--muted); margin-top: .15rem; padding-left: .4rem; }
 .legend { display: flex; gap: 1rem; justify-content: flex-end; margin-top: .4rem; font-size: .72rem; color: var(--muted); }
 .legend i { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; background: var(--c); margin-right: .3rem; vertical-align: 0; }
@@ -115,7 +116,7 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 .side > .mode { position: absolute; inset: 0; transition: opacity 1s ease; }
 .po[data-mode="dublin"] .mode.quad, .po[data-mode="quad"] .mode.dublin { opacity: 0; pointer-events: none; }
 .quadtext { padding: 1.4rem 1.4rem 1.2rem 0; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
-.quadtext blockquote { margin: 0; font-family: var(--display); font-size: 1.55rem; line-height: 1.35; color: var(--fg); text-wrap: balance; }
+.quadtext blockquote { margin: 0; font-family: var(--display); font-size: 1.55rem; line-height: 1.35; color: var(--fg); }
 .quadtext blockquote::before { content: "“"; display: block; font-size: 3.2rem; line-height: .6; color: var(--lilac); margin-bottom: .4rem; }
 
 /* ---------- "Beneath the elms": the precious-days album as a sepia college yearbook ---------- */
@@ -309,7 +310,7 @@ html[data-look="volt"] .work li.past, html[data-look="rouge"] .work li.past { op
 @media (min-width: 900px) { .board.nopast { grid-template-rows: auto auto 22rem minmax(0, 1fr) 25rem; } }
 .midrow { display: grid; grid-template-columns: minmax(0, 1fr) 29rem; gap: 1rem; min-height: 0; }
 .board.nopast .midrow { grid-template-columns: minmax(0, 1fr); }
-.alm { padding: .8rem 1rem; overflow: hidden; --ink-line: color-mix(in srgb, var(--fg) 70%, transparent); }
+.alm { padding: .8rem 1rem; overflow: hidden; }
 .almbody { height: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; gap: .25rem; transition: opacity .7s ease; }
 .almbody.off { opacity: 0; }
 .alm-k { font-family: "IM Fell English", Georgia, serif; font-size: .85rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
@@ -325,6 +326,9 @@ html[data-look="volt"] .work li.past, html[data-look="rouge"] .work li.past { op
 .mc.on .md, .mc.on .mp { color: var(--amber); }
 .mc.on svg { outline: 1px solid var(--amber); outline-offset: 2px; border-radius: 50%; }
 .alm .plate { width: 100%; flex: 1 1 0; min-height: 10.5rem; height: 0; object-fit: contain; margin: .15rem 0; filter: sepia(.3) saturate(.9); border-radius: .2rem; }
+.alm .typer { flex: 1 1 0; min-height: 0; width: 100%; margin: .4rem 0 .3rem; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; text-align: left; font-family: "Courier Prime", "Courier New", var(--mono); font-size: 1.02rem; line-height: 1.3; white-space: pre-wrap; word-break: break-all; color: var(--fg); opacity: .85; }
+.alm .typer mark { background: rgba(255,176,0,.22); color: var(--amber); padding: 0 .1rem; }
+.almbody[data-card="monkeys"] .alm-t { font-size: 1.15rem; }
 /* picture cards (sky, in season, bird, meteor): the plate takes nearly all the card, the words are small */
 .almbody.pic { gap: 0; }
 .almbody.pic .alm-k { font-size: .55rem; letter-spacing: .25em; }
@@ -348,7 +352,7 @@ html[data-look="volt"] .work li.past, html[data-look="rouge"] .work li.past { op
 .alm-c { margin-top: auto; font-family: "IM Fell English", Georgia, serif; font-size: .62rem; color: var(--muted); opacity: .8; }
 .odd { margin-top: .3rem; font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 1.05rem; color: var(--muted); }
 .odd b { font-style: normal; font-family: var(--display); font-weight: 400; color: var(--amber); }
-.skybanner { margin-top: .4rem; padding: .35rem .7rem; border-left: 3px solid var(--amber); background: rgba(255,176,0,.12); background: color-mix(in srgb, var(--amber) 12%, transparent); font-size: .9rem; line-height: 1.35; color: var(--fg); border-radius: .2rem; }
+.skybanner { margin-top: .4rem; padding: .35rem .7rem; border-left: 3px solid var(--amber); background: rgba(255,176,0,.12); font-size: .9rem; line-height: 1.35; color: var(--fg); border-radius: .2rem; }
 .skybanner b { color: var(--amber); font-weight: 600; }
 .now .s2 { margin-top: .25rem; color: var(--muted); font-size: .82rem; }
 
