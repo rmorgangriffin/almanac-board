@@ -219,6 +219,28 @@ html[data-look="phosphor"] { --ink: #030805; --panel: #06110a; --line: #12391f; 
 html[data-look="phosphor"] body { text-shadow: 0 0 .35rem rgba(157, 252, 181, .35); }
 html[data-look="phosphor"] .photo .slot img { filter: saturate(.6) contrast(1.05); }
 
+/* ---------- Trial multi-color looks (preview only with ?look=name; not in the hourly rotation) ---------- */
+/* Panels get their own colors by overriding the palette variables on that panel. */
+html[data-look^="t-"] .panel { color: var(--fg); }
+/* Split complementary: deep teal, terracotta calendar, ochre photos */
+html[data-look="t-split"] { --ink: #0c2a2e; --panel: #123a3f; --line: #23555a; --fg: #eef6f2; --muted: #8fbcb8; --amber: #ffc15e; --sage: #a8e6b0; --lilac: #d4c2ff; --rose: #ffb3c1; --display: "DM Serif Display", Georgia, serif; --gamebg: #071b1e; }
+html[data-look="t-split"] .grid { --panel: #5a2a1e; --line: #7d4231; --fg: #fbefe4; --muted: #d9b9a6; }
+html[data-look="t-split"] .po, html[data-look="t-split"] .past { --panel: #5c4512; --line: #7f6222; --fg: #fdf3dc; --muted: #e0c98f; --lilac: #ffe08a; }
+/* Color-blocked by role: navy header, sage forecast, plum calendar, rust agenda, charcoal photos */
+html[data-look="t-blocks"] { --ink: #0e1a33; --panel: #15254a; --line: #2a3f6e; --fg: #eef2fb; --muted: #9fb0d4; --amber: #ffc15e; --sage: #9fe0b0; --lilac: #c9b8ff; --rose: #ffb0c0; --display: "Fraunces", Georgia, serif; --gamebg: #0a1226; }
+html[data-look="t-blocks"] .fc { --panel: #24402f; --line: #3a5c46; --fg: #eef4e8; --muted: #a9c2a8; --amber: #ffd27a; }
+html[data-look="t-blocks"] .grid { --panel: #3a1f45; --line: #573266; --fg: #f6eefa; --muted: #bfa6cc; }
+html[data-look="t-blocks"] .work { --panel: #5a2614; --line: #7b3c25; --fg: #fbeee6; --muted: #dcb6a3; --amber: #ffd27a; }
+html[data-look="t-blocks"] .po, html[data-look="t-blocks"] .past { --panel: #1c1c1e; --line: #333338; --fg: #f2f2f2; --muted: #a0a0a6; }
+/* One bold accent: calm indigo, with the forecast in coral */
+html[data-look="t-accent"] { --ink: #12122e; --panel: #1b1c45; --line: #2e3070; --fg: #eceaff; --muted: #9b9cd6; --amber: #ffc15e; --sage: #8fe3b8; --lilac: #c7b5ff; --rose: #ff9fb2; --display: "Bricolage Grotesque", system-ui, sans-serif; --gamebg: #0b0b20; }
+html[data-look="t-accent"] .fc { --panel: #ef6a50; --line: #c94f38; --fg: #1c0d10; --muted: #3d1510; --amber: #1c0d10; --sage: #3d1510; --lilac: #3d1510; }
+/* Mid-century: walnut, avocado forecast, burnt-orange agenda, mustard photos, cream text */
+html[data-look="t-mid"] { --ink: #1f140c; --panel: #2b1c11; --line: #4a3322; --fg: #f3e3c3; --muted: #b9a07e; --amber: #ffb347; --sage: #b5d67a; --lilac: #d6b8ff; --rose: #ff9e8a; --display: "Fraunces", Georgia, serif; --gamebg: #140d07; }
+html[data-look="t-mid"] .fc { --panel: #44521f; --line: #5e6e30; --fg: #f5eed8; --muted: #c9cf9e; --amber: #ffcf6a; }
+html[data-look="t-mid"] .work { --panel: #7a3410; --line: #9a4a20; --fg: #fff0dc; --muted: #f0c79e; --amber: #ffd27a; }
+html[data-look="t-mid"] .po, html[data-look="t-mid"] .past { --panel: #5e4a14; --line: #7d6426; --fg: #fbf0d4; --muted: #e0cb8c; }
+
 /* 8 Dusk: violet-to-rose sky with glass panels, grid and work swapped */
 html[data-look="dusk"] { --ink: #1a1030; --panel: rgba(255, 255, 255, .07); --line: rgba(255, 255, 255, .14); --fg: #fbefff; --muted: #c4b0de; --amber: #ffcf70; --sage: #8ff0d2; --lilac: #ff9ed1; --display: "DM Serif Display", Georgia, serif; --gamebg: #12081f; }
 html[data-look="dusk"] body { background: linear-gradient(170deg, #1a1030 0%, #3b1d52 55%, #6b2f5b 100%); }
@@ -559,6 +581,8 @@ function tick() {
 
 /* ---------- looks: a different arrangement each hour ---------- */
 const LOOKS = [["midnight", "Midnight"], ["harbor", "Harbor"], ["tropic", "Tropic"], ["orchard", "Orchard"], ["ember", "Ember"], ["jewel", "Jewel"], ["phosphor", "Phosphor"], ["dusk", "Dusk"]];
+// Trial looks: preview only (?look=t-split etc.), not in the rotation.
+const TRIAL_LOOKS = [["t-split", "Split"], ["t-blocks", "Blocks"], ["t-accent", "Accent"], ["t-mid", "Mid-century"]];
 const forcedLook = new URLSearchParams(location.search).get("look");
 // Seasonal boards (christmas/, halloween/, ...) open this page with ?season=name: their own looks, a header line and a few touches.
 const SEASON = new URLSearchParams(location.search).get("season");
@@ -572,7 +596,7 @@ function applyLook() {
   const list = SEASON_LOOKS[SEASON] || LOOKS;
   const p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", hourCycle: "h23" }).formatToParts(new Date())) p[x.type] = x.value;
   const t = isoToday(), doy = Math.round((Date.parse(t) - Date.parse(t.slice(0, 4) + "-01-01")) / DAY);
-  const all = [...LOOKS, ...Object.values(SEASON_LOOKS).flat()];
+  const all = [...LOOKS, ...Object.values(SEASON_LOOKS).flat(), ...TRIAL_LOOKS];
   const i = forcedLook ? Math.max(0, list.findIndex(l => l[0] === forcedLook)) : (doy * 24 + +p.hour) % list.length;
   const [id, name] = forcedLook && list.findIndex(l => l[0] === forcedLook) < 0 ? (all.find(l => l[0] === forcedLook) || list[0]) : list[i];
   if (id === lookNow) return;
