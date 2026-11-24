@@ -152,7 +152,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
     <div class="p w4"><h2>${H(P.acoustic)}</h2><div class="binary"><div class="lampbox" id="binA"><i></i>${esc(P.acousticOpts[0])}</div><div class="lampbox" id="binB"><i></i>${esc(P.acousticOpts[1])}</div></div></div>
     <div class="p w2"><h2>${H([P.spirits[0], ""])}</h2><div class="binary"><div class="lampbox t" id="spT"><i></i>${esc(P.spiritsOpts[0])}</div><div class="lampbox f" id="spF"><i></i>${esc(P.spiritsOpts[1])}</div></div></div>
     <div class="p w2"><h2>${H(P.ohyes)}</h2><div class="ohyes"><span id="ohyes">${esc(P.ohyesWords[1])}</span></div></div>
-    <div class="p w2"><h2>${H(P.mail)}</h2><div class="inbox" id="inbox"></div><div class="small2">+<span id="rate">0</span> ${esc(P.mailSince)}</div></div>
+    <div class="p w2"><h2>${H(P.mail)}</h2><div class="inbox" id="inbox"></div></div>
     <div class="p w6"><h2>${H(P.restaurant)}</h2><div class="row" style="grid-template-columns:1fr 7rem;margin:.1rem 0"><div class="bar" style="height:1.5rem"><b id="restB"></b></div><span class="st" id="restS" style="font-size:1.6rem"></span></div></div>`;
 
   /* primary systems: private rows plus live ones (live rows without data are left out) */
@@ -255,7 +255,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   function tick() {
     $("clock").textContent = new Date().toLocaleTimeString("en-GB", { timeZone: TZ, hour12: false });
     $("f3").textContent = D.footer[2].replace("{gw}", (1.1 + Math.random() * .2).toFixed(2));
-    const d = 1 + Math.floor(Math.random() * 4); mail += d; seen += d; $("inbox").textContent = mail.toLocaleString("en-US"); $("rate").textContent = seen.toLocaleString("en-US");
+    const d = 1 + Math.floor(Math.random() * 4); mail += d; seen += d; $("inbox").textContent = mail.toLocaleString("en-US");
     if (dinner) $("feed").textContent = D.feed.replace("{db}", 70 + Math.floor(Math.random() * 30));
   }
   let rest = 40;
