@@ -237,8 +237,10 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   /* critical alerts and the breach flash: rare on the wall */
   const crit = [...D.crit]; if (overdue) crit.unshift(D.dinner.crit);
   let ci = 0;
-  function critical() {
-    const c = crit[ci++ % crit.length], a = $("alert");
+  let bearOn = false, bearAnn = null;
+  function critical(force) {
+    if (bearOn && !force) return;
+    const c = force || crit[ci++ % crit.length], a = $("alert");
     a.innerHTML = `⚠ ${esc(c[0])} ⚠<small>${esc(c[1])}</small>`; a.style.display = "block"; a.classList.add("blink");
     $("ticker").textContent = "!! " + c[0] + " !!"; $("ticker").style.color = "#ff3b30"; addLog(["rd", c[0] + " · " + c[1]]);
     if (c[2] === "hostile") { $("hostS").textContent = C.hostility[2]; $("hostS").className = "st rd"; $("hostB").className = "rd"; $("hostB").style.transform = "scaleX(.97)"; $("nimS").textContent = C.nimona[2]; }
@@ -246,6 +248,18 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
       $("hostS").textContent = C.hostility[1]; $("hostS").className = "st am"; $("hostB").className = "am"; $("hostB").style.transform = "scaleX(.74)"; $("nimS").textContent = C.nimona[1]; }, 6000);
   }
   function breach() { $("br1").textContent = D.breach[0]; $("br2").textContent = D.breach[1]; $("br3").textContent = D.breach[2]; $("breach").style.display = "flex"; setTimeout(() => $("breach").style.display = "none", 3500); }
+  /* the bear incident: one sequence in order, in about 60% of reactor sessions (?bear=1 forces it) */
+  if (D.bear && (Q.get("bear") || Math.random() < .6)) {
+    const B = D.bear; let step = 0;
+    bearAnn = [...$("ann").children].find(e => e.textContent === B.ann) || null;
+    const next = () => {
+      const m = B.seq[step]; addLog([m[0], m[1]]);
+      if (step === B.critAt) { bearOn = true; critical(B.crit); }
+      if (step === B.clearAt) bearOn = false;
+      if (++step < B.seq.length) setTimeout(next, rnd(16, 21) * 1000); else bearOn = false;
+    };
+    setTimeout(next, Q.get("bear") ? 2000 : rnd(15, 30) * 1000);
+  }
   setTimeout(critical, Q.get("alert") ? 3000 : rnd(35, 70) * 1000); setInterval(critical, rnd(110, 150) * 1000);
   if (Q.get("flash") || Math.random() < .35) setTimeout(breach, Q.get("flash") ? 4000 : rnd(70, 180) * 1000);
 
@@ -271,7 +285,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   }
   function bark() { const v = Math.random(); $("barkB").style.transform = `scaleX(${(.15 + v * .8).toFixed(2)})`; $("barkB").className = v > .75 ? "am" : ""; $("barkS").textContent = v > .75 ? C.bark[2] : C.bark[1]; $("barkS").className = "st" + (v > .75 ? " am" : ""); }
   setInterval(() => { for (let k = 0; k < 4; k++) pick(BTN).className = "btn " + pick(CLS); for (let k = 0; k < 3; k++) pick(AUX).className = pick(CLS); }, 300);
-  setInterval(() => { const e = pick(ANN); if (!e) return; const r = Math.random(); e.className = r < .55 ? "" : r < .92 ? "on" : "rd"; }, 700);
+  setInterval(() => { const e = pick(ANN); if (!e) return; const r = Math.random(); e.className = r < .55 ? "" : r < .92 ? "on" : "rd"; if (bearAnn) bearAnn.className = bearOn ? "rd" : bearAnn === e ? "" : bearAnn.className; }, 700);
   ANN.forEach(e => { const r = Math.random(); e.className = r < .6 ? "" : r < .93 ? "on" : "rd"; });
   setInterval(() => { const r = Math.random(); pick(LAMP).className = r < .1 ? "am blink" : r < .14 ? "rd blink" : ""; }, 900);
   setInterval(tick, 1000); setInterval(drawChart, 1000); setInterval(restTick, 2000); setInterval(ohTick, 1800);
