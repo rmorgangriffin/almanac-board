@@ -324,7 +324,14 @@ html[data-look="volt"] .work li.past, html[data-look="rouge"] .work li.past { op
 .mc .mp { font-family: "IM Fell English", Georgia, serif; font-size: .68rem; color: var(--muted); }
 .mc.on .md, .mc.on .mp { color: var(--amber); }
 .mc.on svg { outline: 1px solid var(--amber); outline-offset: 2px; border-radius: 50%; }
-.alm .plate { width: 100%; height: 10.5rem; object-fit: contain; margin: .3rem 0 .35rem; filter: sepia(.35) saturate(.85); border-radius: .2rem; }
+.alm .plate { width: 100%; flex: 1 1 0; min-height: 10.5rem; height: 0; object-fit: contain; margin: .2rem 0 .25rem; filter: sepia(.35) saturate(.85); border-radius: .2rem; }
+/* picture cards (sky, in season, bird, meteor): the plate takes all the spare height, the words step down */
+.almbody:has(.plate) { gap: .1rem; }
+.almbody:has(.plate) .alm-t { font-size: 1.1rem; }
+.almbody:has(.plate) .alm-s { font-size: .78rem; line-height: 1.25; }
+.almbody:has(.plate) .alm-la { font-size: .74rem; }
+.almbody:has(.plate) .alm-k { font-size: .72rem; }
+.almbody:has(.plate) .alm-c { margin-top: .15rem; font-size: .55rem; }
 .alm-day { width: 100%; height: auto; margin: .4rem 0 .5rem; }
 .alm .ink, .alm .ink line { stroke: var(--ink-line); stroke-width: .8; }
 .alm .curve { stroke-width: 1.6; }
