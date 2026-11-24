@@ -221,25 +221,25 @@ html[data-look="phosphor"] .photo .slot img { filter: saturate(.6) contrast(1.05
 
 /* ---------- Trial multi-color looks (preview only with ?look=name; not in the hourly rotation) ---------- */
 /* Panels get their own colors by overriding the palette variables on that panel. */
-html[data-look^="t-"] .panel { color: var(--fg); }
+.panel { color: var(--fg); }
 /* Split complementary: deep teal, terracotta calendar, ochre photos */
-html[data-look="t-split"] { --ink: #0c2a2e; --panel: #123a3f; --line: #23555a; --fg: #eef6f2; --muted: #8fbcb8; --amber: #ffc15e; --sage: #a8e6b0; --lilac: #d4c2ff; --rose: #ffb3c1; --display: "DM Serif Display", Georgia, serif; --gamebg: #071b1e; }
-html[data-look="t-split"] .grid { --panel: #5a2a1e; --line: #7d4231; --fg: #fbefe4; --muted: #d9b9a6; }
-html[data-look="t-split"] .po, html[data-look="t-split"] .past { --panel: #5c4512; --line: #7f6222; --fg: #fdf3dc; --muted: #e0c98f; --lilac: #ffe08a; }
+html[data-look="canyon"] { --ink: #0c2a2e; --panel: #123a3f; --line: #23555a; --fg: #eef6f2; --muted: #8fbcb8; --amber: #ffc15e; --sage: #a8e6b0; --lilac: #d4c2ff; --rose: #ffb3c1; --display: "DM Serif Display", Georgia, serif; --gamebg: #071b1e; }
+html[data-look="canyon"] .grid { --panel: #5a2a1e; --line: #7d4231; --fg: #fbefe4; --muted: #d9b9a6; }
+html[data-look="canyon"] .po, html[data-look="canyon"] .past { --panel: #5c4512; --line: #7f6222; --fg: #fdf3dc; --muted: #e0c98f; --lilac: #ffe08a; }
 /* Color-blocked by role: navy header, sage forecast, plum calendar, rust agenda, charcoal photos */
-html[data-look="t-blocks"] { --ink: #0e1a33; --panel: #15254a; --line: #2a3f6e; --fg: #eef2fb; --muted: #9fb0d4; --amber: #ffc15e; --sage: #9fe0b0; --lilac: #c9b8ff; --rose: #ffb0c0; --display: "Fraunces", Georgia, serif; --gamebg: #0a1226; }
-html[data-look="t-blocks"] .fc { --panel: #24402f; --line: #3a5c46; --fg: #eef4e8; --muted: #a9c2a8; --amber: #ffd27a; }
-html[data-look="t-blocks"] .grid { --panel: #3a1f45; --line: #573266; --fg: #f6eefa; --muted: #bfa6cc; }
-html[data-look="t-blocks"] .work { --panel: #5a2614; --line: #7b3c25; --fg: #fbeee6; --muted: #dcb6a3; --amber: #ffd27a; }
-html[data-look="t-blocks"] .po, html[data-look="t-blocks"] .past { --panel: #1c1c1e; --line: #333338; --fg: #f2f2f2; --muted: #a0a0a6; }
+html[data-look="quilt"] { --ink: #0e1a33; --panel: #15254a; --line: #2a3f6e; --fg: #eef2fb; --muted: #9fb0d4; --amber: #ffc15e; --sage: #9fe0b0; --lilac: #c9b8ff; --rose: #ffb0c0; --display: "Fraunces", Georgia, serif; --gamebg: #0a1226; }
+html[data-look="quilt"] .fc { --panel: #24402f; --line: #3a5c46; --fg: #eef4e8; --muted: #a9c2a8; --amber: #ffd27a; }
+html[data-look="quilt"] .grid { --panel: #3a1f45; --line: #573266; --fg: #f6eefa; --muted: #bfa6cc; }
+html[data-look="quilt"] .work { --panel: #5a2614; --line: #7b3c25; --fg: #fbeee6; --muted: #dcb6a3; --amber: #ffd27a; }
+html[data-look="quilt"] .po, html[data-look="quilt"] .past { --panel: #1c1c1e; --line: #333338; --fg: #f2f2f2; --muted: #a0a0a6; }
 /* One bold accent: calm indigo, with the forecast in coral */
-html[data-look="t-accent"] { --ink: #12122e; --panel: #1b1c45; --line: #2e3070; --fg: #eceaff; --muted: #9b9cd6; --amber: #ffc15e; --sage: #8fe3b8; --lilac: #c7b5ff; --rose: #ff9fb2; --display: "Bricolage Grotesque", system-ui, sans-serif; --gamebg: #0b0b20; }
-html[data-look="t-accent"] .fc { --panel: #ef6a50; --line: #c94f38; --fg: #1c0d10; --muted: #3d1510; --amber: #1c0d10; --sage: #3d1510; --lilac: #3d1510; }
+html[data-look="coral"] { --ink: #12122e; --panel: #1b1c45; --line: #2e3070; --fg: #eceaff; --muted: #9b9cd6; --amber: #ffc15e; --sage: #8fe3b8; --lilac: #c7b5ff; --rose: #ff9fb2; --display: "Bricolage Grotesque", system-ui, sans-serif; --gamebg: #0b0b20; }
+html[data-look="coral"] .fc { --panel: #ef6a50; --line: #c94f38; --fg: #1c0d10; --muted: #3d1510; --amber: #1c0d10; --sage: #3d1510; --lilac: #3d1510; }
 /* Mid-century: walnut, avocado forecast, burnt-orange agenda, mustard photos, cream text */
-html[data-look="t-mid"] { --ink: #1f140c; --panel: #2b1c11; --line: #4a3322; --fg: #f3e3c3; --muted: #b9a07e; --amber: #ffb347; --sage: #b5d67a; --lilac: #d6b8ff; --rose: #ff9e8a; --display: "Fraunces", Georgia, serif; --gamebg: #140d07; }
-html[data-look="t-mid"] .fc { --panel: #44521f; --line: #5e6e30; --fg: #f5eed8; --muted: #c9cf9e; --amber: #ffcf6a; }
-html[data-look="t-mid"] .work { --panel: #7a3410; --line: #9a4a20; --fg: #fff0dc; --muted: #f0c79e; --amber: #ffd27a; }
-html[data-look="t-mid"] .po, html[data-look="t-mid"] .past { --panel: #5e4a14; --line: #7d6426; --fg: #fbf0d4; --muted: #e0cb8c; }
+html[data-look="walnut"] { --ink: #1f140c; --panel: #2b1c11; --line: #4a3322; --fg: #f3e3c3; --muted: #b9a07e; --amber: #ffb347; --sage: #b5d67a; --lilac: #d6b8ff; --rose: #ff9e8a; --display: "Fraunces", Georgia, serif; --gamebg: #140d07; }
+html[data-look="walnut"] .fc { --panel: #44521f; --line: #5e6e30; --fg: #f5eed8; --muted: #c9cf9e; --amber: #ffcf6a; }
+html[data-look="walnut"] .work { --panel: #7a3410; --line: #9a4a20; --fg: #fff0dc; --muted: #f0c79e; --amber: #ffd27a; }
+html[data-look="walnut"] .po, html[data-look="walnut"] .past { --panel: #5e4a14; --line: #7d6426; --fg: #fbf0d4; --muted: #e0cb8c; }
 
 /* 8 Dusk: violet-to-rose sky with glass panels, grid and work swapped */
 html[data-look="dusk"] { --ink: #1a1030; --panel: rgba(255, 255, 255, .07); --line: rgba(255, 255, 255, .14); --fg: #fbefff; --muted: #c4b0de; --amber: #ffcf70; --sage: #8ff0d2; --lilac: #ff9ed1; --display: "DM Serif Display", Georgia, serif; --gamebg: #12081f; }
@@ -293,6 +293,60 @@ html.snowtest .drift { transition: none; }
 #cuckoo.out .beak { animation: peep .5s ease-in-out 3 alternate; transform-box: fill-box; transform-origin: 0 50%; }
 @keyframes peep { to { transform: rotate(-25deg); } }
 @media (prefers-reduced-motion: reduce) { .drift, #cuckoo .bird { transition: none; } .photo .drop { animation: none; } }
+
+/* Bolder trials (preview only) */
+html[data-look="t-volt"] { --ink: #04082e; --panel: #0f2db8; --line: #3352d6; --fg: #ffffff; --muted: #c3cdff; --amber: #ffc15e; --sage: #9effc0; --lilac: #e6d4ff; --rose: #ffb8c8; --display: "Archivo Black", Impact, sans-serif; --gamebg: #020520; }
+html[data-look="t-volt"] .fc, html[data-look="t-volt"] .work { --panel: #ff8a1f; --line: #d96c08; --fg: #1a0a00; --muted: #4a2400; --amber: #1a0a00; --sage: #4a2400; --lilac: #4a2400; }
+html[data-look="t-volt"] .po, html[data-look="t-volt"] .past, html[data-look="t-volt"] .alm { --panel: #0a1450; --line: #1e2c80; }
+html[data-look="t-acid"] { --ink: #07070a; --panel: #121216; --line: #2a2a33; --fg: #f4f4f4; --muted: #a4a4ae; --amber: #ffc15e; --sage: #9fe0b0; --lilac: #c9b8ff; --rose: #ffb0c0; --display: "Space Mono", ui-monospace, monospace; --gamebg: #030304; }
+html[data-look="t-acid"] .fc { --panel: #a50c68; --line: #c8107e; --fg: #ffffff; --muted: #ffd6ee; --amber: #fff1a8; --sage: #d8ffb0; }
+html[data-look="t-acid"] .work { --panel: #b4ff2a; --line: #8fd60f; --fg: #0b1400; --muted: #2c4400; --amber: #0b1400; --sage: #2c4400; --lilac: #2c4400; }
+html[data-look="t-acid"] .po, html[data-look="t-acid"] .alm { --sage: #b4ff2a; --line: #b4ff2a; }
+html[data-look="t-rouge"] { --ink: #2a0508; --panel: #5e0912; --line: #84202b; --fg: #fff1ec; --muted: #e6b3ab; --amber: #ffc15e; --sage: #8ff0e8; --lilac: #e4ccff; --rose: #ffb3c1; --display: "DM Serif Display", Georgia, serif; --gamebg: #1a0204; }
+html[data-look="t-rouge"] .fc, html[data-look="t-rouge"] .work { --panel: #17b8b0; --line: #0f8f89; --fg: #021c1a; --muted: #083633; --amber: #021c1a; --sage: #083633; --lilac: #083633; }
+html[data-look="t-rouge"] .po, html[data-look="t-rouge"] .past, html[data-look="t-rouge"] .alm { --panel: #1c0306; --line: #4a0b12; }
+
+/* ---------- the almanac: one row with the "of yore" photos ---------- */
+@media (min-width: 900px) { .board.nopast { grid-template-rows: auto auto 22rem minmax(0, 1fr) 25rem; } }
+.midrow { display: grid; grid-template-columns: minmax(0, 1fr) 22rem; gap: 1rem; min-height: 0; }
+.board.nopast .midrow { grid-template-columns: minmax(0, 1fr); }
+.alm { padding: .8rem 1rem; overflow: hidden; --ink-line: color-mix(in srgb, var(--fg) 70%, transparent); }
+.almbody { height: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; gap: .25rem; transition: opacity .7s ease; }
+.almbody.off { opacity: 0; }
+.alm-k { font-family: "IM Fell English", Georgia, serif; font-size: .85rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+.alm-moon { width: 12.5rem; height: 12.5rem; flex: none; margin: .1rem 0 .2rem; }
+.alm-day { width: 100%; height: auto; margin: .4rem 0 .5rem; }
+.alm .ink, .alm .ink line { stroke: var(--ink-line); stroke-width: .8; }
+.alm .curve { stroke-width: 1.6; }
+.alm .rule { stroke: var(--line); stroke-width: .6; stroke-dasharray: 1 2; }
+.alm .hodie { stroke: var(--amber); fill: var(--amber); stroke-width: 1.2; }
+.alm svg text { font-family: "IM Fell English", Georgia, serif; font-size: 8px; fill: var(--muted); }
+.alm svg .axis text { text-anchor: middle; }
+.alm svg .lbl { fill: var(--amber); font-style: italic; font-size: 9px; }
+.alm-t { font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 1.45rem; line-height: 1.15; color: var(--fg); }
+.alm-s { font-family: "IM Fell English", Georgia, serif; font-size: .95rem; color: var(--muted); }
+.alm-c { margin-top: auto; font-family: "IM Fell English", Georgia, serif; font-size: .62rem; color: var(--muted); opacity: .8; }
+.odd { margin-top: .3rem; font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: 1.05rem; color: var(--muted); }
+.odd b { font-style: normal; font-family: var(--display); font-weight: 400; color: var(--amber); }
+.now .s2 { margin-top: .25rem; color: var(--muted); font-size: .82rem; }
+
+/* ---------- Po in Dublin: Rocque's 1756 map behind the text, Georgian door colors, Irish, tides ---------- */
+.side::before { content: ""; position: absolute; inset: 0; background: url(../img/rocque-dublin.jpg) center / cover no-repeat; mix-blend-mode: screen; opacity: .2; pointer-events: none; transition: opacity 1s ease; }
+.po[data-mode="quad"] .side::before { opacity: 0; }
+.dub .gadate { font-family: "IM Fell English", Georgia, serif; font-size: .95rem; color: var(--muted); margin-top: .15rem; }
+.dub .doors { width: 7rem; height: .32rem; margin-top: .55rem; border-radius: 2px; background: linear-gradient(90deg, #8a1f2c 0 25%, #1f5c3c 25% 50%, #2350a8 50% 75%, #d6a52c 75%); }
+.dub .dubx { font-size: .85rem; color: var(--muted); margin-top: .25rem; }
+.tide { display: flex; align-items: center; gap: .6rem; }
+.tide svg { width: 3.4rem; height: 3.4rem; flex: none; }
+.tide .brass { fill: #a07a36; stroke: #e0c27a; stroke-width: 1.2; }
+.tide .face { fill: #f1e6c8; }
+.tide .tk line { stroke: #5a4218; stroke-width: .8; }
+.tide .tl { font: 5px "IM Fell English", Georgia, serif; fill: #5a4218; text-anchor: middle; letter-spacing: .5px; }
+.tide .needle { stroke: #2a1a08; stroke-width: 1.6; stroke-linecap: round; }
+.tide .pin { fill: #2a1a08; }
+.tide .tt { font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: .95rem; }
+.tide .tv { font-size: .82rem; color: var(--muted); }
+.tide .tv b { color: var(--fg); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -303,6 +357,7 @@ html.snowtest .drift { transition: none; }
       <div class="latin" id="latin">dies <em>Solis</em></div>
       <div class="date" id="date"></div>
       <div class="season" id="season" hidden></div>
+      <div class="odd" id="odd" hidden></div>
     </div>
     <div class="time num" id="time"></div>
     <div class="now" id="now"><div class="t">--°</div><div class="s">Northampton</div></div>
@@ -318,12 +373,15 @@ html.snowtest .drift { transition: none; }
   </div>
 
 
+  <div class="midrow">
   <section class="panel past" id="past" aria-label="This month in past years" hidden>
     <div class="layer"><img class="bg" alt=""><img class="fg" alt=""></div>
     <div class="layer"><img class="bg" alt=""><img class="fg" alt=""></div>
     <div class="ttl"><b id="pastmonth">Novembers</b><span>of yore</span></div>
     <div class="cap" id="pastcap"></div>
   </section>
+  <section class="panel alm" id="alm" aria-label="Almanac"><div class="almbody" id="almbody"></div></section>
+  </div>
 
   <div class="main">
     <section class="panel work" id="work">
@@ -340,10 +398,13 @@ html.snowtest .drift { transition: none; }
         <div>
           <h2>Po in Dublin</h2>
           <div class="ga">Po i mBaile Átha Cliath</div>
+          <div class="gadate" id="gadate"></div>
+          <div class="doors" aria-hidden="true"></div>
         </div>
         <div class="dt num" id="dubtime"></div>
-        <div class="wnow" id="dubnow"></div>
+        <div><div class="wnow" id="dubnow"></div><div class="dubx" id="dubx"></div></div>
         <div class="mini" id="dubfc"></div>
+        <div class="tide" id="tide" hidden></div>
       </div>
       <div class="mode quad quadtext">
         <blockquote>Oh, those precious days amongst the ivy, beneath the stately elms upon the quad!</blockquote>
@@ -355,7 +416,7 @@ html.snowtest .drift { transition: none; }
 
 <script>
 const TZ = "America/New_York", DUB = "Europe/Dublin";
-const HOME = { lat: 42.3251, lon: -72.6412 }, DUBLIN = { lat: 53.3494, lon: -6.2606 };
+const HOME = { lat: 42.355, lon: -72.703 }, DUBLIN = { lat: 53.3494, lon: -6.2606 };
 const KEY = location.hash.slice(1);
 const LATIN = ["Solis", "Lunae", "Martis", "Mercurii", "Iovis", "Veneris", "Saturni"];
 const CAL = { morgan: "var(--amber)", corey: "var(--sage)", family: "var(--lilac)", holiday: "var(--rose)" };
@@ -391,13 +452,16 @@ function kind(code) {
 const icon = code => `<svg class="wx" viewBox="0 0 24 24" aria-hidden="true">${ICON[kind(code)[0]]}</svg>`;
 
 async function weather(loc, tz) {
-  const u = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,apparent_temperature,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunset&temperature_unit=fahrenheit&timezone=${encodeURIComponent(tz)}&forecast_days=6`;
+  const u = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,apparent_temperature,weather_code,relative_humidity_2m,wind_speed_10m,wind_direction_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=${encodeURIComponent(tz)}&forecast_days=6`;
   const r = await fetch(u); if (!r.ok) throw new Error("weather"); return r.json();
 }
+const compass = deg => ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"][Math.round(deg / 22.5) % 16];
+const hm12 = s => { let [h, m] = s.slice(11, 16).split(":").map(Number); const pm = h >= 12; h = h % 12 || 12; return `${h}:${String(m).padStart(2, "0")} ${pm ? "pm" : "am"}`; };
 async function renderWeather() {
   try {
     const w = await weather(HOME, TZ), c = w.current, d = w.daily;
-    $("now").innerHTML = `<div class="t">${icon(c.weather_code)}<span class="num">${Math.round(c.temperature_2m)}°</span></div><div class="s">Feels like ${Math.round(c.apparent_temperature)}° · ${kind(c.weather_code)[1]}</div>`;
+    $("now").innerHTML = `<div class="t">${icon(c.weather_code)}<span class="num">${Math.round(c.temperature_2m)}°</span></div><div class="s">Feels like ${Math.round(c.apparent_temperature)}° · ${kind(c.weather_code)[1]}</div><div class="s2">${Math.round(c.relative_humidity_2m)}% humidity · wind ${Math.round(c.wind_speed_10m)} mph ${compass(c.wind_direction_10m)}${d.sunrise ? ` · sun ${hm12(d.sunrise[0])}–${hm12(d.sunset[0])}` : ""}</div>`;
+    window.HOME_TEMP = c.temperature_2m;
     $("fc").innerHTML = d.time.map((t, i) => {
       const n = i === 0 ? "Today" : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dowOf(t)];
       const p = d.precipitation_probability_max[i];
@@ -409,6 +473,8 @@ async function renderWeather() {
   try {
     const w = await weather(DUBLIN, DUB), c = w.current, d = w.daily;
     $("dubnow").innerHTML = `${icon(c.weather_code)}<b class="num">${Math.round(c.temperature_2m)}°</b><span>${kind(c.weather_code)[1]}</span>`;
+    const diff = window.HOME_TEMP != null ? Math.round(c.temperature_2m - window.HOME_TEMP) : null;
+    $("dubx").textContent = [d.sunset ? `Sunset ${hm12(d.sunset[0])}` : "", diff == null ? "" : diff === 0 ? "same as Leeds" : `${Math.abs(diff)}° ${diff > 0 ? "warmer" : "colder"} than Leeds`].filter(Boolean).join(" · ");
     if (window.wxDub) wxDub(c.weather_code);
     $("dubfc").innerHTML = d.time.slice(1, 4).map((t, i) => `<div><div class="label">${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dowOf(t)]}</div><div class="i">${icon(d.weather_code[i + 1])}</div><div class="num">${Math.round(d.temperature_2m_max[i + 1])}° <span>${Math.round(d.temperature_2m_min[i + 1])}°</span></div></div>`).join("");
   } catch (e) {}
@@ -580,9 +646,9 @@ function tick() {
 }
 
 /* ---------- looks: a different arrangement each hour ---------- */
-const LOOKS = [["midnight", "Midnight"], ["harbor", "Harbor"], ["tropic", "Tropic"], ["orchard", "Orchard"], ["ember", "Ember"], ["jewel", "Jewel"], ["phosphor", "Phosphor"], ["dusk", "Dusk"]];
+const LOOKS = [["midnight", "Midnight"], ["harbor", "Harbor"], ["tropic", "Tropic"], ["orchard", "Orchard"], ["ember", "Ember"], ["jewel", "Jewel"], ["phosphor", "Phosphor"], ["dusk", "Dusk"], ["canyon", "Canyon"], ["quilt", "Quilt"], ["coral", "Coral"], ["walnut", "Walnut"]];
 // Trial looks: preview only (?look=t-split etc.), not in the rotation.
-const TRIAL_LOOKS = [["t-split", "Split"], ["t-blocks", "Blocks"], ["t-accent", "Accent"], ["t-mid", "Mid-century"]];
+const TRIAL_LOOKS = [["t-volt", "Volt"], ["t-acid", "Acid"], ["t-rouge", "Rouge"]];
 const forcedLook = new URLSearchParams(location.search).get("look");
 // Seasonal boards (christmas/, halloween/, ...) open this page with ?season=name: their own looks, a header line and a few touches.
 const SEASON = new URLSearchParams(location.search).get("season");
@@ -895,7 +961,7 @@ if (SEASON === "christmas") {
 function placeDrifts() {
   if (LITE) return;
   document.querySelectorAll(".drift").forEach(d => d.remove());
-  document.querySelectorAll(".board > .panel, .board > .strip > .panel, .main > .panel").forEach(p => {
+  document.querySelectorAll(".board > .panel, .board > .strip > .panel, .main > .panel, .midrow > .panel").forEach(p => {
     if (p.hidden) return;
     const r = p.getBoundingClientRect(), d = document.createElement("div"); d.className = "drift";
     d.style.left = (r.left + 6) + "px"; d.style.width = (r.width - 12) + "px"; d.style.bottom = (innerHeight - r.top - 1) + "px";
@@ -949,6 +1015,8 @@ if (Q.get("cuckoo")) setTimeout(doCuckoo, 2500);
 if (Q.get("snow") === "1") { document.documentElement.classList.add("snowtest"); wxHome(0); }
 if (Q.get("rain") === "1") wxDub(0);
 </script>
+<script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+<script src="almanac.js"></script>
 <script src="../walk.js"></script>
 <script src="../greet.js"></script>
 </body>
