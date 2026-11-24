@@ -36,7 +36,7 @@ header .clock { font-size: 2.5rem; text-align: right; }
 .feed { display: none; background: #2a1a00; border: 2px solid var(--amber); color: var(--amber); font-size: 1.45rem; text-align: center; padding: .2rem; letter-spacing: .05em; }
 .feed.on { display: block; animation: bl 1.2s steps(1) infinite; }
 .protos { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .55rem; }
-.protos .w2 { grid-column: span 2; } .protos .w3 { grid-column: span 3; } .protos .w6 { grid-column: span 6; }
+.protos .w2 { grid-column: span 2; } .protos .w4 { grid-column: span 4; } .protos .w3 { grid-column: span 3; } .protos .w6 { grid-column: span 6; }
 .lampbox { display: flex; flex-direction: column; align-items: center; gap: .35rem; text-align: center; font-size: 1.3rem; color: var(--gd); padding-top: .2rem; }
 .lampbox i { width: 2.4rem; height: 2.4rem; border-radius: 50%; border: 2px solid var(--gd); background: #08200f; }
 .lampbox.on { color: var(--amber); } .lampbox.on i { background: var(--amber); border-color: var(--amber); }
@@ -62,7 +62,7 @@ header .clock { font-size: 2.5rem; text-align: right; }
 .bar b.am { background: var(--amber); } .bar b.rd { background: var(--red); }
 .st { text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .st.am { color: var(--amber); } .st.rd { color: var(--red); }
 .sys .row { grid-template-columns: minmax(0, 1fr) 6rem; grid-template-areas: "l s" "b b"; gap: .1rem .4rem; margin: .4rem 0; }
-.sys .row > span:first-child { grid-area: l; } .sys .row .bar { grid-area: b; } .sys .row .st { grid-area: s; }
+.sys .row > span:first-child { grid-area: l; } .sys .row.one > span:first-child { grid-column: 1 / -1; white-space: normal; } .sys .row .bar { grid-area: b; } .sys .row .st { grid-area: s; }
 .dials { display: grid; grid-template-columns: repeat(3, 1fr); gap: .35rem; text-align: center; font-size: .95rem; }
 .dials .dv { font-size: 1.3rem; }
 .dials .nd { transform-origin: 50px 54px; transition: transform 1.8s ease; }
@@ -149,8 +149,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   const P = D.protos;
   $("protos").innerHTML = `
     <div class="p w2"><h2>${H(P.table)}</h2><div class="tt" id="ttMode">${esc(P.tableStates[0])}</div></div>
-    <div class="p w2"><h2>${H([P.acoustic[0], "A"])}</h2><div class="lampbox" id="binA"><i></i>${esc(P.acousticOpts[0])}</div></div>
-    <div class="p w2"><h2>${H([P.acoustic[0], "B"])}</h2><div class="lampbox" id="binB"><i></i>${esc(P.acousticOpts[1])}</div></div>
+    <div class="p w4"><h2>${H(P.acoustic)}</h2><div class="binary"><div class="lampbox" id="binA"><i></i>${esc(P.acousticOpts[0])}</div><div class="lampbox" id="binB"><i></i>${esc(P.acousticOpts[1])}</div></div></div>
     <div class="p w2"><h2>${H([P.spirits[0], ""])}</h2><div class="binary"><div class="lampbox t" id="spT"><i></i>${esc(P.spiritsOpts[0])}</div><div class="lampbox f" id="spF"><i></i>${esc(P.spiritsOpts[1])}</div></div></div>
     <div class="p w2"><h2>${H(P.ohyes)}</h2><div class="ohyes"><span id="ohyes">${esc(P.ohyesWords[1])}</span></div></div>
     <div class="p w2"><h2>${H(P.mail)}</h2><div class="inbox" id="inbox"></div><div class="small2">+<span id="rate">0</span> ${esc(P.mailSince)}</div></div>
@@ -165,7 +164,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   };
   const rows = D.rows.map(r => { const k = (r[3] || "").startsWith("live:") ? r[3].slice(5) : null; if (k) { const v = LIVE[k] && LIVE[k](); return v ? { l: r[0], v: v[0], s: v[1], live: true } : null; } return { l: r[0], v: r[1], s: r[2], fixed: r[3] === "fixed" }; }).filter(Boolean);
   const sc = v => v > 85 ? "rd" : v > 65 ? "am" : "";
-  $("rows").innerHTML = rows.map((r, i) => `<div class="row"><span>${esc(r.l)}${r.live ? '<span class="live">◆LIVE</span>' : ""}</span><div class="bar"><b id="rb${i}"></b></div><span class="st" id="rs${i}">${esc(r.s)}</span></div>`).join("");
+  $("rows").innerHTML = rows.map((r, i) => `<div class="row${r.s ? "" : " one"}"><span>${esc(r.l)}${r.live ? '<span class="live">◆LIVE</span>' : ""}</span><div class="bar"><b id="rb${i}"></b></div><span class="st" id="rs${i}">${esc(r.s)}</span></div>`).join("");
   function drawRows() { rows.forEach((r, i) => { if (!r.live && !r.fixed) r.v = Math.max(5, Math.min(99, r.v + rnd(-4, 4))); const c = sc(r.v); $("rb" + i).className = c; $("rb" + i).style.transform = `scaleX(${(r.v / 100).toFixed(3)})`; $("rs" + i).className = "st " + c; }); }
 
   /* espresso core strip chart (canvas, redrawn once a second) */
@@ -223,11 +222,13 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   $("logT").innerHTML = H(D.logTitle);
   let mail = P.mailStart, seen = 0;
   const msgs = D.log.filter(m => !m[2] || (m[2] === "life" && N.life_open != null));
-  if (dinner) msgs.push(...D.dinner.log, ...D.dinner.log);
+  if (dinner) msgs.push(...D.dinner.log);
+  let deck = [];
+  const draw = () => { if (!deck.length) deck = msgs.map(m => [Math.random(), m]).sort((a, b) => a[0] - b[0]).map(x => x[1]); return deck.pop(); };
   function fill(t) { return t.replace("{dublinC}", wx.dublinC == null ? "--" : Math.round(wx.dublinC)).replace("{tempF}", wx.tempF == null ? "--" : Math.round(wx.tempF)).replace("{hum}", wx.hum == null ? "--" : Math.round(wx.hum)).replace("{wind}", wx.wind == null ? "--" : Math.round(wx.wind)).replace("{life}", N.life_open).replace("{mailM}", Math.floor(mail / 1e6) + 1); }
   const lines = [];
   function addLog(m) {
-    if (!m) { do { m = pick(msgs); } while (wx.tempF == null && /\{(dublinC|tempF|hum|wind)\}/.test(m[1])); }
+    if (!m) { for (let k = 0; k < 5; k++) { m = draw(); if (!(wx.tempF == null && /\{(dublinC|tempF|hum|wind)\}/.test(m[1]))) break; } }
     const t = new Date().toLocaleTimeString("en-GB", { timeZone: TZ, hour12: false });
     lines.push(`<div class="${m[0]}">${t} ${m[0] === "rd" ? "**" : ">"} ${esc(fill(m[1])).replace(/█+/g, x => `<span class="redact">${x}</span>`)}</div>`);
     if (lines.length > 40) lines.shift(); $("log").innerHTML = lines.join("");
@@ -276,7 +277,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   setInterval(() => { drawRows(); drawDials(); }, 3000); setInterval(flips, 3500); setInterval(bark, 4000);
   setInterval(() => { const s = pick(P.tableStates); $("ttMode").textContent = s; $("ttMode").style.color = s === "STANDBY" || s === "CONCLUDED" ? "#1d8c45" : "#ffb000"; }, 7000);
   setInterval(() => addLog(), 2400);
-  for (let i = 0; i < 40; i++) addLog();
+  for (let i = 0; i < 24; i++) addLog();
   tick(); drawChart(); drawRows(); restTick(); ohTick(); bark(); loadWx();
 })();
 </script>
