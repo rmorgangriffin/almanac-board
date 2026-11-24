@@ -160,6 +160,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   const LIVE = {
     claude: () => N.claude_minutes == null ? null : [Math.min(99, N.claude_minutes / 2.4), `${Math.floor(N.claude_minutes / 60)}H ${N.claude_minutes % 60}M TODAY`],
     grocery: () => N.grocery == null ? null : [Math.min(99, N.grocery * 4), `${N.grocery} ITEMS`],
+    amazon: () => N.amazon_inbound == null ? null : [Math.max(5, Math.min(99, N.amazon_inbound * 14)), N.amazon_today ? `${N.amazon_today} TODAY` + (N.amazon_inbound > N.amazon_today ? ` · ${N.amazon_inbound - N.amazon_today} MORE` : "") : N.amazon_inbound ? `${N.amazon_inbound} IN TRANSIT` : "NONE INBOUND"],
   };
   const rows = D.rows.map(r => { const k = (r[3] || "").startsWith("live:") ? r[3].slice(5) : null; if (k) { const v = LIVE[k] && LIVE[k](); return v ? { l: r[0], v: v[0], s: v[1], live: true } : null; } return { l: r[0], v: r[1], s: r[2], fixed: r[3] === "fixed" }; }).filter(Boolean);
   const sc = v => v > 85 ? "rd" : v > 65 ? "am" : "";
