@@ -226,13 +226,88 @@
       <div class="alm-c">${esc(credit)}, The Birds of America · public domain · sighting via ${b.source && b.source.startsWith("ebird") ? "eBird" : "iNaturalist"}</div>`;
   }
 
+  /* ---------- monkeys in a room with typewriters: endless nonsense, and twice a day a line of Hamlet with one letter wrong ---------- */
+  const HAMLET = [
+    "To be, or not to be, that is the question",
+    "Something is rotten in the state of Denmark",
+    "There are more things in heaven and earth, Horatio, than are dreamt of in your philosophy",
+    "The lady doth protest too much, methinks",
+    "Brevity is the soul of wit",
+    "Though this be madness, yet there is method in't",
+    "Alas, poor Yorick! I knew him, Horatio",
+    "The rest is silence",
+    "Frailty, thy name is woman!",
+    "Neither a borrower nor a lender be",
+    "This above all: to thine own self be true",
+    "Good night, sweet prince, and flights of angels sing thee to thy rest",
+    "There is nothing either good or bad, but thinking makes it so",
+    "The play's the thing wherein I'll catch the conscience of the king",
+    "What a piece of work is a man!",
+    "I must be cruel only to be kind",
+    "Get thee to a nunnery",
+    "O, that this too too solid flesh would melt",
+    "Words, words, words",
+    "The time is out of joint",
+    "I am but mad north-north-west",
+    "Sweets to the sweet: farewell!",
+    "When sorrows come, they come not single spies, but in battalions",
+    "Murder most foul, as in the best it is",
+  ];
+  const KEYS = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,;:'!?-&()      ";
+  const hash = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
+  function hamletTimes() {   // two minutes a day, somewhere between 9 am and 9 pm, the same all day for every screen
+    const t = isoToday(), h = hash("monkeys" + t), a = 540 + h % 360, b = 900 + (h >>> 9) % 360;
+    return [a, b];
+  }
+  function oneWrong(line, seed) {
+    const idx = [...line].map((c, i) => /[a-z]/i.test(c) ? i : -1).filter(i => i >= 0), i = idx[seed % idx.length], c = line[i];
+    let r = c.toLowerCase();
+    while (r === c.toLowerCase()) { seed = Math.imul(seed ^ 0x9e3779b9, 2654435761) >>> 0; r = "abcdefghijklmnopqrstuvwxyz"[seed % 26]; }
+    return line.slice(0, i) + (c === c.toUpperCase() ? r.toUpperCase() : r) + line.slice(i + 1);
+  }
+  const MK = { text: "", line: null, at: 0, misses: 0, timer: null };
+  for (let i = 0; i < 700; i++) MK.text += KEYS[Math.floor(Math.random() * KEYS.length)];
+  function monkeyStats() {
+    const now = new Date(), p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", minute: "numeric", second: "numeric", hourCycle: "h23" }).formatToParts(now)) p[x.type] = +x.value || 0;
+    const secs = p.hour * 3600 + p.minute * 60 + p.second, mins = p.hour * 60 + p.minute;
+    return { keys: Math.floor(secs * 7.3), near: hamletTimes().filter(m => m <= mins).length };
+  }
+  function monkeyFoot() { const s = monkeyStats(); return `Keystrokes today: ${s.keys.toLocaleString("en-US")} · Near misses: ${s.near} · Hamlets completed: 0`; }
+  function monkeyCard() {
+    return `<div class="alm-k">Hamlet Update</div>
+      <div class="alm-t">Monkeys in a Room with Typewriters</div>
+      <div class="typer" id="typer"></div>
+      <div class="alm-c" id="monkfoot">${monkeyFoot()}</div>`;
+  }
+  function monkeyPaint() {
+    const el = $("typer"); if (!el) return;
+    if (MK.line) { const s = Math.max(0, MK.lineStart), e = MK.lineStart + MK.line.length; el.innerHTML = esc(MK.text.slice(0, s)) + `<mark>${esc(MK.text.slice(s, e))}</mark>` + esc(MK.text.slice(e)); }
+    else el.textContent = MK.text;
+    const f = $("monkfoot"); if (f && Math.random() < .1) f.textContent = monkeyFoot();
+  }
+  function monkeyTick() {
+    if (!$("typer")) return;
+    let add = "";
+    if (MK.line && MK.typed < MK.line.length) { add = MK.line[MK.typed++]; }
+    else if (MK.line && MK.hold > 0) { MK.hold--; }
+    else { add = KEYS[Math.floor(Math.random() * KEYS.length)]; if (Math.random() < .3) add += KEYS[Math.floor(Math.random() * KEYS.length)]; }
+    if (add) { MK.text += add; const cut = Math.max(0, MK.text.length - 700); if (cut) { MK.text = MK.text.slice(cut); if (MK.line) MK.lineStart -= cut; } }
+    if (MK.line && MK.lineStart + MK.line.length <= 0) MK.line = null;
+    monkeyPaint();
+  }
+  function monkeyStrike(seed) {   // the moment: type the line (one letter wrong), hold it, then carry on
+    const line = oneWrong(HAMLET[seed % HAMLET.length], seed >>> 3);
+    MK.text += "  "; MK.lineStart = MK.text.length; MK.line = line; MK.typed = 0; MK.hold = 110;
+  }
+  setInterval(monkeyTick, 140);
+
   /* ---------- the Almanac panel ---------- */
-  const CARDS = { moon: moonCard, sky: skyCard, day: dayCard, river: riverCard, meteor: meteorCard, plant: plantCard, bird: birdCard };
+  const CARDS = { moon: moonCard, sky: skyCard, day: dayCard, river: riverCard, meteor: meteorCard, plant: plantCard, bird: birdCard, monkeys: monkeyCard };
   let ci = 0, lastName = null;
   function showCardNow() { if (lastName && $("almbody")) try { $("almbody").innerHTML = CARDS[lastName](); } catch (e) {} }
-  function showCard() {
+  function showCard(force) {
     const box = $("almbody"); if (!box || !A) return;
-    const names = Object.keys(CARDS), pin = Q.get("alm");
+    const names = Object.keys(CARDS), pin = typeof force === "string" ? force : Q.get("alm");
     const name = CARDS[pin] ? pin : names[ci++ % names.length];
     box.classList.add("off");
     setTimeout(() => { lastName = name; try { box.innerHTML = CARDS[name](); box.dataset.card = name; } catch (e) { if (!pin) { box.classList.remove("off"); return showCard(); } } box.classList.remove("off"); }, 700);
@@ -362,5 +437,17 @@
   let lastDay = isoToday();
   setInterval(() => { if (isoToday() !== lastDay) { lastDay = isoToday(); daily(); } renderTide(); }, 5 * 60000);
   setInterval(showCard, 3 * 60000);
+  // the Hamlet moments: bring the monkeys forward and let them strike (?hamlet=1 tries it straight away)
+  let struck = {};
+  function hamletCheck() {
+    const p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", minute: "numeric", hourCycle: "h23" }).formatToParts(new Date())) p[x.type] = +x.value || 0;
+    const mins = p.hour * 60 + p.minute, key = isoToday() + ":" + mins;
+    if ((hamletTimes().includes(mins) || (Q.get("hamlet") && !struck.test)) && !struck[key]) {
+      struck[key] = struck.test = true;
+      if ($("almbody").dataset.card !== "monkeys") showCard("monkeys");
+      setTimeout(() => monkeyStrike(hash(key) + (Q.get("hamlet") ? Date.now() : 0)), 4000);
+    }
+  }
+  setInterval(hamletCheck, 20000); setTimeout(hamletCheck, 3000);
   setTimeout(renderTide, 15000);   // once the encrypted data has loaded
 })();
