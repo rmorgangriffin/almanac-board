@@ -129,15 +129,71 @@
       <div class="alm-c">Johannes Hevelius, Uranographia, 1690 (drawn as on a globe, so mirrored) · public domain</div>`;
   }
 
+
+  /* ---------- the Connecticut River, from the USGS gauge at Holyoke (and the Mill River, which runs through Leeds) ---------- */
+  let RIVER = null, riverAt = 0;
+  async function loadRiver() {
+    if (RIVER && Date.now() - riverAt < 30 * 60000) return RIVER;
+    const r = await fetch("https://waterservices.usgs.gov/nwis/iv/?format=json&sites=01172010,01171500&parameterCd=00060,00065&period=P7D");
+    if (!r.ok) throw new Error("usgs");
+    const d = await r.json(), out = {};
+    for (const t of d.value.timeSeries) {
+      const site = t.sourceInfo.siteCode[0].value, v = t.variable.variableCode[0].value;
+      out[site + ":" + v] = t.values[0].value.filter(x => +x.value > -999).map(x => [Date.parse(x.dateTime), +x.value]);
+    }
+    RIVER = out; riverAt = Date.now(); return out;
+  }
+  function riverCard() {
+    const R = RIVER; if (!R) { loadRiver().then(showCardNow).catch(() => {}); throw new Error("no river yet"); }
+    const q = R["01172010:00060"] || [], h = R["01172010:00065"] || [], mill = R["01171500:00060"] || [];
+    if (!q.length) throw new Error("no flow");
+    const last = q[q.length - 1], dayAgo = q.find(x => x[0] >= last[0] - DAY) || q[0];
+    const ch = (last[1] - dayAgo[1]) / dayAgo[1], trend = ch > .05 ? "rising" : ch < -.05 ? "falling" : "steady";
+    const W = 300, H = 90, P = 6, lo = Math.min(...q.map(x => x[1])), hi = Math.max(...q.map(x => x[1]));
+    const X = t => P + (t - q[0][0]) / (last[0] - q[0][0]) * (W - 2 * P), Y = v => H - 16 - (v - lo) / ((hi - lo) || 1) * (H - 30);
+    const step = Math.max(1, Math.floor(q.length / 120));
+    let d = ""; q.filter((_, i) => i % step === 0 || i === q.length - 1).forEach((x, i) => d += (i ? "L" : "M") + X(x[0]).toFixed(1) + "," + Y(x[1]).toFixed(1));
+    const days = Array.from({ length: 8 }, (_, i) => last[0] - i * DAY).filter(t => t >= q[0][0]).map(t => `<line class="rule" x1="${X(t)}" x2="${X(t)}" y1="6" y2="${H - 16}"/><text x="${X(t)}" y="${H - 5}" text-anchor="middle">${fmt(new Date(t), TZ, { weekday: "narrow" })}</text>`).join("");
+    return `<div class="alm-k">The River</div>
+      <div class="alm-t">The Connecticut at Holyoke</div>
+      <svg class="alm-day" viewBox="0 0 ${W} ${H}" aria-hidden="true"><rect class="ink" x="${P}" y="6" width="${W - 2 * P}" height="${H - 22}" fill="none"/>${days}
+        <path d="${d}L${X(last[0])},${H - 16}L${X(q[0][0])},${H - 16}Z" fill="url(#rhatch)" opacity=".5"/><path d="${d}" class="ink curve" fill="none"/>
+        <defs><pattern id="rhatch" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="3" class="ink"/></pattern></defs>
+        <circle class="hodie" cx="${X(last[0])}" cy="${Y(last[1])}" r="3"/></svg>
+      <div class="alm-s"><b class="num">${Math.round(last[1]).toLocaleString("en-US")}</b> cubic feet a second, ${trend}${h.length ? ` · gauge ${h[h.length - 1][1].toFixed(1)} ft` : ""}</div>
+      <div class="alm-s">Past week: ${Math.round(lo).toLocaleString("en-US")} to ${Math.round(hi).toLocaleString("en-US")} cfs</div>
+      ${mill.length ? `<div class="alm-s">The Mill River at Northampton: ${Math.round(mill[mill.length - 1][1])} cfs</div>` : ""}
+      <div class="alm-c">U.S. Geological Survey gauges 01172010 and 01171500 · provisional data</div>`;
+  }
+
+  /* ---------- shooting stars: the next major meteor shower (peak dates and rates after the IMO calendar) ---------- */
+  const SHOWERS = [["01-03", "Quadrantids", "Boötes", 80, "Jan 3–4"], ["04-22", "Lyrids", "Lyra", 18, "Apr 21–22"], ["05-06", "Eta Aquariids", "Aquarius", 50, "May 5–6"],
+    ["08-12", "Perseids", "Perseus", 100, "Aug 12–13"], ["10-21", "Orionids", "Orion", 20, "Oct 20–21"], ["11-17", "Leonids", "Leo", 15, "Nov 16–17"],
+    ["12-14", "Geminids", "Gemini", 150, "Dec 13–14"], ["12-22", "Ursids", "Ursa Minor", 10, "Dec 21–22"]];
+  function meteorCard() {
+    const t = isoToday(), y = +t.slice(0, 4);
+    const list = SHOWERS.map(s => { let iso = `${y}-${s[0]}`; if (iso < t) iso = `${y + 1}-${s[0]}`; return [iso, ...s.slice(1)]; }).sort((a, b) => a[0] < b[0] ? -1 : 1);
+    const [iso, name, rad, zhr, nights] = list[0], n = daysTo(iso);
+    const lit = Math.round(A.Illumination(A.Body.Moon, new Date(iso + "T08:00:00Z")).phase_fraction * 100);
+    const moon = lit < 25 ? "a dark sky, with little moonlight" : lit < 60 ? `a ${lit}% moon, so some glare` : `a ${lit}% moon washing out the fainter ones`;
+    return `<div class="alm-k">Shooting Stars</div>
+      <img class="plate" src="../img/leonids-1833.jpg" alt="">
+      <div class="alm-t">The ${name}</div>
+      <div class="alm-s">${n === 0 ? "Peak tonight" : n === 1 ? "Peak tomorrow night" : `Peak in ${n} days`}: the nights of ${nights}</div>
+      <div class="alm-s">Up to ${zhr} an hour from ${rad}, under ideal skies · ${moon}</div>
+      <div class="alm-c">The great Leonid storm of 1833, engraving by Adolf Vollmy, 1889 · public domain</div>`;
+  }
+
   /* ---------- the Almanac panel ---------- */
-  const CARDS = { moon: moonCard, sky: skyCard, day: dayCard };
-  let ci = 0;
+  const CARDS = { moon: moonCard, sky: skyCard, day: dayCard, river: riverCard, meteor: meteorCard };
+  let ci = 0, lastName = null;
+  function showCardNow() { if (lastName && $("almbody")) try { $("almbody").innerHTML = CARDS[lastName](); } catch (e) {} }
   function showCard() {
     const box = $("almbody"); if (!box || !A) return;
     const names = Object.keys(CARDS), pin = Q.get("alm");
     const name = CARDS[pin] ? pin : names[ci++ % names.length];
     box.classList.add("off");
-    setTimeout(() => { try { box.innerHTML = CARDS[name](); box.dataset.card = name; } catch (e) {} box.classList.remove("off"); }, 700);
+    setTimeout(() => { lastName = name; try { box.innerHTML = CARDS[name](); box.dataset.card = name; } catch (e) { if (!pin) { box.classList.remove("off"); return showCard(); } } box.classList.remove("off"); }, 700);
   }
 
   /* ---------- a quirky countdown, a different one each day ---------- */
@@ -200,7 +256,7 @@
   }
 
   function daily() { renderOdd(); renderGa(); }
-  daily(); renderTide(); showCard();
+  daily(); renderTide(); loadRiver().catch(() => {}); showCard();
   let lastDay = isoToday();
   setInterval(() => { if (isoToday() !== lastDay) { lastDay = isoToday(); daily(); } renderTide(); }, 5 * 60000);
   setInterval(showCard, 3 * 60000);
