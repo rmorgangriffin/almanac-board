@@ -314,7 +314,17 @@ html[data-look="t-rouge"] .po, html[data-look="t-rouge"] .past, html[data-look="
 .almbody { height: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; gap: .25rem; transition: opacity .7s ease; }
 .almbody.off { opacity: 0; }
 .alm-k { font-family: "IM Fell English", Georgia, serif; font-size: .85rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
-.alm-moon { width: 12.5rem; height: 12.5rem; flex: none; margin: .1rem 0 .2rem; }
+.moonrow { display: flex; align-items: center; gap: 1rem; margin: .35rem 0 .2rem; text-align: left; }
+.moonrow .big { width: 7rem; height: 7rem; flex: none; }
+.alm .ink { stroke: var(--ink-line); stroke-width: .8; }
+.alm-la { font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: .85rem; color: var(--muted); opacity: .8; }
+.mstrip { display: grid; grid-template-columns: repeat(4, 1fr); gap: .35rem .2rem; width: 100%; margin: .3rem 0 .35rem; }
+.mc { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.mc svg { width: 1.9rem; height: 1.9rem; }
+.mc .md { font-family: var(--mono); font-size: .6rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-top: .15rem; }
+.mc .mp { font-family: "IM Fell English", Georgia, serif; font-size: .68rem; color: var(--muted); }
+.mc.on .md, .mc.on .mp { color: var(--amber); }
+.mc.on svg { outline: 1px solid var(--amber); outline-offset: 2px; border-radius: 50%; }
 .alm-day { width: 100%; height: auto; margin: .4rem 0 .5rem; }
 .alm .ink, .alm .ink line { stroke: var(--ink-line); stroke-width: .8; }
 .alm .curve { stroke-width: 1.6; }
@@ -334,7 +344,6 @@ html[data-look="t-rouge"] .po, html[data-look="t-rouge"] .past, html[data-look="
 .side::before { content: ""; position: absolute; inset: 0; background: url(../img/rocque-dublin.jpg) center / cover no-repeat; mix-blend-mode: screen; opacity: .2; pointer-events: none; transition: opacity 1s ease; }
 .po[data-mode="quad"] .side::before { opacity: 0; }
 .dub .gadate { font-family: "IM Fell English", Georgia, serif; font-size: .95rem; color: var(--muted); margin-top: .15rem; }
-.dub .doors { width: 7rem; height: .32rem; margin-top: .55rem; border-radius: 2px; background: linear-gradient(90deg, #8a1f2c 0 25%, #1f5c3c 25% 50%, #2350a8 50% 75%, #d6a52c 75%); }
 .dub .dubx { font-size: .85rem; color: var(--muted); margin-top: .25rem; }
 .tide { display: flex; align-items: center; gap: .6rem; }
 .tide svg { width: 3.4rem; height: 3.4rem; flex: none; }
@@ -399,7 +408,6 @@ html[data-look="t-rouge"] .po, html[data-look="t-rouge"] .past, html[data-look="
           <h2>Po in Dublin</h2>
           <div class="ga">Po i mBaile Átha Cliath</div>
           <div class="gadate" id="gadate"></div>
-          <div class="doors" aria-hidden="true"></div>
         </div>
         <div class="dt num" id="dubtime"></div>
         <div><div class="wnow" id="dubnow"></div><div class="dubx" id="dubx"></div></div>

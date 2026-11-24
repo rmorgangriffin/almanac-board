@@ -21,15 +21,15 @@
 
   /* ---------- the Moon ---------- */
   const FULL_NAMES = ["Wolf", "Snow", "Worm", "Pink", "Flower", "Strawberry", "Buck", "Sturgeon", "Harvest", "Hunter's", "Beaver", "Cold"];
-  function phaseName(a) {
-    if (a < 8 || a > 352) return ["Novilunium", "new moon"];
-    if (a < 84) return ["Luna Crescens", "waxing crescent"];
-    if (a < 96) return ["Luna Dimidiata Crescens", "first quarter"];
-    if (a < 172) return ["Luna Gibbosa Crescens", "waxing gibbous"];
-    if (a < 188) return ["Plenilunium", "full moon"];
-    if (a < 264) return ["Luna Gibbosa Decrescens", "waning gibbous"];
-    if (a < 276) return ["Luna Dimidiata Decrescens", "last quarter"];
-    return ["Luna Decrescens", "waning crescent"];
+  function phaseName(a) {   // [English, short, Latin]
+    if (a < 8 || a > 352) return ["New moon", "New", "Novilunium"];
+    if (a < 84) return ["Waxing crescent", "Young crescent", "Luna crescens"];
+    if (a < 96) return ["First quarter", "First quarter", "Luna dimidiata"];
+    if (a < 172) return ["Waxing gibbous", "Waxing gibbous", "Luna gibbosa"];
+    if (a < 188) return ["Full moon", "Full", "Plenilunium"];
+    if (a < 264) return ["Waning gibbous", "Waning gibbous", "Luna gibbosa"];
+    if (a < 276) return ["Last quarter", "Last quarter", "Luna dimidiata"];
+    return ["Waning crescent", "Old crescent", "Luna decrescens"];
   }
   // The dark part of the disc for a phase angle (0 new, 180 full); lit side on the right while waxing.
   function shadow(theta, cx, cy, r) {
@@ -43,21 +43,21 @@
     const f = A.SearchMoonPhase(180, now, 40).date;
     return { date: f, name: FULL_NAMES[+fmt(f, TZ, { month: "numeric" }) - 1] };
   }
+  const face = (ang, size, cls = "") => `<svg class="${cls}" viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true"><image href="../img/moon-lro.webp" x="2" y="2" width="96" height="96"/><path d="${shadow(ang, 50, 50, 48)}" fill="rgba(12,8,4,.86)"/><circle cx="50" cy="50" r="48.5" fill="none" class="ink"/></svg>`;
   function moonCard() {
     const now = new Date(), ang = A.MoonPhase(now), age = ang / 360 * 29.530588;
     const lit = Math.round(A.Illumination(A.Body.Moon, now).phase_fraction * 100);
-    const [la, en] = phaseName(ang), f = nextFull(now);
-    const ticks = Array.from({ length: 48 }, (_, i) => { const a = i / 48 * Math.PI * 2, r1 = 93, r2 = i % 4 ? 96 : 99; return `<line x1="${100 + Math.cos(a) * r1}" y1="${100 + Math.sin(a) * r1}" x2="${100 + Math.cos(a) * r2}" y2="${100 + Math.sin(a) * r2}"/>`; }).join("");
-    return `<div class="alm-k">Luna</div>
-      <svg class="alm-moon" viewBox="0 0 200 200" aria-hidden="true">
-        <g class="ink" fill="none"><circle cx="100" cy="100" r="99"/><circle cx="100" cy="100" r="93"/>${ticks}</g>
-        <image href="../img/moon-hevelius.webp" x="12" y="12" width="176" height="176"/>
-        <path d="${shadow(ang, 100, 100, 87)}" fill="rgba(16,9,3,.84)"/>
-      </svg>
-      <div class="alm-t">${la}</div>
-      <div class="alm-s">${en} · ${age.toFixed(1)} days old · ${lit}% lit</div>
-      <div class="alm-s">Next full: the ${f.name} Moon, ${dmy(f.date)}, ${hm(f.date)}</div>
-      <div class="alm-c">Moon after Johannes Hevelius, Selenographia, 1647 · public domain</div>`;
+    const [en, , la] = phaseName(ang), f = nextFull(now), nw = A.SearchMoonPhase(0, now, 40).date;
+    const strip = Array.from({ length: 8 }, (_, i) => {
+      const d = new Date(now.getTime() + i * 3.69 * DAY), a = A.MoonPhase(d);
+      return `<div class="mc${i ? "" : " on"}">${face(a, 30)}<div class="md">${i ? fmt(d, TZ, { month: "short", day: "numeric" }) : "Tonight"}</div><div class="mp">${phaseName(a)[1]}</div></div>`;
+    }).join("");
+    return `<div class="alm-k">The Moon</div>
+      <div class="moonrow">${face(ang, 112, "big")}<div class="mtxt"><div class="alm-t">${en}</div><div class="alm-la">${la}</div>
+        <div class="alm-s">${age.toFixed(1)} days old · ${lit}% lit</div></div></div>
+      <div class="mstrip">${strip}</div>
+      <div class="alm-s">Full moon ${dmy(f.date)} (the ${f.name} Moon) · New moon ${dmy(nw)}</div>
+      <div class="alm-c">Lunar Reconnaissance Orbiter photo, NASA · public domain</div>`;
   }
 
   /* ---------- the year's daylight ---------- */
@@ -89,7 +89,7 @@
       const s = Math.round((today.len - yest.len) * 3600), a = Math.abs(s);
       delta = `${Math.floor(a / 60)}m ${a % 60}s ${s < 0 ? "less" : "more"} than yesterday`;
     }
-    return `<div class="alm-k">Dies · Daylight</div>
+    return `<div class="alm-k">Daylight</div>
       <svg class="alm-day" viewBox="0 0 ${W} ${H}" aria-hidden="true">
         <defs><pattern id="hatch" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="3" class="ink"/></pattern></defs>
         <rect class="ink" x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="none"/>
