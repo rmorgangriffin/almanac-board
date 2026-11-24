@@ -211,8 +211,23 @@
       <div class="alm-c">${p[5]} · public domain</div>`;
   }
 
+
+  /* ---------- bird of the day: a recent sighting near Leeds with its Audubon plate (found by the family data job) ---------- */
+  function birdCard() {
+    const b = (typeof DATA !== "undefined" && DATA) ? DATA.bird : null;
+    if (!b || !b.plate) throw new Error("no bird");
+    const seen = b.seen ? fmt(new Date(b.seen + "T12:00:00Z"), TZ, { month: "short", day: "numeric" }) : "";
+    const m = /^(.*?)(?: after)? John James Audubon, (.*?), (\d{4})/.exec(b.plate_title || "");
+    const credit = m ? `${b.plate_title.includes("Havell") ? "Robert Havell after " : ""}John James Audubon, ${m[2]}, ${m[3]}` : (b.plate_title || "Audubon, The Birds of America");
+    return `<div class="alm-k">Bird of the Day</div>
+      <img class="plate" src="${esc(b.plate)}" alt="">
+      <div class="alm-t">${esc(b.common)}</div><div class="alm-la">${esc(b.sci)}</div>
+      <div class="alm-s">Seen near Leeds${seen ? ` on ${seen}` : ""}${b.sightings > 1 ? `, ${b.sightings} times this week` : ""}</div>
+      <div class="alm-c">${esc(credit)}, The Birds of America · public domain · sighting via iNaturalist</div>`;
+  }
+
   /* ---------- the Almanac panel ---------- */
-  const CARDS = { moon: moonCard, sky: skyCard, day: dayCard, river: riverCard, meteor: meteorCard, plant: plantCard };
+  const CARDS = { moon: moonCard, sky: skyCard, day: dayCard, river: riverCard, meteor: meteorCard, plant: plantCard, bird: birdCard };
   let ci = 0, lastName = null;
   function showCardNow() { if (lastName && $("almbody")) try { $("almbody").innerHTML = CARDS[lastName](); } catch (e) {} }
   function showCard() {
