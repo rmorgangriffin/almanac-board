@@ -19,7 +19,8 @@ html { font-size: 16px; }
 html, body { margin: 0; height: 100%; background: #010603; }
 body { font-family: "VT323", monospace; color: var(--g); overflow: hidden; }
 .crt { position: fixed; inset: 0; padding: .45rem 1.2rem .7rem; display: grid; grid-template-rows: auto auto auto auto auto auto minmax(0, 1fr) auto; gap: .5rem; }
-.classified { display: flex; justify-content: space-between; gap: 1rem; background: #2a0505; color: #ff6b61; border: 1px solid #7a1a14; padding: .1rem .6rem; font-size: 1.1rem; letter-spacing: .12em; }
+.access { display: flex; justify-content: space-between; gap: 1rem; background: #03100a; color: var(--gd); border: 1px solid #0f4a25; padding: .1rem .6rem; font-size: 1.1rem; letter-spacing: .12em; }
+.access b { font-weight: normal; color: var(--g); } .access b.no { color: var(--amber); }
 header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--gd); padding-bottom: .3rem; margin-top: -.15rem; }
 header h1 { margin: 0; font-size: 2.6rem; letter-spacing: .06em; font-weight: normal; line-height: 1; }
 header .sub { font-size: 1.15rem; color: var(--gd); }
@@ -90,7 +91,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
 </head>
 <body>
 <div class="crt">
-  <div class="classified" id="classified"></div>
+  <div class="access" id="access"></div>
   <header><div><h1 id="ttl">CONTROL CONSOLE</h1><div class="sub" id="sub"></div></div><div class="clock" id="clock">00:00:00</div></header>
   <div class="consoles" id="consoles"></div>
   <div class="lamps" id="lamps"></div>
@@ -132,7 +133,10 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   const N = D.now || {}, wx = { tempF: null, hum: null, wind: null, dublinC: null };
 
   /* header, consoles, lamps */
-  $("classified").innerHTML = D.strip.map(s => `<span>${esc(s)}</span>`).join("");
+  const AC = D.access;
+  $("access").innerHTML = `<span>${esc(AC.label)} <b id="lvl">${esc(AC.levels[0])}</b></span><span id="acmid"></span><span>${esc(AC.clear)} <b class="no blink">${esc(AC.verdict)}</b></span>`;
+  const setAccess = () => { $("lvl").textContent = pick(AC.levels); $("acmid").textContent = AC.mid.replace("{s}", 7000 + Math.floor(Math.random() * 2999)); };
+  setAccess(); setInterval(setAccess, 9000);
   $("ttl").textContent = D.title; $("sub").textContent = D.subtitle;
   const NB = 120, CLS = ["g", "g", "g", "g", "a", "w", "", "", "", "r"];
   $("consoles").innerHTML = Array.from({ length: NB }, () => `<div class="btn ${pick(CLS)}"></div>`).join("");
@@ -222,7 +226,8 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   if (dinner) msgs.push(...D.dinner.log, ...D.dinner.log);
   function fill(t) { return t.replace("{dublinC}", wx.dublinC == null ? "--" : Math.round(wx.dublinC)).replace("{tempF}", wx.tempF == null ? "--" : Math.round(wx.tempF)).replace("{hum}", wx.hum == null ? "--" : Math.round(wx.hum)).replace("{wind}", wx.wind == null ? "--" : Math.round(wx.wind)).replace("{life}", N.life_open).replace("{mailM}", Math.floor(mail / 1e6) + 1); }
   const lines = [];
-  function addLog(m = pick(msgs)) {
+  function addLog(m) {
+    if (!m) { do { m = pick(msgs); } while (wx.tempF == null && /\{(dublinC|tempF|hum|wind)\}/.test(m[1])); }
     const t = new Date().toLocaleTimeString("en-GB", { timeZone: TZ, hour12: false });
     lines.push(`<div class="${m[0]}">${t} ${m[0] === "rd" ? "**" : ">"} ${esc(fill(m[1])).replace(/█+/g, x => `<span class="redact">${x}</span>`)}</div>`);
     if (lines.length > 40) lines.shift(); $("log").innerHTML = lines.join("");
