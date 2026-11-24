@@ -6,90 +6,95 @@
 <meta name="robots" content="noindex">
 <title>Console</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-/* A 1984 green-phosphor control console. The public page is only the engine and generic labels;
-   every name, joke and log line comes from the encrypted data (reactor/data.enc).
-   Pi-light: no glow, blur or scanlines; a few class flips a second; alerts every couple of minutes.
-   Tests: ?dinner=1 (the 4–6pm feeding cycle), ?alert=1, ?flash=1. */
-:root { --g: #39ff6a; --gd: #1c8a3a; --gk: #0b2a14; --bg: #020a04; --red: #ff3b30; --amber: #ffb000; color-scheme: dark; }
+/* A 1984 green-phosphor control console, laid out after Morgan's mockup. The public page is only the engine;
+   every label, name, joke and log line comes from the encrypted data (reactor/data.enc).
+   Pi-light: no glow, blur or scanlines; a few element updates a second; alerts every couple of minutes.
+   Tests: ?dinner=1 (the 4-6pm feeding cycle), ?overdue=1 (slop dispersal overdue, 6:01pm and 7:01am), ?alert=1 (an alert in 3 seconds), ?flash=1 (the breach flash). */
+:root { --g: #39ff7a; --gd: #1d8c45; --amber: #ffb000; --red: #ff3b30; --panel: #06140b; color-scheme: dark; }
 * { box-sizing: border-box; }
 html { font-size: 16px; }
 @media (min-width: 900px) { html { font-size: calc(100vw / 67.5); } }
-body { margin: 0; height: 100vh; overflow: hidden; background: var(--bg); color: var(--g); font-family: "VT323", "IBM Plex Mono", monospace; letter-spacing: .04em;
-  padding: 1rem 1.1rem; display: grid; grid-template-rows: auto auto auto auto auto minmax(0, 1fr) auto; gap: .7rem; }
-.strip { background: var(--red); color: #fff; text-align: center; font-size: 1.5rem; letter-spacing: .3em; padding: .1rem 0; }
-.hd { display: flex; justify-content: space-between; align-items: end; border-bottom: 2px solid var(--gd); padding-bottom: .4rem; }
-.hd h1 { margin: 0; font-weight: 400; font-size: 2.6rem; line-height: 1; }
-.hd .sub { font-size: 1.35rem; color: var(--gd); }
-.hd .clock { font-size: 2.6rem; text-align: right; line-height: 1; }
-.hd .crew { font-size: 1.05rem; color: var(--gd); text-align: right; }
-.box { border: 2px solid var(--gd); padding: .45rem .6rem; min-width: 0; position: relative; }
-.box > .lb { font-size: 1.05rem; color: var(--gd); margin-bottom: .25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.top { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
-.opt { font-size: 1.3rem; padding: .05rem .4rem; margin: .12rem 0; border: 1px solid var(--gk); color: var(--gd); }
-.opt.on { background: var(--g); color: var(--bg); border-color: var(--g); }
-.big { font-size: 2.4rem; line-height: 1.05; }
-.ohyes { display: flex; align-items: center; justify-content: center; height: 4rem; }
-.ohyes span { font-size: 2.2rem; display: inline-block; animation: swell 2.6s ease-in-out infinite alternate; }
-@keyframes swell { from { transform: scale(.7); } to { transform: scale(1.35); } }
-.sm { font-size: 1.05rem; color: var(--gd); }
-.bar { height: .9rem; border: 1px solid var(--gd); margin-top: .2rem; }
-.bar i { display: block; height: 100%; background: var(--g); transform-origin: 0 50%; transition: transform 1.5s ease; }
-.mid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: .6rem; }
-.gauges .g { display: grid; grid-template-columns: minmax(0, 1fr) 5.5rem; gap: .1rem .6rem; align-items: center; margin: .28rem 0; }
-.gauges .g .t { font-size: 1.12rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gauges .g .v { font-size: 1.12rem; text-align: right; }
-.gauges .g .bar { grid-column: 1 / -1; margin: 0; height: .7rem; }
-.gauges .g .n { grid-column: 1 / -1; font-size: .95rem; color: var(--gd); margin-top: -.05rem; }
-.gauges .g.hot .bar i { background: var(--amber); }
-.btns { display: grid; grid-template-columns: repeat(12, 1fr); gap: .3rem; }
-.btns b { aspect-ratio: 1.5; border: 1px solid var(--gd); background: var(--gk); }
-.btns b.on { background: var(--g); } .btns b.r.on { background: var(--red); border-color: var(--red); } .btns b.a.on { background: var(--amber); border-color: var(--amber); }
-.dials { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .3rem .4rem; }
-.dial { text-align: center; }
-.dial svg { width: 100%; max-width: 8.5rem; height: auto; }
-.dial .face { fill: none; stroke: var(--gd); stroke-width: 2; }
-.dial .tk { stroke: var(--gd); stroke-width: 1.5; }
-.dial .nd { stroke: var(--g); stroke-width: 3; stroke-linecap: round; transform-origin: 50px 50px; transition: transform 1.8s ease; }
-.dial .dv { font-size: 1.3rem; } .dial .dl { font-size: .95rem; color: var(--gd); }
-.lamps { display: grid; grid-template-columns: 1fr auto; gap: .15rem .6rem; font-size: 1.15rem; }
-.lamps .st { color: var(--g); } .lamps .st.w { color: var(--amber); }
-.yn { display: flex; gap: .4rem; margin-top: .3rem; align-items: center; font-size: 1.15rem; }
-.yn .opt { margin: 0; }
-.lower { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .6rem; min-height: 0; }
-.chart svg { width: 100%; height: 7.5rem; display: block; }
-.chart .grid line { stroke: var(--gk); stroke-width: 1; }
-.chart path { fill: none; stroke: var(--g); stroke-width: 2; }
-.log { overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; font-size: 1.22rem; line-height: 1.25; }
-.log div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.log div .ts { color: var(--gd); margin-right: .6rem; }
-.log .x { background: var(--g); color: var(--g); }
-.log .warn { color: var(--amber); } .log .crit { color: var(--red); }
-.foot { display: flex; justify-content: space-between; font-size: 1.05rem; color: var(--gd); border-top: 2px solid var(--gd); padding-top: .3rem; }
-#feed { display: none; background: var(--amber); color: #1a0f00; text-align: center; font-size: 1.9rem; padding: .25rem; letter-spacing: .08em; }
-body.dinner #feed { display: block; animation: blink 1s steps(1) infinite; }
-@keyframes blink { 50% { opacity: .25; } }
-#alert { position: fixed; left: 8%; right: 8%; top: 38%; z-index: 20; border: 4px solid var(--red); background: #1a0000; color: var(--red); text-align: center; padding: 1.4rem 1rem; display: none; }
-#alert.on { display: block; animation: blink 1s steps(1) 6; }
-#alert .k { font-size: 1.4rem; letter-spacing: .3em; } #alert .m { font-size: 2.6rem; line-height: 1.1; margin-top: .4rem; }
-#flash { position: fixed; inset: 0; z-index: 30; background: var(--red); color: #fff; display: none; align-items: center; justify-content: center; text-align: center; font-size: 5rem; line-height: 1.05; padding: 0 1rem; }
-#flash.on { display: flex; animation: blink .5s steps(1) 6; }
-@media (prefers-reduced-motion: reduce) { .ohyes span, body.dinner #feed, #alert.on, #flash.on { animation: none; } }
+html, body { margin: 0; height: 100%; background: #010603; }
+body { font-family: "VT323", monospace; color: var(--g); overflow: hidden; }
+.crt { position: fixed; inset: 0; padding: 1rem 1.2rem; display: grid; grid-template-rows: auto auto auto auto auto auto minmax(0, 1fr) auto; gap: .6rem; }
+.classified { display: flex; justify-content: space-between; gap: 1rem; background: #2a0505; color: #ff6b61; border: 1px solid #7a1a14; padding: .1rem .6rem; font-size: 1.1rem; letter-spacing: .12em; }
+header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--gd); padding-bottom: .35rem; }
+header h1 { margin: 0; font-size: 2.6rem; letter-spacing: .06em; font-weight: normal; line-height: 1; }
+header .sub { font-size: 1.15rem; color: var(--gd); }
+header .clock { font-size: 2.5rem; text-align: right; }
+.consoles { display: grid; grid-template-columns: repeat(24, 1fr); gap: .3rem; }
+.btn { height: 1.35rem; border-radius: 3px; border: 1px solid #0a2a15; background: #08200f; }
+.btn.g { background: #1fd760; } .btn.a { background: #ffb000; } .btn.r { background: #ff3b30; } .btn.w { background: #e8f0ff; }
+.lamps { display: flex; gap: .3rem .9rem; flex-wrap: wrap; align-items: center; font-size: 1.05rem; }
+.lamp { display: flex; align-items: center; gap: .35rem; }
+.lamp i { width: .8rem; height: .8rem; border-radius: 50%; background: var(--g); }
+.lamp i.am { background: var(--amber); } .lamp i.rd { background: var(--red); }
+.blink { animation: bl 1s steps(1) infinite; } @keyframes bl { 50% { opacity: .15; } }
+.feed { display: none; background: #2a1a00; border: 2px solid var(--amber); color: var(--amber); font-size: 1.45rem; text-align: center; padding: .2rem; letter-spacing: .05em; }
+.feed.on { display: block; animation: bl 1.2s steps(1) infinite; }
+.protos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
+.p { border: 1px solid var(--gd); background: var(--panel); padding: .55rem .7rem; position: relative; min-height: 0; overflow: hidden; }
+.p h2 { margin: 0 0 .45rem; font-weight: normal; font-size: 1.3rem; letter-spacing: .08em; border-bottom: 1px dashed var(--gd); padding-bottom: .15rem; display: flex; justify-content: space-between; gap: .5rem; white-space: nowrap; overflow: hidden; }
+.p h2 span { color: var(--gd); font-size: 1rem; }
+.tt { font-size: 2.1rem; padding-top: .3rem; text-align: center; letter-spacing: .1em; color: var(--amber); }
+.binary { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .3rem; }
+.bin { border: 1px solid var(--gd); text-align: center; padding: .3rem .2rem; font-size: 1.15rem; color: var(--gd); }
+.bin.on { background: var(--amber); color: #1a0d00; border-color: var(--amber); }
+.ohyes { height: 4.4rem; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+#ohyes { display: inline-block; white-space: nowrap; transition: transform .9s ease, color .9s; font-size: 2.2rem; }
+.inbox { font-size: 3.1rem; text-align: center; letter-spacing: .04em; color: var(--red); line-height: 1.05; }
+.small2 { font-size: 1rem; color: var(--gd); text-align: center; }
+.grid { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: .7rem; min-height: 0; }
+.row { display: grid; grid-template-columns: 12.5rem 1fr 7rem; align-items: center; gap: .45rem; font-size: 1.15rem; margin: .25rem 0; }
+.row > span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .live { color: #8fd3ff; font-size: .8rem; margin-left: .25rem; }
+.bar { height: .8rem; border: 1px solid var(--gd); position: relative; background: #03100a; }
+.bar b { position: absolute; inset: 0 auto 0 0; width: 100%; background: var(--g); transform-origin: 0 50%; transition: transform 1.5s ease; }
+.bar b.am { background: var(--amber); } .bar b.rd { background: var(--red); }
+.st { text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .st.am { color: var(--amber); } .st.rd { color: var(--red); }
+.sys .row { grid-template-columns: minmax(0, 1fr) 6rem; grid-template-areas: "l s" "b b"; gap: .1rem .4rem; margin: .4rem 0; }
+.sys .row > span:first-child { grid-area: l; } .sys .row .bar { grid-area: b; } .sys .row .st { grid-area: s; }
+.dials { display: grid; grid-template-columns: repeat(3, 1fr); gap: .35rem; text-align: center; font-size: .95rem; }
+.dials .dv { font-size: 1.3rem; }
+.dials .nd { transform-origin: 50px 54px; transition: transform 1.8s ease; }
+.mid .row { grid-template-columns: 9.5rem 1fr 6rem; font-size: 1.05rem; }
+.log { font-family: "Share Tech Mono", monospace; font-size: .92rem; line-height: 1.35; color: #7dffaa; display: flex; flex-direction: column; justify-content: flex-end; height: calc(100% - 2rem); overflow: hidden; }
+.log div { overflow: hidden; }
+.log .am { color: var(--amber); } .log .rd { color: var(--red); }
+.redact { background: #7dffaa; color: #7dffaa; padding: 0 3px; }
+canvas { width: 100%; height: 6.8rem; display: block; }
+footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.05rem; color: var(--gd); border-top: 2px solid var(--gd); padding-top: .35rem; }
+.alert { position: fixed; left: 50%; top: 46%; transform: translate(-50%, -50%); border: 4px solid var(--red); background: #1a0202; color: var(--red); padding: 1.1rem 2rem; font-size: 2.7rem; text-align: center; letter-spacing: .05em; display: none; z-index: 5; max-width: 84vw; }
+.alert small { display: block; font-size: 1.5rem; color: #ffb3ad; margin-top: .35rem; }
+.breach { position: fixed; inset: 0; background: rgba(40, 0, 0, .92); display: none; z-index: 7; align-items: center; justify-content: center; flex-direction: column; color: #ff6b61; text-align: center; padding: 0 1rem; }
+.breach h3 { font-size: 4rem; margin: 0; font-weight: normal; letter-spacing: .08em; line-height: 1.05; }
+.breach p { font-size: 1.75rem; margin: .5rem; }
+@media (prefers-reduced-motion: reduce) { .blink, .feed.on { animation: none; } }
 </style>
 </head>
 <body>
-<div class="strip" id="strip">CLASSIFIED</div>
-<div class="hd"><div><h1 id="ttl">CONTROL CONSOLE</h1><div class="sub" id="sub"></div></div><div><div class="clock" id="clock"></div><div class="crew" id="crew"></div></div></div>
-<div id="feed"></div>
-<div class="top" id="top"></div>
-<div class="mid"><div class="box gauges" id="gauges"><div class="lb">SYSTEM GAUGES</div></div>
-  <div style="display:grid;gap:.6rem;align-content:start"><div class="box"><div class="lb">CONTROL BANK</div><div class="btns" id="btns"></div></div><div class="box"><div class="lb">INSTRUMENTS</div><div class="dials" id="dials"></div></div><div class="box" id="contain"></div></div></div>
-<div class="lower"><div style="display:grid;gap:.6rem;grid-template-rows:auto minmax(0,1fr);min-height:0"><div class="box chart"><div class="lb">ESPRESSO CORE · STRIP CHART</div><svg viewBox="0 0 300 80" preserveAspectRatio="none"><g class="grid" id="cg"></g><path id="cp"/></svg></div><div class="box" id="live"></div></div>
-  <div class="box log" id="log"></div></div>
-<div class="foot"><span id="ft1">CONSOLE READY</span><span id="ft2"></span></div>
-<div id="alert"><div class="k">CRITICAL ALERT</div><div class="m" id="alertm"></div></div>
-<div id="flash"></div>
+<div class="crt">
+  <div class="classified" id="classified"></div>
+  <header><div><h1 id="ttl">CONTROL CONSOLE</h1><div class="sub" id="sub"></div></div><div class="clock" id="clock">00:00:00</div></header>
+  <div class="consoles" id="consoles"></div>
+  <div class="lamps" id="lamps"></div>
+  <div class="feed" id="feed"></div>
+  <div class="protos" id="protos"></div>
+  <div class="grid">
+    <div class="p sys"><h2 id="sysT"></h2><div id="rows"></div></div>
+    <div class="p mid" style="display:grid;grid-template-rows:auto auto 1fr;gap:.35rem">
+      <div><h2 id="chartT"></h2><canvas id="chart" width="600" height="150"></canvas></div>
+      <div class="dials" id="dials"></div>
+      <div id="contain"></div>
+    </div>
+    <div class="p"><h2 id="logT"></h2><div class="log" id="log"></div></div>
+  </div>
+  <footer><span id="f1"></span><span id="ticker"></span><span id="f3"></span></footer>
+</div>
+<div class="alert" id="alert"></div>
+<div class="breach" id="breach"><h3 class="blink" id="br1"></h3><p id="br2"></p><p id="br3" style="font-size:1.4rem;color:#ffb3ad"></p></div>
 <script>
 (async function () {
   const $ = id => document.getElementById(id), Q = new URLSearchParams(location.search), TZ = "America/New_York";
@@ -101,122 +106,147 @@ body.dinner #feed { display: block; animation: blink 1s steps(1) infinite; }
     const { iv, ct } = await r.json();
     return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(iv) }, k, b64(ct))));
   }
-  let D; try { D = await unlock("data.enc"); } catch (e) { $("ft1").textContent = "ACCESS DENIED"; return; }
-  const R = (a, b) => a + Math.random() * (b - a), RI = (a, b) => Math.floor(R(a, b + 1)), pick = a => a[Math.floor(Math.random() * a.length)];
+  let D; try { D = await unlock("data.enc"); } catch (e) { $("ttl").textContent = "ACCESS DENIED"; return; }
+  const rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];
   const esc = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
-  const hour = () => +new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", hourCycle: "h23" }).format(new Date());
-  const dinner = Q.get("dinner") === "1" || (hour() >= 16 && hour() < 18);
-  if (dinner) document.body.classList.add("dinner");
-  $("strip").textContent = D.strip; $("ttl").textContent = D.title; $("sub").textContent = D.subtitle; $("crew").textContent = D.crew;
-  $("feed").textContent = D.dinner.banner;
+  const H = (a) => `${esc(a[0])}${a[1] ? ` <span>${esc(a[1])}</span>` : ""}`;
+  const hm = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date())) hm[x.type] = +x.value;
+  // Feeding cycle: pressure builds 4-6pm; the slop is overdue from 6:01pm (until 7) and from 7:01am (until 8).
+  const overdue = Q.get("overdue") === "1" || ((hm.hour === 18 || hm.hour === 7) && hm.minute >= 1);
+  const dinner = overdue || Q.get("dinner") === "1" || (hm.hour >= 16 && hm.hour < 18);
+  const N = D.now || {}, wx = { tempF: null, hum: null, wind: null, dublinC: null };
 
-  /* top panels */
-  const P = D.panels;
-  $("top").innerHTML = `
-    <div class="box"><div class="lb">${esc(P.table.label)}</div>${P.table.states.map((s, i) => `<div class="opt" data-g="table">${esc(s)}</div>`).join("")}</div>
-    <div class="box"><div class="lb">${esc(P.acoustic.label)}</div>${P.acoustic.options.map(s => `<div class="opt" data-g="ac">${esc(s)}</div>`).join("")}
-      <div class="lb" style="margin-top:.45rem">${esc(P.spirits.label)}</div><div class="yn">${P.spirits.options.map(s => `<div class="opt" data-g="sp">${esc(s)}</div>`).join("")}</div></div>
-    <div class="box"><div class="lb">${esc(P.ohyes.label)}</div><div class="ohyes"><span>${esc(P.ohyes.text)}</span></div></div>
-    <div class="box"><div class="lb">${esc(P.mail.label)}</div><div class="big" id="mail"></div><div class="sm" id="mailp"></div></div>
-    <div class="box" style="grid-column: span 2"><div class="lb">${esc(P.restaurant.label)}</div><div class="big" id="rest"></div><div class="bar"><i id="restb"></i></div></div>`;
-  function light(g) { const els = [...document.querySelectorAll(`[data-g="${g}"]`)]; const on = Math.floor(Math.random() * els.length); els.forEach((e, i) => e.classList.toggle("on", i === on)); }
-  ["table", "ac", "sp"].forEach(light);
-  let mail = P.mail.start + Math.floor((Date.now() / 1000) % 86400) * 3, mail0 = mail;
-  let rest = 104;
+  /* header, consoles, lamps */
+  $("classified").innerHTML = D.strip.map(s => `<span>${esc(s)}</span>`).join("");
+  $("ttl").textContent = D.title; $("sub").textContent = D.subtitle;
+  const NB = 72, CLS = ["g", "g", "g", "g", "a", "w", "", "", "", "r"];
+  $("consoles").innerHTML = Array.from({ length: NB }, () => `<div class="btn ${pick(CLS)}"></div>`).join("");
+  const BTN = [...$("consoles").children];
+  $("lamps").innerHTML = D.lamps.map(n => `<span class="lamp"><i></i>${esc(n)}</span>`).join("");
+  const LAMP = [...$("lamps").querySelectorAll("i")];
+  if (dinner) $("feed").classList.add("on");
 
-  /* gauges */
-  const G = D.gauges.map(g => ({ ...g, cur: R(g.v[0], g.v[1]) }));
-  $("gauges").insertAdjacentHTML("beforeend", G.map((g, i) => `<div class="g" id="g${i}"><div class="t">${esc(g.label)}</div><div class="v"></div><div class="bar"><i></i></div>${g.note ? `<div class="n">${esc(g.note)}</div>` : ""}</div>`).join(""));
-  function drawGauges() {
-    G.forEach((g, i) => {
-      g.cur = Math.max(g.v[0], Math.min(g.v[1], g.cur + R(-4, 4) * (g.v[1] - g.v[0]) / 20));
-      const el = $("g" + i), pct = Math.min(1, g.unit === "%" ? g.cur / 100 : (g.cur - g.v[0]) / ((g.v[1] - g.v[0]) || 1));
-      el.querySelector(".v").textContent = (g.int ? Math.round(g.cur) : Math.round(g.cur)) + g.unit;
-      el.querySelector("i").style.transform = `scaleX(${pct.toFixed(3)})`; el.classList.toggle("hot", pct > .9);
-    });
+  /* the protocol panels */
+  const P = D.protos;
+  $("protos").innerHTML = `
+    <div class="p"><h2>${H(P.table)}</h2><div class="tt" id="ttMode">${esc(P.tableStates[0])}</div></div>
+    <div class="p"><h2>${H(P.acoustic)}</h2><div class="binary"><div class="bin on" id="binA">${esc(P.acousticOpts[0])}</div><div class="bin" id="binB">${esc(P.acousticOpts[1])}</div></div></div>
+    <div class="p"><h2>${H(P.spirits)}</h2><div class="binary"><div class="bin on" id="spT">${esc(P.spiritsOpts[0])}</div><div class="bin" id="spF">${esc(P.spiritsOpts[1])}</div></div></div>
+    <div class="p"><h2>${H(P.ohyes)}</h2><div class="ohyes"><span id="ohyes">${esc(P.ohyesWords[1])}</span></div></div>
+    <div class="p"><h2>${H(P.mail)}</h2><div class="inbox" id="inbox"></div><div class="small2">+<span id="rate">0</span> ${esc(P.mailSince)}</div></div>
+    <div class="p"><h2>${H(P.restaurant)}</h2><div class="row" style="grid-template-columns:1fr 6rem;margin-top:.9rem"><div class="bar" style="height:1.25rem"><b id="restB"></b></div><span class="st" id="restS"></span></div></div>`;
+
+  /* primary systems: private rows plus live ones (live rows without data are left out) */
+  $("sysT").innerHTML = H(D.systems);
+  const LIVE = {
+    claude: () => N.claude_minutes == null ? null : [Math.min(99, N.claude_minutes / 2.4), `${Math.floor(N.claude_minutes / 60)}H ${N.claude_minutes % 60}M TODAY`],
+    life: () => N.life_open == null ? null : [Math.min(99, N.life_open / 1.3), `${N.life_open} OPEN · AS OF ${N.life_as_of || ""}`],
+    grocery: () => N.grocery == null ? null : [Math.min(99, N.grocery * 4), `${N.grocery} ITEMS`],
+  };
+  const rows = D.rows.map(r => { const k = (r[3] || "").startsWith("live:") ? r[3].slice(5) : null; if (k) { const v = LIVE[k] && LIVE[k](); return v ? { l: r[0], v: v[0], s: v[1], live: true } : null; } return { l: r[0], v: r[1], s: r[2], fixed: r[3] === "fixed" }; }).filter(Boolean);
+  const sc = v => v > 85 ? "rd" : v > 65 ? "am" : "";
+  $("rows").innerHTML = rows.map((r, i) => `<div class="row"><span>${esc(r.l)}${r.live ? '<span class="live">◆LIVE</span>' : ""}</span><div class="bar"><b id="rb${i}"></b></div><span class="st" id="rs${i}">${esc(r.s)}</span></div>`).join("");
+  function drawRows() { rows.forEach((r, i) => { if (!r.live && !r.fixed) r.v = Math.max(5, Math.min(99, r.v + rnd(-4, 4))); const c = sc(r.v); $("rb" + i).className = c; $("rb" + i).style.transform = `scaleX(${(r.v / 100).toFixed(3)})`; $("rs" + i).className = "st " + c; }); }
+
+  /* espresso core strip chart (canvas, redrawn once a second) */
+  $("chartT").innerHTML = H(D.chart);
+  const cx = $("chart").getContext("2d"); let pts = Array(120).fill(90);
+  function drawChart() {
+    pts.shift(); let n = pts[pts.length - 1] + rnd(-3, 3); if (Math.random() < .05) n = 93 + Math.random() * 4; pts.push(Math.max(60, Math.min(100, n)));
+    cx.fillStyle = "#03100a"; cx.fillRect(0, 0, 600, 150); cx.strokeStyle = "#0f4a25"; cx.lineWidth = 1;
+    for (let y = 0; y < 150; y += 30) { cx.beginPath(); cx.moveTo(0, y); cx.lineTo(600, y); cx.stroke(); } for (let x = 0; x < 600; x += 50) { cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, 150); cx.stroke(); }
+    const yy = p => 150 - (p - 60) * 3.75; cx.strokeStyle = "#ff3b30"; cx.setLineDash([6, 6]); cx.beginPath(); cx.moveTo(0, yy(96)); cx.lineTo(600, yy(96)); cx.stroke(); cx.setLineDash([]);
+    cx.strokeStyle = "#39ff7a"; cx.lineWidth = 2; cx.beginPath(); pts.forEach((p, i) => i ? cx.lineTo(i * 5, yy(p)) : cx.moveTo(0, yy(p))); cx.stroke();
+    cx.fillStyle = "#39ff7a"; cx.font = "20px VT323"; cx.fillText(D.chart[2].replace("{t}", pts[pts.length - 1].toFixed(1)), 8, 20);
   }
 
-  /* button wall */
-  $("btns").innerHTML = Array.from({ length: 48 }, (_, i) => `<b class="${i % 11 === 3 ? "r" : i % 7 === 2 ? "a" : ""}"></b>`).join("");
-  const B = [...$("btns").children];
-
-  /* dials: the private ones plus live weather */
-  const dials = D.dials.map(d => ({ ...d, cur: R(d.v[0], d.v[1]) }));
-  const wx = { t: null, h: null, w: null, dt: null };
-  function dialSVG(i) { const tk = Array.from({ length: 11 }, (_, k) => { const a = (-120 + k * 24) * Math.PI / 180; return `<line class="tk" x1="${50 + Math.sin(a) * 38}" y1="${50 - Math.cos(a) * 38}" x2="${50 + Math.sin(a) * 44}" y2="${50 - Math.cos(a) * 44}"/>`; }).join("");
-    return `<div class="dial"><svg viewBox="0 0 100 70"><path class="face" d="M12,62 A44,44 0 1,1 88,62"/>${tk}<line class="nd" id="nd${i}" x1="50" y1="50" x2="50" y2="14"/></svg><div class="dv" id="dv${i}"></div><div class="dl" id="dl${i}"></div></div>`; }
-  $("dials").innerHTML = [0, 1, 2, 3].map(dialSVG).join("");
-  function setDial(i, label, val, txt, lo, hi) { $("dl" + i).textContent = label; $("dv" + i).textContent = txt; const f = Math.max(0, Math.min(1, (val - lo) / ((hi - lo) || 1))); $("nd" + i).style.transform = `rotate(${(-120 + f * 240).toFixed(1)}deg)`; }
+  /* dials */
+  const dv = { nap: 64, tabs: 47 };
+  const DV = { nap: () => [dv.nap, Math.round(dv.nap) + "%"], tabs: () => [dv.tabs, Math.round(dv.tabs) + ""],
+    temp: () => wx.tempF == null ? [0, "--"] : [wx.tempF, Math.round(wx.tempF) + "°F"], hum: () => wx.hum == null ? [0, "--"] : [wx.hum, Math.round(wx.hum) + "%"],
+    wind: () => wx.wind == null ? [0, "--"] : [wx.wind * 4, Math.round(wx.wind) + " MPH"], dublin: () => wx.dublinC == null ? [0, "--"] : [wx.dublinC * 4, Math.round(wx.dublinC) + "°C"] };
+  $("dials").innerHTML = D.dials.map((d, i) => `<div><svg viewBox="0 0 100 58" width="100%"><path d="M10,54 A40,40 0 0 1 90,54" fill="none" stroke="#1d8c45" stroke-width="3"/><path d="M74,22 A40,40 0 0 1 90,54" fill="none" stroke="#ff3b30" stroke-width="3"/><line class="nd" id="nd${i}" x1="50" y1="54" x2="12" y2="54" stroke="#39ff7a" stroke-width="2.5"/><circle cx="50" cy="54" r="3" fill="#39ff7a"/></svg><div>${esc(d[0])}</div><div class="dv" id="dv${i}"></div></div>`).join("");
   function drawDials() {
-    dials.forEach((d, i) => { d.cur = Math.max(d.v[0], Math.min(d.v[1], d.cur + R(-.08, .08) * (d.v[1] - d.v[0]))); setDial(i, d.label, d.cur, Math.round(d.cur) + d.unit, d.v[0], d.v[1]); });
-    if (wx.w != null) setDial(2, "LEEDS WIND", wx.w + R(-1, 1), `${Math.round(wx.w)} MPH`, 0, 40);
-    if (wx.h != null) setDial(3, "LEEDS HUMIDITY", wx.h, `${Math.round(wx.h)}%`, 0, 100);
+    dv.nap = Math.max(5, Math.min(99, dv.nap + rnd(-5, 5))); dv.tabs = Math.max(10, Math.min(99, dv.tabs + rnd(-2, 4)));
+    D.dials.forEach((d, i) => { const [v, t] = (DV[d[1]] || (() => [0, "--"]))(); $("nd" + i).style.transform = `rotate(${(Math.min(100, Math.max(0, v)) * 1.8).toFixed(1)}deg)`; $("dv" + i).textContent = t; });
   }
 
   /* containment */
   const C = D.containment;
-  $("contain").innerHTML = `<div class="lb">${esc(C.label)}</div><div class="lamps">${C.rows.map(r => `<span>${esc(r[0])} ${esc(r[1])}</span><span class="st${r[2] === "ELEVATED" ? " w" : ""}">${esc(r[2])}</span>`).join("")}
-    <span>${esc(C.psi)}</span><span class="st" id="psi"></span></div><div class="yn"><span>${esc(C.nims)}</span><div class="opt" data-g="nims">YES</div><div class="opt" data-g="nims">NO</div></div>`;
-  light("nims");
+  $("contain").innerHTML = `<h2>${H(C.title)}</h2>
+    <div class="row"><span>${esc(C.hostility[0])}</span><div class="bar"><b id="hostB" class="am" style="transform:scaleX(.74)"></b></div><span class="st am" id="hostS">${esc(C.hostility[1])}</span></div>
+    ${C.rows.map(r => `<div class="row"><span>${esc(r[0])}</span><div class="bar"><b style="transform:scaleX(${r[1] / 100})"></b></div><span class="st">${esc(r[2])}</span></div>`).join("")}
+    <div class="row"><span>${esc(C.nimona[0])}</span><div class="bar"><b style="transform:scaleX(.15)"></b></div><span class="st" id="nimS">${esc(C.nimona[1])}</span></div>
+    <div class="row" style="grid-template-columns:9.5rem 1fr 1fr"><span>${esc(C.nims)}</span><div class="bin" id="nimY">YES</div><div class="bin on" id="nimN">NO</div></div>
+    <div class="row"><span>${esc(C.bark[0])}</span><div class="bar"><b id="barkB"></b></div><span class="st" id="barkS">${esc(C.bark[1])}</span></div>`;
 
-  /* live panel: real numbers */
-  function drawLive() {
-    const L = D.live, n = D.now || {};
-    $("live").innerHTML = `<div class="lb">LIVE TELEMETRY</div><div class="lamps">
-      <span>${esc(L.claude)}</span><span class="st">${n.claude_minutes != null ? `${Math.floor(n.claude_minutes / 60)}H ${n.claude_minutes % 60}M` : "--"}</span>
-      <span>${esc(L.home)} TEMP</span><span class="st">${wx.t != null ? Math.round(wx.t) + "°F" : "--"}</span>
-      <span>${esc(L.home)} HUMIDITY · WIND</span><span class="st">${wx.h != null ? `${Math.round(wx.h)}% · ${Math.round(wx.w)} MPH` : "--"}</span>
-      <span>${esc(L.dublin)}</span><span class="st">${wx.dt != null ? Math.round(wx.dt) + "°F" : "--"}</span></div>
-      <div class="sm" style="margin-top:.3rem">TELEMETRY AS OF ${esc((n.as_of || "").toUpperCase())}</div>`;
-  }
+  /* weather: Leeds post office and Dublin */
   async function loadWx() {
     try {
       const a = await (await fetch("https://api.open-meteo.com/v1/forecast?latitude=42.355&longitude=-72.703&current=temperature_2m,relative_humidity_2m,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph")).json();
-      wx.t = a.current.temperature_2m; wx.h = a.current.relative_humidity_2m; wx.w = a.current.wind_speed_10m;
-      const b = await (await fetch("https://api.open-meteo.com/v1/forecast?latitude=53.349&longitude=-6.261&current=temperature_2m&temperature_unit=fahrenheit")).json();
-      wx.dt = b.current.temperature_2m;
+      wx.tempF = a.current.temperature_2m; wx.hum = a.current.relative_humidity_2m; wx.wind = a.current.wind_speed_10m;
+      const b = await (await fetch("https://api.open-meteo.com/v1/forecast?latitude=53.349&longitude=-6.261&current=temperature_2m")).json();
+      wx.dublinC = b.current.temperature_2m;
     } catch (e) {}
-    drawLive();
+    drawDials();
   }
-
-  /* espresso core strip chart */
-  $("cg").innerHTML = [16, 32, 48, 64].map(y => `<line x1="0" x2="300" y1="${y}" y2="${y}"/>`).join("") + Array.from({ length: 9 }, (_, i) => `<line y1="0" y2="80" x1="${i * 37.5}" x2="${i * 37.5}"/>`).join("");
-  const pts = Array.from({ length: 60 }, () => 40); let lvl = 40;
-  function drawChart() { lvl = Math.max(6, Math.min(74, lvl + R(-9, 9) + (Math.random() < .06 ? R(-25, 25) : 0))); pts.push(lvl); pts.shift(); $("cp").setAttribute("d", pts.map((v, i) => `${i ? "L" : "M"}${(i * 300 / 59).toFixed(1)},${(80 - v).toFixed(1)}`).join("")); }
 
   /* event log */
-  const logLines = [...D.log, ...(dinner ? [...D.dinner.log, ...D.dinner.log] : [])];
-  function addLog(text, cls = "") {
-    const t = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date());
-    const body = esc(text.replace("{n}", RI(3, 41))).replace(/█+/g, m => `<span class="x">${m}</span>`);
-    const d = document.createElement("div"); d.className = cls; d.innerHTML = `<span class="ts">${t}</span>${body}`;
-    $("log").appendChild(d); while ($("log").children.length > 30) $("log").firstChild.remove();
+  $("logT").innerHTML = H(D.logTitle);
+  let mail = P.mailStart, seen = 0;
+  const msgs = D.log.filter(m => !m[2] || (m[2] === "life" && N.life_open != null));
+  if (dinner) msgs.push(...D.dinner.log, ...D.dinner.log);
+  function fill(t) { return t.replace("{dublinC}", wx.dublinC == null ? "--" : Math.round(wx.dublinC)).replace("{tempF}", wx.tempF == null ? "--" : Math.round(wx.tempF)).replace("{hum}", wx.hum == null ? "--" : Math.round(wx.hum)).replace("{wind}", wx.wind == null ? "--" : Math.round(wx.wind)).replace("{life}", N.life_open).replace("{mailM}", Math.floor(mail / 1e6) + 1); }
+  const lines = [];
+  function addLog(m = pick(msgs)) {
+    const t = new Date().toLocaleTimeString("en-GB", { timeZone: TZ, hour12: false });
+    lines.push(`<div class="${m[0]}">${t} ${m[0] === "rd" ? "**" : ">"} ${esc(fill(m[1])).replace(/█+/g, x => `<span class="redact">${x}</span>`)}</div>`);
+    if (lines.length > 30) lines.shift(); $("log").innerHTML = lines.join("");
   }
-  for (let i = 0; i < 12; i++) addLog(pick(logLines));
 
-  /* alerts: rare on the wall (every couple of minutes while showing), the full-screen flash at most once */
-  function alert(msg) { $("alertm").textContent = msg; $("alert").classList.add("on"); addLog("CRITICAL: " + msg, "crit"); setTimeout(() => $("alert").classList.remove("on"), 7000); }
-  function flash() { $("flash").textContent = D.flash; $("flash").classList.add("on"); setTimeout(() => $("flash").classList.remove("on"), 3200); }
-  const alertPool = [...D.alerts, ...(dinner ? D.dinner.alerts : [])];
-  setTimeout(() => alert(dinner ? pick(D.dinner.alerts) : pick(alertPool)), Q.get("alert") ? 2500 : R(40, 75) * 1000);
-  setInterval(() => alert(pick(alertPool)), R(110, 150) * 1000);
-  if (Q.get("flash") || Math.random() < .35) setTimeout(flash, Q.get("flash") ? 4000 : R(60, 170) * 1000);
+  /* critical alerts and the breach flash: rare on the wall */
+  const crit = [...D.crit]; if (overdue) crit.unshift(D.dinner.crit);
+  let ci = 0;
+  function critical() {
+    const c = crit[ci++ % crit.length], a = $("alert");
+    a.innerHTML = `⚠ ${esc(c[0])} ⚠<small>${esc(c[1])}</small>`; a.style.display = "block"; a.classList.add("blink");
+    $("ticker").textContent = "!! " + c[0] + " !!"; $("ticker").style.color = "#ff3b30"; addLog(["rd", c[0] + " · " + c[1]]);
+    if (c[2] === "hostile") { $("hostS").textContent = C.hostility[2]; $("hostS").className = "st rd"; $("hostB").className = "rd"; $("hostB").style.transform = "scaleX(.97)"; $("nimS").textContent = C.nimona[2]; }
+    setTimeout(() => { a.style.display = "none"; a.classList.remove("blink"); $("ticker").textContent = D.footer[3]; $("ticker").style.color = "";
+      $("hostS").textContent = C.hostility[1]; $("hostS").className = "st am"; $("hostB").className = "am"; $("hostB").style.transform = "scaleX(.74)"; $("nimS").textContent = C.nimona[1]; }, 6000);
+  }
+  function breach() { $("br1").textContent = D.breach[0]; $("br2").textContent = D.breach[1]; $("br3").textContent = D.breach[2]; $("breach").style.display = "flex"; setTimeout(() => $("breach").style.display = "none", 3500); }
+  setTimeout(critical, Q.get("alert") ? 3000 : rnd(35, 70) * 1000); setInterval(critical, rnd(110, 150) * 1000);
+  if (Q.get("flash") || Math.random() < .35) setTimeout(breach, Q.get("flash") ? 4000 : rnd(70, 180) * 1000);
 
-  /* clocks and loops: a handful of DOM updates a second */
+  /* footer */
+  $("f1").textContent = D.footer[0]; $("ticker").textContent = D.footer[1];
+
+  /* the loops, a handful of element updates a second */
   function tick() {
-    $("clock").textContent = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date());
-    mail += RI(1, 9); $("mail").textContent = mail.toLocaleString("en-US"); $("mailp").textContent = `+${(mail - mail0).toLocaleString("en-US")} SINCE YOU STARTED LOOKING`;
-    rest = rest > 9000 ? 104 : rest * R(1.05, 1.35); $("rest").textContent = rest > 5000 ? "∞" : Math.round(rest).toLocaleString("en-US") + "%"; $("restb").style.transform = `scaleX(${Math.min(1, rest / 1000).toFixed(3)})`;
-    $("psi").textContent = `${RI(18, 140)} PSI`;
-    $("ft2").textContent = `CORE ${RI(96, 104)}% · LOOP ${RI(1, 4)} · ${new Date().getUTCMilliseconds() % 2 ? "▮" : "▯"}`;
+    $("clock").textContent = new Date().toLocaleTimeString("en-GB", { timeZone: TZ, hour12: false });
+    $("f3").textContent = D.footer[2].replace("{gw}", (1.1 + Math.random() * .2).toFixed(2));
+    const d = 1 + Math.floor(Math.random() * 4); mail += d; seen += d; $("inbox").textContent = mail.toLocaleString("en-US"); $("rate").textContent = seen.toLocaleString("en-US");
+    if (dinner) $("feed").textContent = D.feed.replace("{db}", 70 + Math.floor(Math.random() * 30));
   }
-  setInterval(() => { for (let k = 0; k < 4; k++) pick(B).classList.toggle("on"); }, 450);
-  setInterval(tick, 1000); setInterval(drawChart, 1000);
-  setInterval(() => { drawGauges(); drawDials(); }, 3000);
-  setInterval(() => addLog(pick(logLines), Math.random() < .12 ? "warn" : ""), 3200);
-  setInterval(() => light(pick(["table", "ac", "sp", "nims"])), 5000);
-  $("ft1").textContent = "CONSOLE ONLINE · ALL SECTORS REPORTING";
-  tick(); drawChart(); drawGauges(); drawDials(); drawLive(); loadWx();
+  let rest = 40;
+  function restTick() { rest = rest < 100 ? rest + 7 + Math.random() * 9 : rest * (1.25 + Math.random() * .5); if (rest > 99999) rest = 37;
+    const c = rest > 100 ? "rd" : rest > 70 ? "am" : ""; $("restB").style.transform = `scaleX(${Math.min(1, rest / 100).toFixed(3)})`; $("restB").className = c; $("restS").textContent = rest > 9999 ? "∞" : Math.round(rest).toLocaleString("en-US") + "%"; $("restS").className = "st " + c; }
+  function ohTick() { const s = .45 + Math.random() * 1.6, e = $("ohyes"); e.style.transform = `scale(${s.toFixed(2)})`; e.textContent = s > 1.45 ? P.ohyesWords[2] : s > .85 ? P.ohyesWords[1] : P.ohyesWords[0]; e.style.color = s > 1.45 ? "#ffb000" : "#39ff7a"; }
+  function flips() {
+    const a = Math.random() < .5; $("binA").className = "bin" + (a ? " on" : ""); $("binB").className = "bin" + (a ? "" : " on");
+    const t = Math.random() < .5; $("spT").className = "bin" + (t ? " on" : ""); $("spF").className = "bin" + (t ? "" : " on");
+    const y = Math.random() < .35; $("nimY").className = "bin" + (y ? " on" : ""); $("nimN").className = "bin" + (y ? "" : " on");
+  }
+  function bark() { const v = Math.random(); $("barkB").style.transform = `scaleX(${(.15 + v * .8).toFixed(2)})`; $("barkB").className = v > .75 ? "am" : ""; $("barkS").textContent = v > .75 ? C.bark[2] : C.bark[1]; $("barkS").className = "st" + (v > .75 ? " am" : ""); }
+  setInterval(() => { for (let k = 0; k < 4; k++) pick(BTN).className = "btn " + pick(CLS); }, 300);
+  setInterval(() => { const r = Math.random(); pick(LAMP).className = r < .1 ? "am blink" : r < .14 ? "rd blink" : ""; }, 900);
+  setInterval(tick, 1000); setInterval(drawChart, 1000); setInterval(restTick, 2000); setInterval(ohTick, 1800);
+  setInterval(() => { drawRows(); drawDials(); }, 3000); setInterval(flips, 3500); setInterval(bark, 4000);
+  setInterval(() => { const s = pick(P.tableStates); $("ttMode").textContent = s; $("ttMode").style.color = s === "STANDBY" || s === "CONCLUDED" ? "#1d8c45" : "#ffb000"; }, 7000);
+  setInterval(() => addLog(), 2400);
+  for (let i = 0; i < 12; i++) addLog();
+  tick(); drawChart(); drawRows(); restTick(); ohTick(); bark(); loadWx();
 })();
 </script>
 </body>
