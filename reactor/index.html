@@ -159,7 +159,6 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   $("sysT").innerHTML = H(D.systems);
   const LIVE = {
     claude: () => N.claude_minutes == null ? null : [Math.min(99, N.claude_minutes / 2.4), `${Math.floor(N.claude_minutes / 60)}H ${N.claude_minutes % 60}M TODAY`],
-    life: () => N.life_open == null ? null : [Math.min(99, N.life_open / 1.3), `${N.life_open} OPEN · AS OF ${N.life_as_of || ""}`],
     grocery: () => N.grocery == null ? null : [Math.min(99, N.grocery * 4), `${N.grocery} ITEMS`],
   };
   const rows = D.rows.map(r => { const k = (r[3] || "").startsWith("live:") ? r[3].slice(5) : null; if (k) { const v = LIVE[k] && LIVE[k](); return v ? { l: r[0], v: v[0], s: v[1], live: true } : null; } return { l: r[0], v: r[1], s: r[2], fixed: r[3] === "fixed" }; }).filter(Boolean);
@@ -221,11 +220,11 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   /* event log */
   $("logT").innerHTML = H(D.logTitle);
   let mail = P.mailStart, seen = 0;
-  const msgs = D.log.filter(m => !m[2] || (m[2] === "life" && N.life_open != null));
+  const msgs = D.log.filter(m => !m[2]);
   if (dinner) msgs.push(...D.dinner.log);
   let deck = [];
   const draw = () => { if (!deck.length) deck = msgs.map(m => [Math.random(), m]).sort((a, b) => a[0] - b[0]).map(x => x[1]); return deck.pop(); };
-  function fill(t) { return t.replace("{dublinC}", wx.dublinC == null ? "--" : Math.round(wx.dublinC)).replace("{tempF}", wx.tempF == null ? "--" : Math.round(wx.tempF)).replace("{hum}", wx.hum == null ? "--" : Math.round(wx.hum)).replace("{wind}", wx.wind == null ? "--" : Math.round(wx.wind)).replace("{life}", N.life_open).replace("{mailM}", Math.floor(mail / 1e6) + 1); }
+  function fill(t) { return t.replace("{dublinC}", wx.dublinC == null ? "--" : Math.round(wx.dublinC)).replace("{tempF}", wx.tempF == null ? "--" : Math.round(wx.tempF)).replace("{hum}", wx.hum == null ? "--" : Math.round(wx.hum)).replace("{wind}", wx.wind == null ? "--" : Math.round(wx.wind)).replace("{mailM}", Math.floor(mail / 1e6) + 1); }
   const lines = [];
   function addLog(m) {
     if (!m) { for (let k = 0; k < 5; k++) { m = draw(); if (!(wx.tempF == null && /\{(dublinC|tempF|hum|wind)\}/.test(m[1]))) break; } }
