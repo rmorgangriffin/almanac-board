@@ -432,6 +432,7 @@ html[data-look="volt"] .work li.past, html[data-look="rouge"] .work li.past { op
   </section>
 </div>
 
+<script src="atari.js"></script>
 <script>
 const TZ = "America/New_York", DUB = "Europe/Dublin";
 const HOME = { lat: 42.355, lon: -72.703 }, DUBLIN = { lat: 53.3494, lon: -6.2606 };
@@ -690,7 +691,7 @@ function applyLook() {
 }
 applyLook(); setInterval(applyLook, 60000);
 
-/* ---------- arcade: computer plays Pong, a cowboy duel, and a text adventure in turn ---------- */
+/* ---------- arcade: computer plays Pong, a cowboy duel, and one of the Atari-style games (atari.js) in turn ---------- */
 (function arcade() {
   const c = $("game"), x = c.getContext("2d"), W = 160, H = 90;
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -699,11 +700,14 @@ applyLook(); setInterval(applyLook, 60000);
 
   function startPong() { st = { bx: W / 2, by: H / 2, vx: (Math.random() < .5 ? -1 : 1) * 2.9, vy: rnd(-1.6, 1.6), p: [H / 2, H / 2], miss: [0, 0] }; }
   function startDuel() { st = { y: [30, 60], vy: [.5, -.5], shots: [], cool: [rnd(40, 90), rnd(40, 90)], cactus: rnd(28, 62), wag: [0, 0] }; }
-  const NAMES = ["Pong", "Showdown", "Adventure"], LENGTH = [180000, 180000, 300000];
+  const NAMES = ["Pong", "Showdown", "Atari"], LENGTH = [180000, 180000, 300000];
+  const GAMES = window.ATARI || [], C = k => k === "bg" ? (css("--gamebg") || "#070a16") : css("--" + k);
+  let gi = +(new URLSearchParams(location.search).get("atari") || Math.floor(Math.random() * 99)), game = null;
   function begin() {
     score = [0, 0]; $("gname").textContent = NAMES[mode];
-    const text = mode === 2; c.hidden = text; $("ifbox").hidden = !text;
-    if (typeof ADV !== "undefined") { if (text) ADV.start(); else ADV.stop(); }
+    c.hidden = false; $("ifbox").hidden = true;
+    if (typeof ADV !== "undefined") ADV.stop();
+    if (mode === 2) { if (!GAMES.length) { mode = 0; return begin(); } game = GAMES[gi++ % GAMES.length]; st = game.init(); $("gname").textContent = game.name; }
     if (mode === 0) startPong(); else if (mode === 1) startDuel();
   }
 
@@ -878,8 +882,11 @@ applyLook(); setInterval(applyLook, 60000);
       if (mode < 2) {
         for (let k = 1; k <= steps; k++) mode ? duel(k === steps) : pong(k === steps);
         $("gscore").textContent = `${score[0]} · ${score[1]}`;
+      } else if (game) {
+        for (let k = 0; k < steps; k++) game.step(st);
+        game.draw(x, st, C); $("gscore").textContent = game.score(st);
       }
-      if (Date.now() > swapAt || (mode < 2 && Math.max(...score) >= 11)) { mode = (mode + 1) % 3; begin(); swapAt = Date.now() + LENGTH[mode]; }
+      if (Date.now() > swapAt || (mode < 2 && Math.max(...score) >= 11) || (mode === 2 && game && game.over(st))) { mode = (mode + 1) % 3; begin(); swapAt = Date.now() + LENGTH[mode]; }
     }
     requestAnimationFrame(frame);
   }
