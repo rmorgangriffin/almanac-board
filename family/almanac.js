@@ -172,7 +172,7 @@
     const line = pts => pts.map((x, i) => (i ? "L" : "M") + X(x[0]).toFixed(1) + "," + Y(x[1]).toFixed(1)).join("");
     const bandD = band.length ? band.map((b, i) => (i ? "L" : "M") + X(b[0]).toFixed(1) + "," + Y(b[3]).toFixed(1)).join("") + [...band].reverse().map(b => "L" + X(b[0]).toFixed(1) + "," + Y(b[1]).toFixed(1)).join("") + "Z" : "";
     const med = band.length ? line(band.map(b => [b[0], b[2]])) : "";
-    const ticks = [0, 7, 14, 21, 28].map(k => last[0] - k * DAY).filter(ts => ts >= start).map(ts => `<line class="rule" x1="${X(ts)}" x2="${X(ts)}" y1="${top}" y2="${bot}"/><text x="${X(ts)}" y="${H - 5}" text-anchor="middle">${fmt(new Date(ts), TZ, { month: "short", day: "numeric" })}</text>`).join("");
+    const ticks = [0, 7, 14, 21, 28].map(k => last[0] - k * DAY).filter(ts => ts >= start).map(ts => `<line class="rule" x1="${X(ts)}" x2="${X(ts)}" y1="${top}" y2="${bot}"/><text x="${X(ts)}" y="${H - 5}" text-anchor="${ts === last[0] ? "end" : "middle"}">${ts === last[0] ? "today" : fmt(new Date(ts), TZ, { month: "short", day: "numeric" })}</text>`).join("");
     const nToday = R.norm && R.norm[md(last[0])];
     const vsNormal = nToday ? (last[1] < nToday[0] ? `below normal for late ${fmt(new Date(last[0]), TZ, { month: "long" })} (usually ${Math.round(nToday[1]).toLocaleString("en-US")})` : last[1] > nToday[2] ? `above normal for the time of year (usually ${Math.round(nToday[1]).toLocaleString("en-US")})` : "about normal for the time of year") : "";
     return `<div class="alm-k">The River</div>
