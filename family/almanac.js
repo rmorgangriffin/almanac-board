@@ -222,8 +222,8 @@
     return `<div class="alm-k">Bird of the Day</div>
       <img class="plate" src="${esc(b.plate)}" alt="">
       <div class="alm-t">${esc(b.common)}</div><div class="alm-la">${esc(b.sci)}</div>
-      <div class="alm-s">Seen near Leeds${seen ? ` on ${seen}` : ""}${b.sightings > 1 ? `, ${b.sightings} times this week` : ""}</div>
-      <div class="alm-c">${esc(credit)}, The Birds of America · public domain · sighting via iNaturalist</div>`;
+      <div class="alm-s">${b.source === "ebird-notable" ? "A notable sighting" : "Seen"} near Leeds${seen ? ` on ${seen}` : ""}${b.sightings > 1 ? `, ${b.sightings} reports this week` : ""}</div>
+      <div class="alm-c">${esc(credit)}, The Birds of America · public domain · sighting via ${b.source && b.source.startsWith("ebird") ? "eBird" : "iNaturalist"}</div>`;
   }
 
   /* ---------- the Almanac panel ---------- */

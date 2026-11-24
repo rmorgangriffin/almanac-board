@@ -294,20 +294,16 @@ html.snowtest .drift { transition: none; }
 @keyframes peep { to { transform: rotate(-25deg); } }
 @media (prefers-reduced-motion: reduce) { .drift, #cuckoo .bird { transition: none; } .photo .drop { animation: none; } }
 
-/* Bolder trials (preview only) */
-html[data-look="t-volt"] { --ink: #04082e; --panel: #0f2db8; --line: #3352d6; --fg: #ffffff; --muted: #c3cdff; --amber: #ffc15e; --sage: #9effc0; --lilac: #e6d4ff; --rose: #ffb8c8; --display: "Archivo Black", Impact, sans-serif; --gamebg: #020520; }
-html[data-look="t-volt"] .fc, html[data-look="t-volt"] .work { --panel: #ff8a1f; --line: #d96c08; --fg: #1a0a00; --muted: #4a2400; --amber: #1a0a00; --sage: #4a2400; --lilac: #4a2400; }
-html[data-look="t-volt"] .po, html[data-look="t-volt"] .past, html[data-look="t-volt"] .alm { --panel: #0a1450; --line: #1e2c80; }
-html[data-look="t-acid"] { --ink: #07070a; --panel: #121216; --line: #2a2a33; --fg: #f4f4f4; --muted: #a4a4ae; --amber: #ffc15e; --sage: #9fe0b0; --lilac: #c9b8ff; --rose: #ffb0c0; --display: "Space Mono", ui-monospace, monospace; --gamebg: #030304; }
-html[data-look="t-acid"] .fc { --panel: #a50c68; --line: #c8107e; --fg: #ffffff; --muted: #ffd6ee; --amber: #fff1a8; --sage: #d8ffb0; }
-html[data-look="t-acid"] .work { --panel: #b4ff2a; --line: #8fd60f; --fg: #0b1400; --muted: #2c4400; --amber: #0b1400; --sage: #2c4400; --lilac: #2c4400; }
-html[data-look="t-acid"] .po, html[data-look="t-acid"] .alm { --sage: #b4ff2a; --line: #b4ff2a; }
-html[data-look="t-rouge"] { --ink: #2a0508; --panel: #5e0912; --line: #84202b; --fg: #fff1ec; --muted: #e6b3ab; --amber: #ffc15e; --sage: #8ff0e8; --lilac: #e4ccff; --rose: #ffb3c1; --display: "DM Serif Display", Georgia, serif; --gamebg: #1a0204; }
-html[data-look="t-rouge"] .fc, html[data-look="t-rouge"] .work { --panel: #17b8b0; --line: #0f8f89; --fg: #021c1a; --muted: #083633; --amber: #021c1a; --sage: #083633; --lilac: #083633; }
-html[data-look="t-rouge"] .po, html[data-look="t-rouge"] .past, html[data-look="t-rouge"] .alm { --panel: #1c0306; --line: #4a0b12; }
+/* Volt and Rouge: the bolder looks, in the rotation since Nov 24 */
+html[data-look="volt"] { --ink: #04082e; --panel: #0f2db8; --line: #3352d6; --fg: #ffffff; --muted: #c3cdff; --amber: #ffc15e; --sage: #9effc0; --lilac: #e6d4ff; --rose: #ffb8c8; --display: "Archivo Black", Impact, sans-serif; --gamebg: #020520; }
+html[data-look="volt"] .fc, html[data-look="volt"] .work { --panel: #ff8a1f; --line: #d96c08; --fg: #1a0a00; --muted: #4a2400; --amber: #1a0a00; --sage: #4a2400; --lilac: #4a2400; }
+html[data-look="volt"] .po, html[data-look="volt"] .past, html[data-look="volt"] .alm { --panel: #0a1450; --line: #1e2c80; }
+html[data-look="rouge"] { --ink: #2a0508; --panel: #5e0912; --line: #84202b; --fg: #fff1ec; --muted: #e6b3ab; --amber: #ffc15e; --sage: #8ff0e8; --lilac: #e4ccff; --rose: #ffb3c1; --display: "DM Serif Display", Georgia, serif; --gamebg: #1a0204; }
+html[data-look="rouge"] .fc, html[data-look="rouge"] .work { --panel: #17b8b0; --line: #0f8f89; --fg: #021c1a; --muted: #083633; --amber: #021c1a; --sage: #083633; --lilac: #083633; }
+html[data-look="rouge"] .po, html[data-look="rouge"] .past, html[data-look="rouge"] .alm { --panel: #1c0306; --line: #4a0b12; }
 
-html[data-look="t-volt"] .work li.nowon, html[data-look="t-acid"] .work li.nowon, html[data-look="t-rouge"] .work li.nowon { background: rgba(0, 0, 0, .1); }
-html[data-look="t-volt"] .work li.past, html[data-look="t-acid"] .work li.past, html[data-look="t-rouge"] .work li.past { opacity: .55; }
+html[data-look="volt"] .work li.nowon, html[data-look="rouge"] .work li.nowon { background: rgba(0, 0, 0, .1); }
+html[data-look="volt"] .work li.past, html[data-look="rouge"] .work li.past { opacity: .55; }
 
 /* ---------- the almanac: one row with the "of yore" photos ---------- */
 @media (min-width: 900px) { .board.nopast { grid-template-rows: auto auto 22rem minmax(0, 1fr) 25rem; } }
@@ -661,9 +657,8 @@ function tick() {
 }
 
 /* ---------- looks: a different arrangement each hour ---------- */
-const LOOKS = [["midnight", "Midnight"], ["harbor", "Harbor"], ["tropic", "Tropic"], ["orchard", "Orchard"], ["ember", "Ember"], ["jewel", "Jewel"], ["phosphor", "Phosphor"], ["dusk", "Dusk"], ["canyon", "Canyon"], ["quilt", "Quilt"], ["coral", "Coral"], ["walnut", "Walnut"]];
+const LOOKS = [["midnight", "Midnight"], ["harbor", "Harbor"], ["tropic", "Tropic"], ["orchard", "Orchard"], ["ember", "Ember"], ["jewel", "Jewel"], ["phosphor", "Phosphor"], ["dusk", "Dusk"], ["canyon", "Canyon"], ["quilt", "Quilt"], ["coral", "Coral"], ["walnut", "Walnut"], ["volt", "Volt"], ["rouge", "Rouge"]];
 // Trial looks: preview only (?look=t-split etc.), not in the rotation.
-const TRIAL_LOOKS = [["t-volt", "Volt"], ["t-acid", "Acid"], ["t-rouge", "Rouge"]];
 const forcedLook = new URLSearchParams(location.search).get("look");
 // Seasonal boards (christmas/, halloween/, ...) open this page with ?season=name: their own looks, a header line and a few touches.
 const SEASON = new URLSearchParams(location.search).get("season");
