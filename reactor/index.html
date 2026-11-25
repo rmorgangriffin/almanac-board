@@ -267,17 +267,20 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
       $("hostS").textContent = C.hostility[1]; $("hostS").className = "st am"; $("hostB").className = "am"; $("hostB").style.transform = "scaleX(.74)"; $("nimS").textContent = C.nimona[1]; }, 6000);
   }
   function breach() { $("br1").textContent = D.breach[0]; $("br2").textContent = D.breach[1]; $("br3").textContent = D.breach[2]; $("breach").style.display = "flex"; setTimeout(() => $("breach").style.display = "none", 3500); }
-  /* the bear incident: one sequence in order, in about 60% of reactor sessions (?bear=1 forces it) */
-  if (D.bear && (Q.get("bear") || Math.random() < .6)) {
-    const B = D.bear; let step = 0;
-    bearAnn = [...$("ann").children].find(e => e.textContent === B.ann) || null;
+  /* incidents: one sequence played in order, at most one per showing (the bear or the pantry, each in about 40% of showings; ?bear=1 or ?pantry=1 forces one) */
+  const INC = [["bear", D.bear], ["pantry", D.pantry]].filter(x => x[1] && x[1].seq && x[1].seq.length);
+  const roll = Math.random(), forced = INC.find(([k]) => Q.get(k));
+  const chosen = forced || (INC.length > 1 ? (roll < .4 ? INC[0] : roll < .8 ? INC[1] : null) : (INC.length && roll < .6 ? INC[0] : null));
+  if (chosen) {
+    const B = chosen[1]; let step = 0;
+    bearAnn = B.ann ? [...$("ann").children].find(e => e.textContent === B.ann) || null : null;
     const next = () => {
       const m = B.seq[step]; addLog([m[0], m[1]]);
       if (step === B.critAt) { bearOn = true; critical(B.crit); }
       if (step === B.clearAt) bearOn = false;
       if (++step < B.seq.length) setTimeout(next, rnd(16, 21) * 1000); else bearOn = false;
     };
-    setTimeout(next, Q.get("bear") ? 2000 : rnd(15, 30) * 1000);
+    setTimeout(next, forced ? 2000 : rnd(15, 30) * 1000);
   }
   setTimeout(critical, Q.get("alert") ? 3000 : rnd(35, 70) * 1000); setInterval(critical, rnd(110, 150) * 1000);
   if (Q.get("flash") || Math.random() < .35) setTimeout(breach, Q.get("flash") ? 4000 : rnd(70, 180) * 1000);
