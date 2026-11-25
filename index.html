@@ -49,7 +49,7 @@ function pick() {
     if ((r.start && date < r.start) || (r.end && date > r.end)) continue;
     if (r.days && !r.days.includes(dow)) continue;
     const from = r.from || "00:00", to = r.to || "24:00";
-    if (from <= to ? (hm >= from && hm < to) : (hm >= from || hm < to)) return r.board;
+    if (from <= to ? (hm >= from && hm < to) : (hm >= from || hm < to)) return r.board + (r.params ? "?" + r.params : "");   // params: e.g. "bear=1" for a one-off showing
   }
   return schedule.default;
 }
@@ -62,7 +62,8 @@ function show(board) {
   el.onload = swap;
   setTimeout(swap, first ? 0 : 8000);   // never wait on slow-loading fonts or images to show the board
   first = false;
-  el.src = `${board}/?v=${Date.now()}#${key}`;
+  const [b, q] = board.split("?");
+  el.src = `${b}/?${q ? q + "&" : ""}v=${Date.now()}#${key}`;
   front = next;
 }
 async function loadSchedule() {
