@@ -131,6 +131,11 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 .quadtext blockquote::before { color: #6e1a1a; font-family: "IM Fell English", Georgia, serif; font-style: normal; }
 .quadtext .foot { display: flex; align-items: center; justify-content: space-between; gap: .8rem; }
 .quadtext .pennant { position: relative; width: 11rem; height: 2.6rem; background: #6e1a1a; clip-path: polygon(0 0, 100% 50%, 0 100%); display: flex; align-items: center; padding-left: 1.1rem; font-family: "Graduate", Georgia, serif; font-size: .95rem; letter-spacing: .14em; color: #f3e6c4; transform: rotate(-4deg); transform-origin: left center; }
+.quadtext { position: relative; isolation: isolate; overflow: hidden; }
+.quadtext .cimg { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 64%; object-fit: cover; z-index: -1; opacity: .32; mix-blend-mode: multiply;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 45%); mask-image: linear-gradient(to bottom, transparent 0%, #000 45%); }
+.quadtext .cimg:not([src]) { display: none; }
+.quadtext .ccred { margin-top: .35rem; font-family: "IM Fell English", Georgia, serif; font-style: italic; font-size: .7rem; color: #5a4128; text-align: right; }
 .quadtext .pennant small { font-size: .72em; margin-left: .35em; }
 .quadtext .pennant::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: .45rem; background: #c9a24a; }
 .quadtext #quadcap { font-family: "IM Fell English", Georgia, serif; font-style: italic; text-transform: none; letter-spacing: 0; font-size: .95rem; color: #7a6040; text-align: right; }
@@ -471,6 +476,8 @@ html[data-look="rouge"] .grid { --gl: #9f5b5b; }
       <div class="mode quad quadtext">
         <blockquote>Oh, those precious days amongst the ivy, beneath the stately elms upon the quad!</blockquote>
         <div class="foot"><div class="pennant">RAH! <small>RAH!</small></div><div class="num" id="quadcap"></div></div>
+        <img class="cimg" id="cimg" alt="">
+        <div class="ccred" id="ccred"></div>
       </div>
     </div>
   </section>
@@ -608,7 +615,7 @@ async function loadData() {
 /* ---------- Po's photos ---------- */
 // Two sets (Ada's Dublin photos, the "precious days" album). The panel switches set
 // every minute and changes photo every 12 seconds within the set.
-let SETS = {}, MODES = [], mi = 0, idx = {}, layer = 0;
+let SETS = {}, MODES = [], mi = 0, idx = {}, layer = 0, lastCollegeMode = null;
 async function loadPhotos() {
   try {
     const p = await unlock("/almanac-board-photos/photos.enc");
@@ -660,8 +667,22 @@ async function showPhoto() {
     layer._shots = shots;
     const dates = [...new Set(shots.map(x => x.p.date).filter(Boolean))].join(" · ");
     $("cap").textContent = dates;
-    if (mode === "quad") $("quadcap").textContent = dates;
+    if (mode === "quad") { $("quadcap").textContent = dates; if (mode !== lastCollegeMode) showCollege(); }
+    lastCollegeMode = mode;
   } finally { showing = false; }
+}
+/* "Beneath the elms": an old public-domain photo of one of the two colleges behind the quote, the college alternating day by day */
+const COLLEGES = [
+  ["mhc", [["Mary Lyon Hall, Mount Holyoke College, c. 1908"], ["Williston Hall, Mount Holyoke College, c. 1880"], ["Zoology laboratory, Mount Holyoke College, 1890"],
+           ["The gymnasium, Mount Holyoke College, c. 1900"], ["Dwight Memorial, Mount Holyoke College, postcard, early 1900s"], ["The Brook, Mount Holyoke College, postcard, early 1900s"]]],
+  ["bmc", [["Radnor Hall, Bryn Mawr College, postcard, c. 1905"], ["Taylor Hall, Bryn Mawr College, c. 1910"], ["Merion Hall, Bryn Mawr College, c. 1910"],
+           ["Commencement, Bryn Mawr College, early 1900s"], ["A snowball fight, Bryn Mawr College, c. 1898"], ["Lantern Night, Bryn Mawr College, early 1900s"], ["The Deanery garden, Bryn Mawr College, 1917"]]],
+];
+let collegeTurn = Math.floor(Math.random() * 7);
+function showCollege() {
+  const day = Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000), [k, list] = COLLEGES[day % 2], i = collegeTurn++ % list.length;
+  const img = $("cimg"); if (!img) return;
+  img.src = `../img/college/${k}-${i + 1}.jpg`; $("ccred").textContent = list[i][0] + " · public domain";
 }
 function nextPhoto() { const m = MODES[mi % MODES.length]; if (m) idx[m]++; showPhoto(); }
 function nextMode() { mi++; showPhoto(); }
