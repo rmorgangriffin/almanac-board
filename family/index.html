@@ -190,6 +190,9 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 /* ---------- Look tag ---------- */
 .ifbox { margin: 0; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: var(--gamebg, #070a16); color: var(--fg); font-family: var(--mono); font-size: .6rem; line-height: 1.32; padding: .35rem .5rem; border-radius: .35rem; display: flex; flex-direction: column; justify-content: flex-end; white-space: normal; }
 .ifbox div { margin: 0; }
+.ifwrap { position: relative; }
+.ifcred { position: absolute; left: 0; right: 0; top: 0; padding: .3rem .5rem .6rem; font-family: var(--mono); font-size: .46rem; letter-spacing: .04em; color: var(--muted); background: linear-gradient(var(--gamebg, #070a16) 55%, transparent); border-radius: .35rem .35rem 0 0; }
+.ifbox .sep { color: var(--muted); text-align: center; margin: .3rem 0; }
 .ifbox .cmd { color: var(--amber); margin-top: .3rem; }
 .ifbox .room { color: var(--sage); font-weight: 600; }
 .ifbox .cur::after { content: "▌"; animation: blink 1s steps(1) infinite; }
@@ -450,7 +453,7 @@ html[data-look="rouge"] .grid { --gl: #9f5b5b; }
     <section class="panel game" aria-label="Arcade">
       <div class="gh"><span class="label" id="gname">Arcade</span><span class="label num" id="gscore">0 · 0</span></div>
       <canvas id="game" width="160" height="90"></canvas>
-      <div class="ifbox" id="ifbox" hidden></div>
+      <div class="ifwrap"><div class="ifbox" id="ifbox" hidden></div><div class="ifcred" id="ifcred" hidden></div></div>
     </section>
   </div>
 
@@ -792,24 +795,27 @@ function applyLook() {
 }
 applyLook(); setInterval(applyLook, 60000);
 
-/* ---------- arcade: computer plays Pong, a cowboy duel, and one of the Atari-style games (atari.js) in turn ---------- */
+/* ---------- arcade: computer plays Rally (paddle tennis), one of the arcade games (atari.js), a cowboy duel, and a text game, in turn ---------- */
 (function arcade() {
   const c = $("game"), x = c.getContext("2d"), W = 160, H = 90;
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-  let mode = +(new URLSearchParams(location.search).get("game") || 0) % 3, score = [0, 0], st = null, flash = 0;
+  let mode = +(new URLSearchParams(location.search).get("game") || 0) % 4, score = [0, 0], st = null, flash = 0;
   const rnd = (a, b) => a + Math.random() * (b - a);
 
   function startPong() { st = { bx: W / 2, by: H / 2, vx: (Math.random() < .5 ? -1 : 1) * 2.9, vy: rnd(-1.6, 1.6), p: [H / 2, H / 2], miss: [0, 0] }; }
   function startDuel() { st = { y: [30, 60], vy: [.5, -.5], shots: [], cool: [rnd(40, 90), rnd(40, 90)], cactus: rnd(28, 62), wag: [0, 0] }; }
-  const NAMES = ["Pong", "Showdown", "Atari"], LENGTH = [180000, 180000, 300000];
+  const NAMES = ["Rally", "Arcade", "Showdown", "Text"], LENGTH = [180000, 300000, 180000, 360000];   // modes: 0 Rally, 1 arcade game, 2 Showdown, 3 text game
   const GAMES = window.ATARI || [], C = k => k === "bg" ? (css("--gamebg") || "#070a16") : css("--" + k);
   let gi = +(new URLSearchParams(location.search).get("atari") || Math.floor(Math.random() * 99)), game = null;
   function begin() {
     score = [0, 0]; $("gname").textContent = NAMES[mode];
-    c.hidden = false; $("ifbox").hidden = true;
+    const text = mode === 3; c.hidden = text; $("ifbox").hidden = !text; $("ifcred").hidden = true;
     if (typeof ADV !== "undefined") ADV.stop();
-    if (mode === 2) { if (!GAMES.length) { mode = 0; return begin(); } game = GAMES[gi++ % GAMES.length]; st = game.init(); $("gname").textContent = game.name; }
-    if (mode === 0) startPong(); else if (mode === 1) startDuel();
+    if (typeof TXT !== "undefined") TXT.stop();
+    game = null;
+    if (mode === 1) { if (!GAMES.length) { mode = 2; return begin(); } game = GAMES[gi++ % GAMES.length]; st = game.init(); $("gname").textContent = game.name; }
+    if (mode === 0) startPong(); else if (mode === 2) startDuel();
+    if (text) { const k = TEXTS[ti++ % TEXTS.length]; if (k === "house") { $("gname").textContent = "House on the Hill"; ADV.start(); } else TXT.start(k); }
   }
 
   function pong(draw) {
@@ -959,17 +965,68 @@ applyLook(); setInterval(applyLook, 60000);
         if (!running) return;
         if (i < cmd.length) { line.textContent = "> " + cmd.slice(0, ++i); timer = setTimeout(typeIt, 55 + Math.random() * 60); return; }
         line.classList.remove("cur");
-        timer = setTimeout(() => { act(cmd).forEach(show); $("gscore").textContent = `Score ${score()}/30`; timer = setTimeout(turn, 1900); }, 350);
+        timer = setTimeout(() => { act(cmd).forEach(show); $("gscore").textContent = `${score()}/30`; timer = setTimeout(turn, 1900); }, 350);
       };
       timer = setTimeout(typeIt, 400);
     }
     function newGame() {
       S = { room: "porch", inv: [], mantel: [], lampOn: false, herbOpen: false, moves: 0, where: Object.fromEntries(Object.entries(ITEMS).map(([k, v]) => [k, v.where])) };
-      describe().forEach(show); $("gscore").textContent = "Score 0/30";
+      describe().forEach(show); $("gscore").textContent = "0/30";
       timer = setTimeout(turn, 1500);
     }
     return {
       start() { running = true; box.innerHTML = ""; out("THE HOUSE ON THE HILL"); out("An interactive fiction. Release 1."); newGame(); },
+      stop() { running = false; clearTimeout(timer); }
+    };
+  })();
+
+  /* ---------- Text games: recorded sessions of real games (text/*.json, made on the Mac mini), typed back here ---------- */
+  const TEXTS = (() => { const t = ["house", "cave", "zork1", "zork2", "zork3"], f = new URLSearchParams(location.search).get("text");
+    if (f && t.includes(f)) return [f];
+    for (let i = t.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [t[i], t[j]] = [t[j], t[i]]; } return t; })();
+  let ti = 0;
+  const TXT = (() => {
+    const box = $("ifbox"), cred = $("ifcred"), cache = {};
+    let timer = null, running = false, lastRun = {};
+    const out = (text, cls) => { const d = document.createElement("div"); if (cls) d.className = cls; d.textContent = text; box.appendChild(d); while (box.children.length > 40) box.firstChild.remove(); return d; };
+    let titled = false;   // Zork prints a room's name on its own line, in title case; Colossal Cave doesn't
+    const SMALL = ["of", "the", "in", "a", "on", "to", "and"];
+    const isRoom = l => titled && l.length < 34 && !/[.!?:,"*]$/.test(l) && l.split(" ").every((w, i) => /^[A-Z][a-z]/.test(w) || (i && SMALL.includes(w)));
+    function play(g) {
+      if (!running) return;
+      let r = Math.floor(Math.random() * g.runs.length);
+      if (g.runs.length > 1 && r === lastRun[g.id]) r = (r + 1) % g.runs.length;
+      lastRun[g.id] = r;
+      const run = g.runs[r]; let n = 0;
+      run.intro.forEach(l => out(l, isRoom(l) ? "room" : ""));
+      const turn = () => {
+        if (!running) return;
+        if (n >= run.turns.length) { timer = setTimeout(() => { if (running) { out("· · ·", "sep"); play(g); } }, 6000); return; }
+        const [cmd, reply] = run.turns[n++], line = out("> ", "cmd cur");
+        let i = 0;
+        const typeIt = () => {
+          if (!running) return;
+          if (i < cmd.length) { line.textContent = "> " + cmd.slice(0, ++i); timer = setTimeout(typeIt, 60 + Math.random() * 70); return; }
+          line.classList.remove("cur");
+          timer = setTimeout(() => {
+            reply.forEach(l => out(l, isRoom(l) ? "room" : ""));
+            $("gscore").textContent = `Turn ${n}`;
+            const len = reply.join(" ").length;
+            timer = setTimeout(turn, Math.min(7000, 1500 + len * 16));
+          }, 400);
+        };
+        timer = setTimeout(typeIt, 500);
+      };
+      timer = setTimeout(turn, 2500);
+    }
+    return {
+      start(id) {
+        running = true; box.innerHTML = ""; $("gscore").textContent = "";
+        const go = g => { if (!running) return; titled = g.id.startsWith("zork"); $("gname").textContent = g.title; cred.textContent = g.credit; cred.hidden = false; play(g); };
+        if (cache[id]) return go(cache[id]);
+        fetch(`text/${id}.json`).then(r => r.json()).then(g => { cache[id] = g; go(g); })
+          .catch(() => { if (running) { $("gname").textContent = "House on the Hill"; ADV.start(); } });
+      },
       stop() { running = false; clearTimeout(timer); }
     };
   })();
@@ -980,14 +1037,14 @@ applyLook(); setInterval(applyLook, 60000);
     if (t - last >= 33) {
       last = t; if (flash > 0) flash--;
       const steps = Math.min(4, Math.max(1, Math.round((t - prev) / 33))); prev = t;
-      if (mode < 2) {
+      if (mode === 0 || mode === 2) {
         for (let k = 1; k <= steps; k++) mode ? duel(k === steps) : pong(k === steps);
         $("gscore").textContent = `${score[0]} · ${score[1]}`;
-      } else if (game) {
+      } else if (mode === 1 && game) {
         for (let k = 0; k < steps; k++) game.step(st);
         game.draw(x, st, C); $("gscore").textContent = game.score(st);
       }
-      if (Date.now() > swapAt || (mode < 2 && Math.max(...score) >= 11) || (mode === 2 && game && game.over(st))) { mode = (mode + 1) % 3; begin(); swapAt = Date.now() + LENGTH[mode]; }
+      if (Date.now() > swapAt || ((mode === 0 || mode === 2) && Math.max(...score) >= 11) || (mode === 1 && game && game.over(st))) { mode = (mode + 1) % 4; begin(); swapAt = Date.now() + LENGTH[mode]; }
     }
     requestAnimationFrame(frame);
   }
