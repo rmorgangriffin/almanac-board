@@ -392,8 +392,8 @@
     let leap = y; while (!(leap % 4 === 0 && (leap % 100 !== 0 || leap % 400 === 0)) || `${leap}-02-29` < t) leap++;
     L.push(`<b>${daysTo(`${leap}-02-29`)}</b> days until the next leap day, February 29, ${leap}`);
     L.push(`<b>${daysTo("2061-07-28").toLocaleString("en-US")}</b> days until Halley’s Comet swings back round the Sun`);
-    let d = new Date(Date.parse(t) + DAY); while (!(d.getUTCDate() === 13 && d.getUTCDay() === 5)) d = new Date(d.getTime() + DAY);
-    L.push(`<b>${daysTo(d.toISOString().slice(0, 10))}</b> days until the next Friday the 13th`);
+    const xmas = daysTo(nextMD("12-25"));
+    L.push(xmas === 0 ? "Christmas: today" : `<b>${xmas}</b> ${xmas === 1 ? "day" : "days"} until Christmas`);
     return L;
   }
   function renderOdd() {

@@ -131,6 +131,7 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 .quadtext blockquote::before { color: #6e1a1a; font-family: "IM Fell English", Georgia, serif; font-style: normal; }
 .quadtext .foot { display: flex; align-items: center; justify-content: space-between; gap: .8rem; }
 .quadtext .pennant { position: relative; width: 11rem; height: 2.6rem; background: #6e1a1a; clip-path: polygon(0 0, 100% 50%, 0 100%); display: flex; align-items: center; padding-left: 1.1rem; font-family: "Graduate", Georgia, serif; font-size: .95rem; letter-spacing: .14em; color: #f3e6c4; transform: rotate(-4deg); transform-origin: left center; }
+.quadtext .pennant small { font-size: .72em; margin-left: .35em; }
 .quadtext .pennant::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: .45rem; background: #c9a24a; }
 .quadtext #quadcap { font-family: "IM Fell English", Georgia, serif; font-style: italic; text-transform: none; letter-spacing: 0; font-size: .95rem; color: #7a6040; text-align: right; }
 
@@ -469,7 +470,7 @@ html[data-look="rouge"] .grid { --gl: #9f5b5b; }
       </div>
       <div class="mode quad quadtext">
         <blockquote>Oh, those precious days amongst the ivy, beneath the stately elms upon the quad!</blockquote>
-        <div class="foot"><div class="pennant">RAH! RAH!</div><div class="num" id="quadcap"></div></div>
+        <div class="foot"><div class="pennant">RAH! <small>RAH!</small></div><div class="num" id="quadcap"></div></div>
       </div>
     </div>
   </section>
