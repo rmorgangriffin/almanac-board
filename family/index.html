@@ -79,14 +79,14 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 .cell.past, .work li.past { background: none; }  /* not the Novembers-of-yore panel, which shares the class */
 .cell.today { box-shadow: inset 0 0 0 3px var(--amber); }
 .cell.today .dn { color: var(--amber); }
-.ev { font-size: .68rem; line-height: 1.18; margin-top: .18rem; padding-left: .3rem; border-left: 3px solid var(--c, var(--muted)); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.ev { font-size: .68rem; line-height: 1.15; margin-top: .12rem; padding-left: .3rem; border-left: 3px solid var(--c, var(--muted)); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .ev b { font-weight: 500; color: var(--muted); font-family: var(--mono); font-size: .6rem; }
 .ev.allday::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--c); opacity: .22; border-radius: .2rem; }
 .ev.allday { position: relative; isolation: isolate; border-radius: .2rem; }
 .out { display: grid; gap: .9rem; border-top: 3px solid var(--gl, var(--line)); padding-top: .35rem; min-height: 0; overflow: hidden; }
 .out .oc { min-width: 0; overflow: hidden; }
 .out h4 { margin: 0 0 .2rem; font-family: var(--mono); font-weight: 500; font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.out .of { display: flex; gap: .4rem; font-size: .68rem; line-height: 1.2; margin-bottom: .22rem; }
+.out .of { display: flex; gap: .4rem; font-size: .68rem; line-height: 1.18; margin-bottom: .14rem; }
 .out .of span:not(.tm) { min-width: 0; }
 .out .of .tm { font-family: var(--mono); font-size: .6rem; color: var(--amber); white-space: nowrap; padding-top: .05rem; flex: 0 0 4rem; }
 .out .of i { font-style: normal; color: var(--muted); font-size: .6rem; }
@@ -620,7 +620,7 @@ function renderGrid() {
   }
   el.innerHTML = html + out;
   el.insertAdjacentHTML("beforeend", `<div class="legend"><span><i style="--c:var(--amber)"></i>Morgan</span><span><i style="--c:var(--sage)"></i>Corey</span><span><i style="--c:var(--lilac)"></i>Griffano</span></div>`);
-  el.style.gridTemplateRows = out ? "auto repeat(4, minmax(0, 1fr)) minmax(0, 1.2fr) auto" : "auto repeat(5, minmax(0, 1fr)) auto";
+  el.style.gridTemplateRows = out ? "auto repeat(4, minmax(0, 1fr)) minmax(0, 1.65fr) auto" : "auto repeat(5, minmax(0, 1fr)) auto";
 }
 /* Out & about: what's still showing today at the three cinemas, and a few events nearby this week */
 function outStrip() {
@@ -631,17 +631,17 @@ function outStrip() {
   // films: the taste-filtered list (★ first), one per line, each with what's still to come today at each cinema
   const P = O.picks && O.picks.date === today ? O.picks.films : [];
   const films = P.map(f => ({ t: f.t, star: f.star, at: f.at.map(a => ({ c: a.c, times: a.times.filter(x => x >= hm) })).filter(a => a.times.length) }))
-    .filter(f => f.at.length).slice(0, 6);
+    .filter(f => f.at.length).slice(0, 8);
   films.forEach(f => f.at.forEach(a => a.times = a.times.slice(0, f.at.length > 1 ? 2 : 3)));   // one line of times per film
   if (films.length) cols.push(`<div class="oc fl"><h4>At the movies today</h4><div class="fls">${films.map(f =>
     `<div class="fm"><div class="ft">${esc(f.t)}${f.star ? ` <span class="st">★</span>` : ""}</div><div class="fw">${f.at.map(a => `${esc(a.c)} <span class="num">${a.times.map(tShort).join(", ")}</span>`).join(" · ")}</div></div>`).join("")}</div></div>`);
   const D3 = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const ev = (O.events || []).filter(e => e.date > today || (e.date === today && (!e.time || e.time >= hm))).slice(0, 4);
+  const ev = (O.events || []).filter(e => e.date > today || (e.date === today && (!e.time || e.time >= hm))).slice(0, 6);
   if (ev.length) cols.push(`<div class="oc ev2"><h4>Around Northampton</h4>${ev.map(e => {
     const d = e.date === today ? "Today" : e.date === isoAdd(today, 1) ? "Tmrw" : D3[new Date(e.date + "T12:00").getDay()];
     return `<div class="of"><span class="tm num">${d}${e.time ? " " + t12(e.time) : ""}</span><span>${esc(e.title)}${e.place ? ` <i>${esc(e.place.replace(/,\s*Northampton$/, ""))}</i>` : ""}</span></div>`; }).join("")}</div>`);
   if (!films.length && !ev.length) return "";
-  return `<div class="out" style="grid-template-columns: ${films.length ? "minmax(0, 1.7fr)" : ""}${ev.length ? " minmax(0, 1fr)" : ""}">${cols.join("")}</div>`;
+  return `<div class="out" style="grid-template-columns: ${films.length ? "minmax(0, 1.45fr)" : ""}${ev.length ? " minmax(0, 1fr)" : ""}">${cols.join("")}</div>`;
 }
 async function loadData() {
   try { DATA = await unlock("data.enc"); }
