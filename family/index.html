@@ -617,7 +617,7 @@ function renderGrid() {
   }
   el.innerHTML = html + out;
   el.insertAdjacentHTML("beforeend", `<div class="legend"><span><i style="--c:var(--amber)"></i>Morgan</span><span><i style="--c:var(--sage)"></i>Corey</span><span><i style="--c:var(--lilac)"></i>Griffano</span></div>`);
-  el.style.gridTemplateRows = out ? "auto repeat(4, minmax(0, 1fr)) minmax(0, 1fr) auto" : "auto repeat(5, minmax(0, 1fr)) auto";
+  el.style.gridTemplateRows = out ? "auto repeat(4, minmax(0, 1fr)) minmax(0, 1.2fr) auto" : "auto repeat(5, minmax(0, 1fr)) auto";
 }
 /* Out & about: what's still showing today at the three cinemas, and a few events nearby this week */
 function outStrip() {
@@ -627,15 +627,16 @@ function outStrip() {
   const cols = [];
   // films: the taste-filtered list (★ first), one per line, each with what's still to come today at each cinema
   const P = O.picks && O.picks.date === today ? O.picks.films : [];
-  const films = P.map(f => ({ t: f.t, star: f.star, at: f.at.map(a => ({ c: a.c, times: a.times.filter(x => x >= hm).slice(0, 3) })).filter(a => a.times.length) }))
+  const films = P.map(f => ({ t: f.t, star: f.star, at: f.at.map(a => ({ c: a.c, times: a.times.filter(x => x >= hm) })).filter(a => a.times.length) }))
     .filter(f => f.at.length).slice(0, 6);
+  films.forEach(f => f.at.forEach(a => a.times = a.times.slice(0, f.at.length > 1 ? 2 : 3)));   // one line of times per film
   if (films.length) cols.push(`<div class="oc fl"><h4>At the movies today</h4><div class="fls">${films.map(f =>
     `<div class="fm"><div class="ft">${esc(f.t)}${f.star ? ` <span class="st">★</span>` : ""}</div><div class="fw">${f.at.map(a => `${esc(a.c)} <span class="num">${a.times.map(tShort).join(", ")}</span>`).join(" · ")}</div></div>`).join("")}</div></div>`);
   const D3 = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const ev = (O.events || []).filter(e => e.date > today || (e.date === today && (!e.time || e.time >= hm))).slice(0, 4);
+  const ev = (O.events || []).filter(e => e.date > today || (e.date === today && (!e.time || e.time >= hm))).slice(0, 3);
   if (ev.length) cols.push(`<div class="oc ev2"><h4>Around Northampton</h4>${ev.map(e => {
     const d = e.date === today ? "Today" : e.date === isoAdd(today, 1) ? "Tmrw" : D3[new Date(e.date + "T12:00").getDay()];
-    return `<div class="of"><span class="tm num">${d}${e.time ? " " + t12(e.time) : ""}</span><span>${esc(e.title)}${e.place ? ` <i>${esc(e.place)}</i>` : ""}</span></div>`; }).join("")}</div>`);
+    return `<div class="of"><span class="tm num">${d}${e.time ? " " + t12(e.time) : ""}</span><span>${esc(e.title)}${e.place ? ` <i>${esc(e.place.replace(/,\s*Northampton$/, ""))}</i>` : ""}</span></div>`; }).join("")}</div>`);
   if (!films.length && !ev.length) return "";
   return `<div class="out" style="grid-template-columns: ${films.length ? "minmax(0, 1.7fr)" : ""}${ev.length ? " minmax(0, 1fr)" : ""}">${cols.join("")}</div>`;
 }
