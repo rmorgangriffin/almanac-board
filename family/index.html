@@ -86,13 +86,16 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 .out { display: grid; gap: .9rem; border-top: 3px solid var(--gl, var(--line)); padding-top: .35rem; min-height: 0; overflow: hidden; }
 .out .oc { min-width: 0; overflow: hidden; }
 .out h4 { margin: 0 0 .2rem; font-family: var(--mono); font-weight: 500; font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.out .of { display: flex; justify-content: space-between; gap: .4rem; font-size: .74rem; line-height: 1.3; }
-.out .of span:not(.tm) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.out .of .tm { font-family: var(--mono); font-size: .66rem; color: var(--amber); white-space: nowrap; padding-top: .05rem; }
-.out .ev2 .of { justify-content: flex-start; }
-.out .ev2 .of span:not(.tm) { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; margin-bottom: .1rem; }
-.out .ev2 .of .tm { flex: 0 0 4.2rem; }
-.out .of i { font-style: normal; color: var(--muted); font-size: .64rem; }
+.out .of { display: flex; gap: .4rem; font-size: .68rem; line-height: 1.2; margin-bottom: .22rem; }
+.out .of span:not(.tm) { min-width: 0; }
+.out .of .tm { font-family: var(--mono); font-size: .6rem; color: var(--amber); white-space: nowrap; padding-top: .05rem; flex: 0 0 4rem; }
+.out .of i { font-style: normal; color: var(--muted); font-size: .6rem; }
+.out .fls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: .9rem; row-gap: .28rem; }
+.out .fm { min-width: 0; }
+.out .ft { font-size: .68rem; line-height: 1.15; font-stretch: condensed; font-weight: 500; }
+.out .ft .st { color: var(--amber); font-size: .62rem; }
+.out .fw { font-size: .56rem; line-height: 1.25; color: var(--muted); margin-top: .05rem; }
+.out .fw .num { font-family: var(--mono); color: var(--amber); font-size: .54rem; }
 .out .none { font-size: .7rem; color: var(--muted); font-style: italic; }
 .more { font-size: .62rem; color: var(--muted); margin-top: .15rem; padding-left: .4rem; }
 .legend { display: flex; gap: 1rem; justify-content: flex-end; margin-top: .4rem; font-size: .72rem; color: var(--muted); }
@@ -622,18 +625,19 @@ function outStrip() {
   const today = isoToday(), now = new Date(), hm = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
   const tShort = t => { const [h, m] = t.split(":").map(Number); return `${h % 12 || 12}${m ? ":" + String(m).padStart(2, "0") : ""}`; };
   const cols = [];
-  const M = O.movies && O.movies.date === today ? O.movies.cinemas : [];
-  for (const c of M) {
-    const films = c.films.map(f => ({ t: f.t, times: f.times.filter(x => x >= hm) })).filter(f => f.times.length).sort((a, b) => a.times[0].localeCompare(b.times[0])).slice(0, 5);
-    cols.push(`<div class="oc"><h4>${esc(c.name)}</h4>${films.length ? films.map(f => `<div class="of"><span>${esc(f.t)}</span><span class="tm num">${f.times.slice(0, 3).map(tShort).join(" ")}</span></div>`).join("") : `<div class="none">No more shows today</div>`}</div>`);
-  }
+  // films: the taste-filtered list (★ first), one per line, each with what's still to come today at each cinema
+  const P = O.picks && O.picks.date === today ? O.picks.films : [];
+  const films = P.map(f => ({ t: f.t, star: f.star, at: f.at.map(a => ({ c: a.c, times: a.times.filter(x => x >= hm).slice(0, 3) })).filter(a => a.times.length) }))
+    .filter(f => f.at.length).slice(0, 6);
+  if (films.length) cols.push(`<div class="oc fl"><h4>At the movies today</h4><div class="fls">${films.map(f =>
+    `<div class="fm"><div class="ft">${esc(f.t)}${f.star ? ` <span class="st">★</span>` : ""}</div><div class="fw">${f.at.map(a => `${esc(a.c)} <span class="num">${a.times.map(tShort).join(", ")}</span>`).join(" · ")}</div></div>`).join("")}</div></div>`);
   const D3 = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const ev = (O.events || []).filter(e => e.date > today || (e.date === today && (!e.time || e.time >= hm))).slice(0, 4);
   if (ev.length) cols.push(`<div class="oc ev2"><h4>Around Northampton</h4>${ev.map(e => {
     const d = e.date === today ? "Today" : e.date === isoAdd(today, 1) ? "Tmrw" : D3[new Date(e.date + "T12:00").getDay()];
     return `<div class="of"><span class="tm num">${d}${e.time ? " " + t12(e.time) : ""}</span><span>${esc(e.title)}${e.place ? ` <i>${esc(e.place)}</i>` : ""}</span></div>`; }).join("")}</div>`);
-  if (!M.length && !ev.length) return "";
-  return `<div class="out" style="grid-template-columns: repeat(${M.length}, minmax(0, 1fr))${ev.length ? " minmax(0, 1.6fr)" : ""}">${cols.join("")}</div>`;
+  if (!films.length && !ev.length) return "";
+  return `<div class="out" style="grid-template-columns: ${films.length ? "minmax(0, 1.7fr)" : ""}${ev.length ? " minmax(0, 1fr)" : ""}">${cols.join("")}</div>`;
 }
 async function loadData() {
   try { DATA = await unlock("data.enc"); }
