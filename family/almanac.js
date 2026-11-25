@@ -247,8 +247,9 @@
       <div class="alm-c">${esc(credit)}, The Birds of America · public domain · sighting via ${b.source && b.source.startsWith("ebird") ? "eBird" : "iNaturalist"}</div>`;
   }
 
-  /* ---------- monkeys in a room with typewriters: endless nonsense, and twice a day a line of Hamlet with one letter wrong ---------- */
-  const HAMLET = [
+  /* ---------- infinite monkey theorem: one monkey at a time on a live channel; every 10 minutes the one on screen types a real line with one letter wrong ---------- */
+  const MONKEY_TITLE = "Infinite Monkey Theorem · Live Trial";   // Morgan may rename this
+  const LINES = [
     "To be, or not to be, that is the question",
     "Something is rotten in the state of Denmark",
     "There are more things in heaven and earth, Horatio, than are dreamt of in your philosophy",
@@ -273,54 +274,87 @@
     "Sweets to the sweet: farewell!",
     "When sorrows come, they come not single spies, but in battalions",
     "Murder most foul, as in the best it is",
+    "I could be bounded in a nutshell and count myself a king of infinite space",
+    "One may smile, and smile, and be a villain",
+    "Give every man thy ear, but few thy voice",
+    "The readiness is all",
+    "My words fly up, my thoughts remain below",
+    "We know what we are, but know not what we may be",
+    "How weary, stale, flat, and unprofitable seem to me all the uses of this world",
+    "To sleep, perchance to dream: ay, there's the rub",
+    "Doubt thou the stars are fire",
+    "Hold, as 'twere, the mirror up to nature",
+    "There's a divinity that shapes our ends, rough-hew them how we will",
+    "Conscience does make cowards of us all",
   ];
-  const KEYS = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,;:'!?-&()      ";
+  const MONKEYS = ["Bonzo", "Bubbles", "Mabel", "Gus", "Pickles", "Dr. Fernsby", "Coco", "Biscuit", "Reginald", "Mo", "Pudding", "Sir Toby", "Peanut", "Lulu", "Barnaby",
+    "Clementine", "Winston", "Noodle", "Professor Hobbs", "Dot", "Mungo", "Petunia", "Ham", "Enos", "Tiberius", "Rufus", "Marmalade", "Ziggy", "Agnes", "Chuckles",
+    "Nutmeg", "Admiral Tibbs", "Olive", "Bartholomew", "Duchess", "Squeak", "Humphrey", "Fig", "Mrs. Pennywhistle", "Captain Biffle", "Waffles", "Gertrude"];
+  const KEYS = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzetaoinshrdlu;;,,..''kkqqwwppffjj           ";
   const hash = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
-  function hamletTimes() {   // two minutes a day, somewhere between 9 am and 9 pm, the same all day for every screen
-    const t = isoToday(), h = hash("monkeys" + t), a = 540 + h % 360, b = 900 + (h >>> 9) % 360;
-    return [a, b];
-  }
-  function oneWrong(line, seed) {
-    const idx = [...line].map((c, i) => /[a-z]/i.test(c) ? i : -1).filter(i => i >= 0), i = idx[seed % idx.length], c = line[i];
-    let r = c.toLowerCase();
-    while (r === c.toLowerCase()) { seed = Math.imul(seed ^ 0x9e3779b9, 2654435761) >>> 0; r = "abcdefghijklmnopqrstuvwxyz"[seed % 26]; }
+  const rnd = n => Math.floor(Math.random() * n), fmtN = n => n.toLocaleString("en-US");
+  function oneWrong(line) {   // exactly one letter changed, a different letter each time
+    const idx = [...line].map((c, i) => /[a-z]/i.test(c) ? i : -1).filter(i => i >= 0), i = idx[rnd(idx.length)], c = line[i];
+    let r = c.toLowerCase(); while (r === c.toLowerCase()) r = "abcdefghijklmnopqrstuvwxyz"[rnd(26)];
     return line.slice(0, i) + (c === c.toUpperCase() ? r.toUpperCase() : r) + line.slice(i + 1);
   }
-  const MK = { text: "", line: null, at: 0, misses: 0, timer: null };
-  for (let i = 0; i < 700; i++) MK.text += KEYS[Math.floor(Math.random() * KEYS.length)];
-  function monkeyStats() {
-    const now = new Date(), p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", minute: "numeric", second: "numeric", hourCycle: "h23" }).formatToParts(now)) p[x.type] = +x.value || 0;
-    const secs = p.hour * 3600 + p.minute * 60 + p.second, mins = p.hour * 60 + p.minute;
-    return { keys: Math.floor(secs * 7.3), near: hamletTimes().filter(m => m <= mins).length };
+  const ROSTER = {}, usedNums = new Set();   // monkey -> typewriter, fixed for this session
+  function typewriterOf(name) { if (!ROSTER[name]) { let n; do n = 1 + rnd(10000); while (usedNums.has(n)); usedNums.add(n); ROSTER[name] = n; } return ROSTER[name]; }
+  let bag = [];
+  function nextLine() { if (!bag.length) { bag = LINES.map((_, i) => i); for (let i = bag.length - 1; i > 0; i--) { const j = rnd(i + 1); [bag[i], bag[j]] = [bag[j], bag[i]]; } } return LINES[bag.pop()]; }
+  const MK = { name: "", num: 0, text: "", line: null, lineStart: 0, typed: 0, hitAt: 0, keys: 0, cps: 7.4, chanAt: 0, connecting: 0, seen: new Set(), shownAt: 0, nextHit: 0, endedAt: -1e12 };
+  function pickMonkey() {
+    let pool = MONKEYS.filter(m => !MK.seen.has(m) && m !== MK.name); if (!pool.length) { MK.seen.clear(); pool = MONKEYS.filter(m => m !== MK.name); }
+    const name = pool[rnd(pool.length)]; MK.seen.add(name); return name;
   }
-  function monkeyFoot() { const s = monkeyStats(); return `Keystrokes today: ${s.keys.toLocaleString("en-US")} · Near misses: ${s.near} · Hamlets completed: 0`; }
+  function switchChannel() {   // flicker "connecting", then a new monkey at its own typewriter
+    const name = pickMonkey(), num = typewriterOf(name);
+    MK.connecting = 18; MK.pending = [name, num]; MK.text = ""; MK.line = null;
+    const lab = $("mklab"); if (lab) { lab.textContent = `Connecting to typewriter ${fmtN(num)}…`; lab.classList.add("conn"); }
+    const f = $("mkfeed"); if (f) f.textContent = "";
+  }
   function monkeyCard() {
-    return `<div class="alm-k">Hamlet Update</div>
-      <div class="alm-t">Monkeys in a Room with Typewriters</div>
-      <div class="typer" id="typer"></div>
-      <div class="alm-c" id="monkfoot">${monkeyFoot()}</div>`;
+    MK.shownAt = Date.now(); MK.nextHit = MK.shownAt + (Q.get("hamlet") ? 6000 : 4 * 60000); MK.seen.clear();
+    setTimeout(switchChannel, 50);
+    const R = (k, id) => `<div class="mkr"><span>${k}</span><b id="${id}">—</b></div>`;
+    return `<div class="mk">
+      <div class="mkh"><span>${esc(MONKEY_TITLE)}</span><i class="mkrec">● LIVE</i></div>
+      <div class="mkstrip">${R("Typewriter", "mkn")}${R("Subject", "mks")}${R("Keystrokes", "mkk")}${R("Chars / sec", "mkc")}${R("Trial time", "mkt")}${R("Subjects on file", "mkf")}</div>
+      <div class="mkscreen"><div class="mklab" id="mklab"></div><div class="mkfeed" id="mkfeed"></div></div></div>`;
   }
   function monkeyPaint() {
-    const el = $("typer"); if (!el) return;
-    if (MK.line) { const s = Math.max(0, MK.lineStart), e = MK.lineStart + MK.line.length; el.innerHTML = esc(MK.text.slice(0, s)) + `<mark>${esc(MK.text.slice(s, e))}</mark>` + esc(MK.text.slice(e)); }
+    const el = $("mkfeed"); if (!el) return;
+    if (MK.line) { const s = Math.max(0, MK.lineStart), e = MK.lineStart + MK.typed; el.innerHTML = esc(MK.text.slice(0, s)) + `<span class="${MK.hitAt && Date.now() - MK.hitAt > 180000 ? "" : "hit"}">${esc(MK.text.slice(s, e))}</span>` + esc(MK.text.slice(e)); }
     else el.textContent = MK.text;
-    const f = $("monkfoot"); if (f && Math.random() < .1) f.textContent = monkeyFoot();
+  }
+  function monkeyStrip() {
+    if (!$("mkn")) return;
+    const t = Math.floor((Date.now() - MK.shownAt) / 1000), hh = String(Math.floor(t / 3600)).padStart(2, "0"), mm = String(Math.floor(t / 60) % 60).padStart(2, "0"), ss = String(t % 60).padStart(2, "0");
+    MK.cps = Math.max(5.1, Math.min(9.8, MK.cps + (Math.random() - .5) * .6));
+    $("mkn").textContent = MK.num ? fmtN(MK.num) : "—"; $("mks").textContent = MK.name || "—"; $("mkk").textContent = fmtN(MK.keys);
+    $("mkc").textContent = MK.connecting ? "0.0" : MK.cps.toFixed(1); $("mkt").textContent = `T+${hh}:${mm}:${ss}`; $("mkf").textContent = "10,000";
   }
   function monkeyTick() {
-    if (!$("typer")) return;
+    if (!$("mkfeed")) return;
+    if (MK.connecting > 0) {
+      if (--MK.connecting === 0) { [MK.name, MK.num] = MK.pending; MK.keys = 0; MK.chanAt = Date.now(); MK.hitAt = 0;
+        const lab = $("mklab"); lab.classList.remove("conn"); lab.textContent = `Live input · Typewriter ${fmtN(MK.num)} · ${MK.name}`; }
+      return;
+    }
+    const now = Date.now();
+    if (!MK.line && now >= MK.nextHit) {   // the moment: this monkey types a real line, one letter off
+      MK.nextHit = now + 10 * 60000; MK.line = oneWrong(nextLine()); MK.text += MK.text && !MK.text.endsWith(" ") ? "  " : ""; MK.lineStart = MK.text.length; MK.typed = 0; MK.hitAt = 0;
+    }
     let add = "";
-    if (MK.line && MK.typed < MK.line.length) { add = MK.line[MK.typed++]; }
-    else if (MK.line && MK.hold > 0) { MK.hold--; }
-    else { add = KEYS[Math.floor(Math.random() * KEYS.length)]; if (Math.random() < .3) add += KEYS[Math.floor(Math.random() * KEYS.length)]; }
-    if (add) { MK.text += add; const cut = Math.max(0, MK.text.length - 700); if (cut) { MK.text = MK.text.slice(cut); if (MK.line) MK.lineStart -= cut; } }
+    if (MK.line && MK.typed < MK.line.length) { add = MK.line[MK.typed++]; if (MK.typed === MK.line.length) { MK.hitAt = now; add += "  "; } }
+    else if (MK.line && now - MK.hitAt < 12000) add = "";   // a short pause after it lands
+    else { add = KEYS[rnd(KEYS.length)]; if (Math.random() < .3) add += KEYS[rnd(KEYS.length)]; }
+    if (add) { MK.keys += add.length; MK.text += add; const cut = Math.max(0, MK.text.length - 900); if (cut) { MK.text = MK.text.slice(cut); MK.lineStart -= cut; } }
     if (MK.line && MK.lineStart + MK.line.length <= 0) MK.line = null;
+    if (now - MK.chanAt > 60000 && (!MK.line || (MK.hitAt && now - MK.hitAt > 45000))) return switchChannel();
     monkeyPaint();
   }
-  function monkeyStrike(seed) {   // the moment: type the line (one letter wrong), hold it, then carry on
-    const line = oneWrong(HAMLET[seed % HAMLET.length], seed >>> 3);
-    MK.text += "  "; MK.lineStart = MK.text.length; MK.line = line; MK.typed = 0; MK.hold = 110;
-  }
-  setInterval(monkeyTick, 140);
+  setInterval(monkeyTick, 140); setInterval(monkeyStrip, 1000);
 
   /* ---------- the Almanac panel ---------- */
   const CARDS = { moon: moonCard, sky: skyCard, day: dayCard, river: riverCard, meteor: meteorCard, plant: plantCard, bird: birdCard, monkeys: monkeyCard };
@@ -329,7 +363,11 @@
   function showCard(force) {
     const box = $("almbody"); if (!box || !A) return;
     const names = Object.keys(CARDS), pin = typeof force === "string" ? force : Q.get("alm");
-    const name = CARDS[pin] ? pin : names[ci++ % names.length];
+    const showing = box.dataset.card === "monkeys";
+    if (!pin && showing && Date.now() - MK.shownAt < 20 * 60000) return;   // the monkeys get at least 20 minutes
+    if (showing && !pin) MK.endedAt = Date.now();
+    let name = CARDS[pin] ? pin : names[ci++ % names.length];
+    if (!pin && name === "monkeys" && Date.now() - MK.endedAt < 40 * 60000) name = names[ci++ % names.length];
     box.classList.add("off");
     setTimeout(() => { lastName = name; try { box.innerHTML = CARDS[name](); box.dataset.card = name; box.classList.toggle("pic", !!box.querySelector(".plate")); box.parentElement.classList.toggle("pic", !!box.querySelector(".plate")); } catch (e) { if (!pin) { box.classList.remove("off"); return showCard(); } } box.classList.remove("off"); }, 700);
   }
@@ -458,17 +496,6 @@
   let lastDay = isoToday();
   setInterval(() => { if (isoToday() !== lastDay) { lastDay = isoToday(); daily(); } renderTide(); }, 5 * 60000);
   setInterval(showCard, 3 * 60000);
-  // the Hamlet moments: bring the monkeys forward and let them strike (?hamlet=1 tries it straight away)
-  let struck = {};
-  function hamletCheck() {
-    const p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", minute: "numeric", hourCycle: "h23" }).formatToParts(new Date())) p[x.type] = +x.value || 0;
-    const mins = p.hour * 60 + p.minute, key = isoToday() + ":" + mins;
-    if ((hamletTimes().includes(mins) || (Q.get("hamlet") && !struck.test)) && !struck[key]) {
-      struck[key] = struck.test = true;
-      if ($("almbody").dataset.card !== "monkeys") showCard("monkeys");
-      setTimeout(() => monkeyStrike(hash(key) + (Q.get("hamlet") ? Date.now() : 0)), 4000);
-    }
-  }
-  setInterval(hamletCheck, 20000); setTimeout(hamletCheck, 3000);
+  if (Q.get("hamlet")) setTimeout(() => showCard("monkeys"), 1500);   // ?hamlet=1: bring the monkeys up and strike after a few seconds
   setTimeout(renderTide, 15000);   // once the encrypted data has loaded
 })();
