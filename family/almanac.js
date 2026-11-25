@@ -337,7 +337,10 @@
   function monkeyTick() {
     if (!$("mkfeed")) return;
     if (MK.connecting > 0) {
-      if (--MK.connecting === 0) { [MK.name, MK.num] = MK.pending; MK.keys = 0; MK.chanAt = Date.now(); MK.hitAt = 0;
+      if (--MK.connecting === 0) { [MK.name, MK.num] = MK.pending; MK.chanAt = Date.now(); MK.hitAt = 0;
+        // the monkey has been at it a while: arrive on a full page of its earlier typing, never a blank screen
+        let back = ""; while (back.length < 1500) back += KEYS[rnd(KEYS.length)];
+        MK.text = back; MK.keys = 20000 + rnd(400000);
         const lab = $("mklab"); lab.classList.remove("conn"); lab.textContent = `Live input · Typewriter ${fmtN(MK.num)} · ${MK.name}`; }
       return;
     }
@@ -348,7 +351,7 @@
     let add = "";
     if (MK.line && MK.typed < MK.line.length) { add = MK.line[MK.typed++]; if (MK.typed === MK.line.length) { MK.hitAt = now; add += " "; } }
     else { add = KEYS[rnd(KEYS.length)]; if (Math.random() < .3) add += KEYS[rnd(KEYS.length)]; }
-    if (add) { MK.keys += add.length; MK.text += add; const cut = Math.max(0, MK.text.length - 900); if (cut) { MK.text = MK.text.slice(cut); MK.lineStart -= cut; } }
+    if (add) { MK.keys += add.length; MK.text += add; const cut = Math.max(0, MK.text.length - 1600); if (cut) { MK.text = MK.text.slice(cut); MK.lineStart -= cut; } }
     if (MK.line && MK.lineStart + MK.line.length <= 0) MK.line = null;
     if (now - MK.chanAt > 60000 && (!MK.line || (MK.hitAt && now - MK.hitAt > 45000))) return switchChannel();
     monkeyPaint();
