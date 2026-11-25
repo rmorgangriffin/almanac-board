@@ -2,16 +2,6 @@
   "default": "family",
   "rules": [
     {
-      "board": "reactor",
-      "dates": [
-        "2026-11-25"
-      ],
-      "from": "16:40",
-      "to": "16:56",
-      "params": "bear=1&dinner=1",
-      "note": "one-off: the reactor slot Morgan missed (screen was black at 4:13)"
-    },
-    {
       "board": "whovian",
       "dates": [
         "2026-11-23"
