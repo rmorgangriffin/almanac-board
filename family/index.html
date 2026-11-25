@@ -981,7 +981,7 @@ applyLook(); setInterval(applyLook, 60000);
   })();
 
   /* ---------- Text games: recorded sessions of real games (text/*.json, made on the Mac mini), typed back here ---------- */
-  const TEXTS = (() => { const t = ["house", "cave", "zork1", "zork2", "zork3"], f = new URLSearchParams(location.search).get("text");
+  const TEXTS = (() => { const t = ["house", "cave", "zork1", "zork2", "zork3", "wumpus"], f = new URLSearchParams(location.search).get("text");
     if (f && t.includes(f)) return [f];
     for (let i = t.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [t[i], t[j]] = [t[j], t[i]]; } return t; })();
   let ti = 0;
