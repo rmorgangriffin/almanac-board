@@ -217,5 +217,236 @@
     over: s => s.made + s.missed >= 40,
   };
 
-  window.ATARI = [masonry, lander, geese, trails, slalom];
+  /* ---- Dust Bunnies: a swaying drift of dust bunnies sinks toward the floor; the duster at the bottom puffs them away ---- */
+  const bunnies = {
+    name: "Dust Bunnies",
+    init() { const s = { dx: W / 2, puffs: [], lint: [], pts: 0, lives: 3, wave: 0, t: 0, hurt: 0, poofs: [] }; bunnies.wave(s); return s; },
+    wave(s) {
+      s.b = []; s.wave++; s.sink = 0; s.cool = 20;
+      for (let r = 0; r < 4; r++) for (let c = 0; c < (r % 2 ? 6 : 7); c++) s.b.push({ ox: (c - (r % 2 ? 2.5 : 3)) * 15, oy: 8 + r * 8, on: true, r });
+    },
+    pos(s, b) { return { x: W / 2 + b.ox + Math.sin(s.t / 55 + b.r * .7) * 22, y: b.oy + s.sink }; },
+    step(s) {
+      s.t++; if (s.hurt > 0) s.hurt--;
+      s.sink += .012 + s.wave * .004;
+      const live = s.b.filter(b => b.on);
+      // the duster picks the lowest bunny it can reach and steps aside from falling lint
+      let tx = s.dx;
+      if (live.length) { const lo = live.map(b => bunnies.pos(s, b)).sort((a, c) => c.y - a.y || Math.abs(a.x - s.dx) - Math.abs(c.x - s.dx))[0]; tx = lo.x + (s.aim || 0); }
+      const danger = s.lint.find(l => l.y > H - 26 && Math.abs(l.x - s.dx) < 6 && !l.unseen);
+      if (danger) tx = s.dx + (danger.x > s.dx ? -12 : 12);
+      s.dx = clamp(s.dx + clamp(tx - s.dx, -1.4, 1.4), 6, W - 6);
+      if (--s.cool <= 0 && s.puffs.length < 2 && live.length && !s.hurt) { s.puffs.push({ x: s.dx, y: H - 10 }); s.cool = rnd(14, 26); s.aim = Math.random() < .3 ? rnd(-8, 8) : 0; }
+      if (live.length && Math.random() < .014 + s.wave * .007) { const b = live[Math.floor(Math.random() * live.length)], p = bunnies.pos(s, b); s.lint.push({ x: p.x, y: p.y + 3, w: rnd(-.3, .3), unseen: Math.random() < .15 }); }
+      for (const p of s.puffs) {
+        p.y -= 2.2;
+        for (const b of live) { if (!b.on) continue; const q = bunnies.pos(s, b); if (Math.abs(p.x - q.x) < 4 && Math.abs(p.y - q.y) < 3) { b.on = false; p.dead = true; s.pts += 10 * (4 - b.r); s.poofs.push({ x: q.x, y: q.y, life: 14 }); break; } }
+        if (p.y < 0) p.dead = true;
+      }
+      for (const l of s.lint) {
+        l.y += .9; l.x += Math.sin((s.t + l.y) / 6) * .3 + l.w * .2;
+        if (l.y > H - 10 && l.y < H - 4 && Math.abs(l.x - s.dx) < 4 && !s.hurt) { l.dead = true; s.lives--; s.hurt = 50; }
+        if (l.y > H) l.dead = true;
+      }
+      s.puffs = s.puffs.filter(p => !p.dead); s.lint = s.lint.filter(l => !l.dead);
+      for (const p of s.poofs) p.life--; s.poofs = s.poofs.filter(p => p.life > 0);
+      if (!s.b.some(b => b.on)) bunnies.wave(s);
+      else if (live.some(b => bunnies.pos(s, b).y > H - 16)) { s.lives--; s.hurt = 50; bunnies.wave(s); }
+    },
+    draw(x, s, C) {
+      bg(x, C);
+      x.fillStyle = C("line"); x.fillRect(0, H - 3, W, 3); for (let i = 3; i < W; i += 12) x.fillRect(i, H - 4, 6, 1);   // floorboards
+      const hop = (s.t >> 4) & 1;
+      for (const b of s.b) if (b.on) {
+        const { x: bx, y: by } = bunnies.pos(s, b), X = Math.round(bx), Y = Math.round(by);
+        x.fillStyle = b.r < 2 ? C("lilac") : C("fg");
+        x.fillRect(X - 3, Y - 1, 7, 3); x.fillRect(X - 2, Y - 2, 5, 1); x.fillRect(X - 2, Y + 2, 5, 1);
+        x.fillRect(X - 4, Y + hop - 1, 1, 1); x.fillRect(X + 4, Y - hop, 1, 1);   // tufts
+        x.fillRect(X - 1, Y - 4 + hop, 1, 2); x.fillRect(X + 1, Y - 4, 1, 2);       // ears
+        x.fillStyle = C("bg"); x.fillRect(X - 1, Y, 1, 1); x.fillRect(X + 1, Y, 1, 1);
+      }
+      x.fillStyle = C("fg"); for (const p of s.poofs) { const k = 14 - p.life; for (let a = 0; a < 6; a++) x.fillRect(Math.round(p.x + Math.cos(a) * k * .5), Math.round(p.y + Math.sin(a) * k * .4), 1, 1); }
+      x.fillStyle = C("sage"); for (const l of s.lint) x.fillRect(Math.round(l.x), Math.round(l.y), 1, 2);
+      x.fillStyle = C("fg"); for (const p of s.puffs) { x.fillRect(Math.round(p.x) - 1, Math.round(p.y), 3, 1); x.fillRect(Math.round(p.x), Math.round(p.y) - 1, 1, 3); }
+      if (!(s.hurt && (s.hurt >> 2) & 1)) {   // the duster: a handle and a fan of feathers
+        const dx = Math.round(s.dx); x.fillStyle = C("amber");
+        x.fillRect(dx - 1, H - 7, 2, 4); x.fillRect(dx - 4, H - 9, 9, 2); x.fillRect(dx - 3, H - 11, 7, 2); x.fillRect(dx - 1, H - 12, 3, 1);
+      }
+    },
+    score: s => `${s.pts} · ${"♥".repeat(Math.max(0, s.lives))}`,
+    over: s => s.lives <= 0 || s.wave > 6,
+  };
+
+  /* ---- Salvage: a little tug drifts and thrusts through a field of tumbling scrap, cutting it into smaller scrap (line drawing) ---- */
+  const wrap = (v, m) => (v % m + m) % m;
+  const salvage = {
+    name: "Salvage",
+    init() { const s = { sh: { x: W / 2, y: H / 2, a: -Math.PI / 2, vx: 0, vy: 0 }, shots: [], bits: [], pts: 0, lives: 3, wave: 0, dead: 0, cool: 0, sparks: [], t: 0 }; salvage.wave(s); return s; },
+    rock(x, y, size) {
+      const n = 7 + Math.floor(Math.random() * 3), pts = [];
+      for (let i = 0; i < n; i++) pts.push(.65 + Math.random() * .45);
+      const a = Math.random() * Math.PI * 2, v = (.25 + Math.random() * .3) * (4 - size) / 2;
+      return { x, y, size, r: size * 4 + 2, pts, rot: 0, spin: rnd(-.03, .03), vx: Math.cos(a) * v, vy: Math.sin(a) * v, panel: Math.random() < .4 };
+    },
+    wave(s) {
+      s.wave++; s.bits = [];
+      for (let i = 0; i < 2 + s.wave; i++) { const e = Math.random() < .5; s.bits.push(salvage.rock(e ? rnd(0, W) : (Math.random() < .5 ? 4 : W - 4), e ? (Math.random() < .5 ? 4 : H - 4) : rnd(0, H), 3)); }
+    },
+    step(s) {
+      s.t++;
+      const sh = s.sh;
+      if (s.dead > 0) { if (--s.dead === 0) { const clear = s.bits.every(b => Math.hypot(b.x - W / 2, b.y - H / 2) > 22); if (clear) Object.assign(sh, { x: W / 2, y: H / 2, vx: 0, vy: 0 }); else s.dead = 10; } }
+      else {
+        // pick the nearest scrap, lead it, turn toward it; back off when something is about to hit
+        let best = null, bd = 1e9;
+        for (const b of s.bits) { const d = Math.hypot(b.x - sh.x, b.y - sh.y) - b.r; if (d < bd) { bd = d; best = b; } }
+        if (best) {
+          const t = Math.hypot(best.x - sh.x, best.y - sh.y) / 2.4;
+          const want = Math.atan2(best.y + best.vy * t - sh.y, best.x + best.vx * t - sh.x) + (s.wob || 0);
+          let da = wrap(want - sh.a + Math.PI, Math.PI * 2) - Math.PI;
+          sh.a += clamp(da, -.07, .07);
+          if (bd < 10) { sh.vx -= Math.cos(sh.a) * .05; sh.vy -= Math.sin(sh.a) * .05; }
+          else if (bd > 40) { sh.vx += Math.cos(sh.a) * .03; sh.vy += Math.sin(sh.a) * .03; s.thrust = 1; }
+          if (--s.cool <= 0 && Math.abs(da) < .12) { s.shots.push({ x: sh.x + Math.cos(sh.a) * 4, y: sh.y + Math.sin(sh.a) * 4, vx: Math.cos(sh.a) * 2.4 + sh.vx, vy: Math.sin(sh.a) * 2.4 + sh.vy, life: 40 }); s.cool = rnd(10, 18); s.wob = Math.random() < .3 ? rnd(-.25, .25) : 0; }
+        }
+        sh.vx *= .985; sh.vy *= .985; sh.x = wrap(sh.x + sh.vx, W); sh.y = wrap(sh.y + sh.vy, H);
+        for (const b of s.bits) if (Math.hypot(b.x - sh.x, b.y - sh.y) < b.r * .8 + 2) { s.lives--; s.dead = 70; for (let k = 0; k < 10; k++) s.sparks.push({ x: sh.x, y: sh.y, vx: rnd(-1, 1), vy: rnd(-1, 1), life: 30 }); break; }
+      }
+      for (const b of s.bits) { b.x = wrap(b.x + b.vx, W); b.y = wrap(b.y + b.vy, H); b.rot += b.spin; }
+      const born = [];
+      for (const p of s.shots) {
+        p.x = wrap(p.x + p.vx, W); p.y = wrap(p.y + p.vy, H); if (--p.life <= 0) p.dead = true;
+        for (const b of s.bits) if (!b.dead && Math.hypot(b.x - p.x, b.y - p.y) < b.r) {
+          b.dead = p.dead = true; s.pts += [0, 100, 50, 20][b.size];
+          if (b.size > 1) for (let k = 0; k < 2; k++) born.push(salvage.rock(b.x, b.y, b.size - 1));
+          for (let k = 0; k < 4; k++) s.sparks.push({ x: b.x, y: b.y, vx: rnd(-.8, .8), vy: rnd(-.8, .8), life: 18 });
+          break;
+        }
+      }
+      s.bits = s.bits.filter(b => !b.dead).concat(born); s.shots = s.shots.filter(p => !p.dead);
+      for (const p of s.sparks) { p.x += p.vx; p.y += p.vy; p.life--; } s.sparks = s.sparks.filter(p => p.life > 0);
+      if (!s.bits.length) salvage.wave(s);
+    },
+    draw(x, s, C) {
+      bg(x, C);
+      x.fillStyle = C("line"); for (let i = 0; i < 24; i++) x.fillRect((i * 67) % W, (i * 29) % H, 1, 1);
+      x.lineWidth = 1; x.lineJoin = "round";
+      for (const b of s.bits) {
+        x.strokeStyle = b.panel ? C("lilac") : C("fg"); x.beginPath();
+        b.pts.forEach((k, i) => { const a = b.rot + i / b.pts.length * Math.PI * 2, px = b.x + Math.cos(a) * b.r * k, py = b.y + Math.sin(a) * b.r * k; i ? x.lineTo(px, py) : x.moveTo(px, py); });
+        x.closePath(); x.stroke();
+        if (b.panel && b.size > 1) { x.beginPath(); x.moveTo(b.x - b.r * .4, b.y); x.lineTo(b.x + b.r * .4, b.y); x.stroke(); }
+      }
+      x.fillStyle = C("fg"); for (const p of s.shots) x.fillRect(Math.round(p.x), Math.round(p.y), 1, 1);
+      x.fillStyle = C("amber"); for (const p of s.sparks) x.fillRect(Math.round(p.x), Math.round(p.y), 1, 1);
+      if (!s.dead) {   // the tug: a blunt pentagon with a tow hook, and a flicker of exhaust when it thrusts
+        const sh = s.sh, c = Math.cos(sh.a), n = Math.sin(sh.a), P = (f, r) => [sh.x + c * f - n * r, sh.y + n * f + c * r];
+        x.strokeStyle = C("amber"); x.beginPath();
+        [[4, 0], [1, 2.5], [-3, 2.5], [-3, -2.5], [1, -2.5]].forEach(([f, r], i) => { const [px, py] = P(f, r); i ? x.lineTo(px, py) : x.moveTo(px, py); });
+        x.closePath(); x.stroke();
+        if (s.thrust && (s.t >> 1) & 1) { x.strokeStyle = C("sage"); x.beginPath(); const [a1, b1] = P(-3, 0), [a2, b2] = P(-6, 0); x.moveTo(a1, b1); x.lineTo(a2, b2); x.stroke(); }
+        s.thrust = 0;
+      }
+    },
+    score: s => `${s.pts} · ${"▲".repeat(Math.max(0, s.lives))}`,
+    over: s => (s.lives <= 0 && !s.dead) || s.wave > 5,
+  };
+
+  /* ---- Route 9: a chihuahua crosses four lanes of Route 9, then the Mill River on drifting logs and inner tubes ---- */
+  const ROW = 9, LANES = [
+    // row 0 is the far bank, 1-3 the river, 4 the median, 5-8 the road, 9 the near verge
+    null,
+    { river: true, v: .45, len: 22, gap: 40, kind: "log" },
+    { river: true, v: -.6, len: 10, gap: 26, kind: "tube" },
+    { river: true, v: .35, len: 30, gap: 46, kind: "log" },
+    null,
+    { v: -.9, len: 10, gap: 44, kind: "car" },
+    { v: .7, len: 18, gap: 60, kind: "truck" },
+    { v: -1.2, len: 9, gap: 50, kind: "car" },
+    { v: .55, len: 10, gap: 38, kind: "car" },
+    null,
+  ];
+  const route9 = {
+    name: "Route 9",
+    init() {
+      const s = { t: 0, home: 0, lost: 0, objs: LANES.map((L, r) => L ? Array.from({ length: Math.ceil((W + 60) / (L.len + L.gap)) }, (_, i) => ({ x: i * (L.len + L.gap) + rnd(0, L.gap * .5), c: Math.floor(Math.random() * 3) })) : []), splat: 0, flags: [] };
+      route9.spawn(s); return s;
+    },
+    spawn(s) { s.d = { col: 10, row: 9, x: 10 * 8 + 4, hop: 0, from: null, wait: 0 }; },
+    span: L => (L.len + L.gap) * Math.ceil((W + 60) / (L.len + L.gap)),
+    ox(s, r, o, dt) { const L = LANES[r]; return wrap(o.x + L.v * (s.t + dt), route9.span(L)) - 30; },
+    hit(s, r, x, dt) {   // is a car on that spot (road) / is there something to stand on (river), dt frames from now
+      const L = LANES[r]; if (!L) return false;
+      const on = s.objs[r].some(o => { const ox = route9.ox(s, r, o, dt); return x > ox - (L.river ? 0 : 3) && x < ox + L.len + (L.river ? 0 : 3); });
+      return L.river ? !on : on;
+    },
+    safe(s, r, x, from, to) { for (let k = from; k <= to; k += 2) { const L = LANES[r], xx = L && L.river ? x + L.v * k : x; if (xx < 2 || xx > W - 2 || route9.hit(s, r, xx, k)) return false; } return true; },
+    step(s) {
+      s.t++;
+      const d = s.d;
+      if (s.splat > 0) { if (--s.splat === 0) route9.spawn(s); return; }
+      if (d.hop > 0) { d.hop--; if (d.hop === 0) d.from = null; }
+      const L = LANES[d.row];
+      if (L && L.river && !d.hop) d.x += L.v;   // riding a log or a tube
+      if (!d.hop && (d.x < 1 || d.x > W - 1 || (L && route9.hit(s, d.row, d.x, 0)))) { s.lost++; s.splat = 40; s.splatKind = L && L.river ? "splash" : "honk"; return; }
+      if (d.row === 0) { s.home++; s.flags.push(d.x); if (s.flags.length > 6) s.flags.shift(); s.splat = 30; s.splatKind = "home"; return; }
+      if (d.hop || --d.wait > 0) return;
+      // choose a hop: forward if it's safe to land and to stay a moment, otherwise wait, sidestep, or back up
+      const tries = [[-1, 0], [0, 0], [0, -8], [0, 8], [1, 0]];
+      if (Math.random() < .05) tries.unshift([0, Math.random() < .5 ? -8 : 8]);   // now and then a sniff to the side
+      for (const [dr, dx] of tries) {
+        const r = d.row + dr, x = d.x + dx;
+        if (r < 0 || r > 9 || x < 4 || x > W - 4) continue;
+        const LL = LANES[r];
+        if (!LL ? true : route9.safe(s, r, x, 6, 22)) {
+          if (dr === 0 && dx === 0) { d.wait = 4; return; }
+          d.from = { row: d.row, x: d.x }; d.row = r; d.x = x; d.hop = 6; d.wait = Math.random() < .15 ? rnd(10, 30) : 3; return;
+        }
+      }
+      d.wait = 4;
+    },
+    draw(x, s, C) {
+      bg(x, C);
+      const y0 = r => r * ROW;
+      x.fillStyle = C("sage"); x.globalAlpha = .35; x.fillRect(0, y0(0), W, ROW); x.fillRect(0, y0(4), W, ROW); x.fillRect(0, y0(9), W, ROW); x.globalAlpha = 1;
+      x.fillStyle = C("lilac"); x.globalAlpha = .22; x.fillRect(0, y0(1), W, ROW * 3); x.globalAlpha = 1;
+      x.fillStyle = C("lilac"); for (let i = 0; i < 18; i++) x.fillRect(Math.round(wrap(i * 37 + s.t * (i % 2 ? .3 : -.2), W)), y0(1 + i % 3) + 4, 3, 1);   // ripples
+      x.fillStyle = C("line"); x.fillRect(0, y0(5), W, ROW * 4);
+      x.fillStyle = C("amber"); for (let i = 0; i < W; i += 14) x.fillRect(i, y0(7) - 1, 8, 1);   // double yellow at the middle
+      x.fillStyle = C("fg"); for (const r of [6, 8]) for (let i = 0; i < W; i += 16) x.fillRect(i, y0(r) - 1, 6, 1);
+      x.fillStyle = C("fg"); x.font = "5px monospace"; x.fillText("9", W - 7, y0(9) + 7);
+      x.fillStyle = C("amber"); for (const f of s.flags) { x.fillRect(Math.round(f), 1, 1, 7); x.fillRect(Math.round(f) + 1, 1, 3, 2); }
+      LANES.forEach((L, r) => {
+        if (!L) return;
+        for (const o of s.objs[r]) {
+          const X = Math.round(route9.ox(s, r, o, 0)), Y = y0(r);
+          if (L.kind === "log") { x.fillStyle = C("amber"); x.globalAlpha = .7; x.fillRect(X, Y + 2, L.len, 5); x.globalAlpha = 1; x.fillStyle = C("bg"); x.fillRect(X + 4, Y + 4, 1, 1); x.fillRect(X + L.len - 6, Y + 3, 1, 1); }
+          else if (L.kind === "tube") { x.fillStyle = C("fg"); x.fillRect(X + 1, Y + 2, L.len - 2, 5); x.fillStyle = C("lilac"); x.fillRect(X + 3, Y + 4, L.len - 6, 1); }
+          else {
+            x.fillStyle = [C("amber"), C("lilac"), C("fg")][o.c]; x.fillRect(X, Y + 2, L.len, L.kind === "truck" ? 6 : 5);
+            if (L.kind === "truck") { x.fillStyle = C("fg"); x.fillRect(L.v > 0 ? X + L.len - 5 : X, Y + 2, 5, 6); }
+            x.fillStyle = C("bg"); x.fillRect(X + 2, Y + 7, 2, 1); x.fillRect(X + L.len - 4, Y + 7, 2, 1);   // wheels
+            x.fillStyle = C("fg"); x.fillRect(L.v > 0 ? X + L.len - 1 : X, Y + 3, 1, 1);   // headlight
+          }
+        }
+      });
+      const d = s.d;
+      let dy = y0(d.row) + 4, dxp = d.x;
+      if (d.hop && d.from) { const k = d.hop / 6; dy = y0(d.row) * (1 - k) + y0(d.from.row) * k + 4 - Math.sin((1 - k) * Math.PI) * 2; dxp = d.x * (1 - k) + d.from.x * k; }
+      if (s.splat && s.splatKind !== "home") {
+        x.fillStyle = s.splatKind === "splash" ? C("fg") : C("amber");
+        for (let a = 0; a < 8; a++) x.fillRect(Math.round(dxp + Math.cos(a) * (40 - s.splat) * .15), Math.round(dy + Math.sin(a) * (40 - s.splat) * .1), 1, 1);
+      } else {   // the chihuahua: small body, big ears, a curl of tail
+        const X = Math.round(dxp), Y = Math.round(dy);
+        x.fillStyle = C("amber"); x.fillRect(X - 2, Y - 1, 4, 3); x.fillRect(X - 1, Y - 3, 3, 2);
+        x.fillRect(X - 2, Y - 4, 1, 1); x.fillRect(X + 2, Y - 4, 1, 1);   // ears
+        x.fillRect(X - 3, Y - 2, 1, 1);                                    // tail
+        x.fillStyle = C("bg"); x.fillRect(X, Y - 2, 1, 1);
+      }
+    },
+    score: s => `${s.home} home · ${s.lost} lost`,
+    over: s => s.home + s.lost >= 14 && !s.splat,
+  };
+
+  window.ATARI = [masonry, bunnies, lander, salvage, geese, route9, trails, slalom];
 })();
