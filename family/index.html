@@ -91,7 +91,7 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 .out .of .tm { font-family: var(--mono); font-size: .66rem; color: var(--amber); white-space: nowrap; padding-top: .05rem; }
 .out .ev2 .of { justify-content: flex-start; }
 .out .ev2 .of span:not(.tm) { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; margin-bottom: .1rem; }
-.out .ev2 .of .tm { flex: 0 0 5rem; }
+.out .ev2 .of .tm { flex: 0 0 4.2rem; }
 .out .of i { font-style: normal; color: var(--muted); font-size: .64rem; }
 .out .none { font-size: .7rem; color: var(--muted); font-style: italic; }
 .more { font-size: .62rem; color: var(--muted); margin-top: .15rem; padding-left: .4rem; }
@@ -628,7 +628,7 @@ function outStrip() {
     cols.push(`<div class="oc"><h4>${esc(c.name)}</h4>${films.length ? films.map(f => `<div class="of"><span>${esc(f.t)}</span><span class="tm num">${f.times.slice(0, 3).map(tShort).join(" ")}</span></div>`).join("") : `<div class="none">No more shows today</div>`}</div>`);
   }
   const D3 = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const ev = (O.events || []).filter(e => e.date > today || (e.date === today && (!e.time || e.time >= hm))).slice(0, 5);
+  const ev = (O.events || []).filter(e => e.date > today || (e.date === today && (!e.time || e.time >= hm))).slice(0, 4);
   if (ev.length) cols.push(`<div class="oc ev2"><h4>Around Northampton</h4>${ev.map(e => {
     const d = e.date === today ? "Today" : e.date === isoAdd(today, 1) ? "Tmrw" : D3[new Date(e.date + "T12:00").getDay()];
     return `<div class="of"><span class="tm num">${d}${e.time ? " " + t12(e.time) : ""}</span><span>${esc(e.title)}${e.place ? ` <i>${esc(e.place)}</i>` : ""}</span></div>`; }).join("")}</div>`);
