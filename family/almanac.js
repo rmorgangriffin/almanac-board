@@ -343,11 +343,10 @@
     }
     const now = Date.now();
     if (!MK.line && now >= MK.nextHit) {   // the moment: this monkey types a real line, one letter off
-      MK.nextHit = now + 10 * 60000; MK.line = oneWrong(nextLine()); MK.text += MK.text && !MK.text.endsWith(" ") ? "  " : ""; MK.lineStart = MK.text.length; MK.typed = 0; MK.hitAt = 0;
+      MK.nextHit = now + 10 * 60000; MK.line = oneWrong(nextLine()); MK.text += MK.text && !MK.text.endsWith(" ") ? " " : ""; MK.lineStart = MK.text.length; MK.typed = 0; MK.hitAt = 0;
     }
     let add = "";
-    if (MK.line && MK.typed < MK.line.length) { add = MK.line[MK.typed++]; if (MK.typed === MK.line.length) { MK.hitAt = now; add += "  "; } }
-    else if (MK.line && now - MK.hitAt < 12000) add = "";   // a short pause after it lands
+    if (MK.line && MK.typed < MK.line.length) { add = MK.line[MK.typed++]; if (MK.typed === MK.line.length) { MK.hitAt = now; add += " "; } }
     else { add = KEYS[rnd(KEYS.length)]; if (Math.random() < .3) add += KEYS[rnd(KEYS.length)]; }
     if (add) { MK.keys += add.length; MK.text += add; const cut = Math.max(0, MK.text.length - 900); if (cut) { MK.text = MK.text.slice(cut); MK.lineStart -= cut; } }
     if (MK.line && MK.lineStart + MK.line.length <= 0) MK.line = null;
