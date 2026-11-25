@@ -149,7 +149,8 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   const P = D.protos;
   $("protos").innerHTML = `
     <div class="p w2"><h2>${H(P.table)}</h2><div class="tt" id="ttMode">${esc(P.tableStates[0])}</div></div>
-    <div class="p w4"><h2>${H(P.acoustic)}</h2><div class="binary"><div class="lampbox" id="binA"><i></i>${esc(P.acousticOpts[0])}</div><div class="lampbox" id="binB"><i></i>${esc(P.acousticOpts[1])}</div></div></div>
+    <div class="p ${P.nimps ? "w2" : "w4"}"><h2>${H(P.acoustic)}</h2><div class="binary"><div class="lampbox" id="binA"><i></i>${esc(P.acousticOpts[0])}</div><div class="lampbox" id="binB"><i></i>${esc(P.acousticOpts[1])}</div></div></div>
+    ${P.nimps ? `<div class="p w2"><h2>${H(P.nimps)}</h2><div class="binary"><div class="lampbox" id="niA"><i></i>${esc(P.nimpsOpts[0])}</div><div class="lampbox" id="niB"><i></i>${esc(P.nimpsOpts[1])}</div></div></div>` : ""}
     <div class="p w2"><h2>${H([P.spirits[0], ""])}</h2><div class="binary"><div class="lampbox t" id="spT"><i></i>${esc(P.spiritsOpts[0])}</div><div class="lampbox f" id="spF"><i></i>${esc(P.spiritsOpts[1])}</div></div></div>
     <div class="p w2"><h2>${H(P.ohyes)}</h2><div class="ohyes"><span id="ohyes">${esc(P.ohyesWords[1])}</span></div></div>
     <div class="p w2"><h2>${H(P.mail)}</h2><div class="inbox" id="inbox"></div></div>
@@ -233,7 +234,8 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
     lines.push(`<div class="${m[0]}">${t} ${m[0] === "rd" ? "**" : ">"} ${esc(fill(m[1])).replace(/█+/g, x => `<span class="redact">${x}</span>`)}</div>`);
     if (lines.length > 40) lines.shift();
     const el = $("log"); el.innerHTML = lines.join("");
-    while (el.children.length > 1 && el.scrollHeight > el.clientHeight + 1) { el.removeChild(el.firstChild); lines.shift(); }   // no half-cut line at the top
+    const used = () => [...el.children].reduce((h, c) => h + c.offsetHeight, 0);   // bottom-aligned overflow doesn't scroll, so add up the lines
+    while (el.children.length > 1 && used() > el.clientHeight) { el.removeChild(el.firstChild); lines.shift(); }   // no half-cut line at the top
   }
 
   /* critical alerts and the breach flash: rare on the wall */
@@ -282,6 +284,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   function ohTick() { const s = .45 + Math.random() * 1.6, e = $("ohyes"); e.style.transform = `scale(${s.toFixed(2)})`; e.textContent = s > 1.45 ? P.ohyesWords[2] : s > .85 ? P.ohyesWords[1] : P.ohyesWords[0]; e.style.color = s > 1.45 ? "#ffb000" : "#39ff7a"; }
   function flips() {
     const a = Math.random() < .5; $("binA").className = "lampbox" + (a ? " on" : ""); $("binB").className = "lampbox" + (a ? "" : " on");
+    if ($("niA")) { const n = Math.random() < .5; $("niA").className = "lampbox" + (n ? " on" : ""); $("niB").className = "lampbox" + (n ? "" : " on"); }
     const t = Math.random() < .5; $("spT").className = "lampbox t" + (t ? " on" : ""); $("spF").className = "lampbox f" + (t ? "" : " on");
     const y = Math.random() < .35; $("nimY").className = "bin" + (y ? " on" : ""); $("nimN").className = "bin" + (y ? "" : " on");
   }
