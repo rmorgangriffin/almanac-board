@@ -620,7 +620,8 @@ function renderGrid() {
   }
   el.innerHTML = html + out;
   el.insertAdjacentHTML("beforeend", `<div class="legend"><span><i style="--c:var(--amber)"></i>Morgan</span><span><i style="--c:var(--sage)"></i>Corey</span><span><i style="--c:var(--lilac)"></i>Griffano</span></div>`);
-  el.style.gridTemplateRows = out ? "auto repeat(4, minmax(0, 1fr)) minmax(0, 1.65fr) auto" : "auto repeat(5, minmax(0, 1fr)) auto";
+  const big = (out.match(/class="fm"/g) || []).length > 6 || (out.match(/class="of"/g) || []).length > 4;   // the box grows only when there is more to show
+  el.style.gridTemplateRows = out ? `auto repeat(4, minmax(0, 1fr)) minmax(0, ${big ? 1.65 : 1.2}fr) auto` : "auto repeat(5, minmax(0, 1fr)) auto";
 }
 /* Out & about: what's still showing today at the three cinemas, and a few events nearby this week */
 function outStrip() {
