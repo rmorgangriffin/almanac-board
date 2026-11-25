@@ -55,18 +55,18 @@ header .clock { font-size: 2.5rem; text-align: right; }
 .small2 { font-size: 1rem; color: var(--gd); text-align: center; }
 .grid { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: .7rem; min-height: 0; }
 .row { display: grid; grid-template-columns: 12.5rem 1fr 7rem; align-items: center; gap: .45rem; font-size: 1.15rem; margin: .25rem 0; }
-.row > span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row > span:first-child { min-width: 0; line-height: 1.12; overflow-wrap: break-word; }   /* long labels wrap, never clip */
 .row .live { color: #8fd3ff; font-size: .8rem; margin-left: .25rem; }
 .bar { height: .8rem; border: 1px solid var(--gd); position: relative; background: #03100a; }
 .bar b { position: absolute; inset: 0 auto 0 0; width: 100%; background: var(--g); transform-origin: 0 50%; transition: transform 1.5s ease; }
 .bar b.am { background: var(--amber); } .bar b.rd { background: var(--red); }
-.st { text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .st.am { color: var(--amber); } .st.rd { color: var(--red); }
-.sys .row { grid-template-columns: minmax(0, 1fr) 6rem; grid-template-areas: "l s" "b b"; gap: .1rem .4rem; margin: .4rem 0; }
-.sys .row > span:first-child { grid-area: l; } .sys .row.one > span:first-child { grid-column: 1 / -1; white-space: normal; } .sys .row .bar { grid-area: b; } .sys .row .st { grid-area: s; }
+.st { text-align: right; line-height: 1.12; min-width: 0; overflow-wrap: break-word; } .st.am { color: var(--amber); } .st.rd { color: var(--red); }
+.sys .row { grid-template-columns: minmax(0, 1fr) minmax(6rem, max-content); align-items: end; grid-template-areas: "l s" "b b"; gap: .1rem .4rem; margin: .4rem 0; }
+.sys .row > span:first-child { grid-area: l; } .sys .row .st { max-width: 10rem; } .sys .row.one > span:first-child { grid-column: 1 / -1; white-space: normal; } .sys .row .bar { grid-area: b; } .sys .row .st { grid-area: s; }
 .dials { display: grid; grid-template-columns: repeat(3, 1fr); gap: .35rem; text-align: center; font-size: .95rem; }
 .dials .dv { font-size: 1.3rem; }
 .dials .nd { transform-origin: 50px 54px; transition: transform 1.8s ease; }
-.mid .row { grid-template-columns: 9.5rem 1fr 6rem; font-size: 1.05rem; }
+.mid .row { grid-template-columns: minmax(0, 9rem) minmax(2rem, 1fr) minmax(0, 6.5rem); font-size: 1rem; }
 .log { font-family: "Share Tech Mono", monospace; font-size: .92rem; line-height: 1.35; color: #7dffaa; display: flex; flex-direction: column; justify-content: flex-end; height: calc(100% - 2rem); overflow: hidden; }
 .log div { flex: none; }
 .log .am { color: var(--amber); } .log .rd { color: var(--red); }
@@ -231,7 +231,9 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
     if (!m) { for (let k = 0; k < 5; k++) { m = draw(); if (!(wx.tempF == null && /\{(dublinC|tempF|hum|wind)\}/.test(m[1]))) break; } }
     const t = new Date().toLocaleTimeString("en-GB", { timeZone: TZ, hour12: false });
     lines.push(`<div class="${m[0]}">${t} ${m[0] === "rd" ? "**" : ">"} ${esc(fill(m[1])).replace(/█+/g, x => `<span class="redact">${x}</span>`)}</div>`);
-    if (lines.length > 40) lines.shift(); $("log").innerHTML = lines.join("");
+    if (lines.length > 40) lines.shift();
+    const el = $("log"); el.innerHTML = lines.join("");
+    while (el.children.length > 1 && el.scrollHeight > el.clientHeight + 1) { el.removeChild(el.firstChild); lines.shift(); }   // no half-cut line at the top
   }
 
   /* critical alerts and the breach flash: rare on the wall */
