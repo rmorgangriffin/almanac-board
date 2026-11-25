@@ -56,13 +56,13 @@ header .clock { font-size: 2.5rem; text-align: right; }
 .grid { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: .7rem; min-height: 0; }
 .row { display: grid; grid-template-columns: 12.5rem 1fr 7rem; align-items: center; gap: .45rem; font-size: 1.15rem; margin: .25rem 0; }
 .row > span:first-child { min-width: 0; line-height: 1.12; overflow-wrap: break-word; }   /* long labels wrap, never clip */
-.row .live { color: #8fd3ff; font-size: .8rem; margin-left: .25rem; }
+.row .live { color: #8fd3ff; font-size: .7em; margin-left: .25rem; }
 .bar { height: .8rem; border: 1px solid var(--gd); position: relative; background: #03100a; }
 .bar b { position: absolute; inset: 0 auto 0 0; width: 100%; background: var(--g); transform-origin: 0 50%; transition: transform 1.5s ease; }
 .bar b.am { background: var(--amber); } .bar b.rd { background: var(--red); }
 .st { text-align: right; line-height: 1.12; min-width: 0; overflow-wrap: break-word; } .st.am { color: var(--amber); } .st.rd { color: var(--red); }
-.sys .row { grid-template-columns: minmax(0, 1fr) minmax(6rem, max-content); align-items: end; grid-template-areas: "l s" "b b"; gap: .1rem .4rem; margin: .4rem 0; }
-.sys .row > span:first-child { grid-area: l; } .sys .row .st { max-width: 10rem; } .sys .row.one > span:first-child { grid-column: 1 / -1; white-space: normal; } .sys .row .bar { grid-area: b; } .sys .row .st { grid-area: s; }
+#rows { font-size: 1rem; } .sys .row { font-size: 1.15em; grid-template-columns: minmax(0, 1fr) minmax(6rem, max-content); align-items: end; grid-template-areas: "l s" "b b"; gap: .1rem .4rem; margin: .4rem 0; }
+.sys .row > span:first-child { grid-area: l; } .sys .row .st { max-width: 14rem; } .sys .row.one > span:first-child { grid-column: 1 / -1; white-space: normal; } .sys .row .bar { grid-area: b; } .sys .row .st { grid-area: s; }
 .dials { display: grid; grid-template-columns: repeat(3, 1fr); gap: .35rem; text-align: center; font-size: .95rem; }
 .dials .dv { font-size: 1.3rem; }
 .dials .nd { transform-origin: 50px 54px; transition: transform 1.8s ease; }
@@ -163,10 +163,25 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
     grocery: () => N.grocery == null ? null : [Math.min(99, N.grocery * 4), `${N.grocery} ITEMS`],
     amazon: () => N.amazon_inbound == null ? null : [Math.max(5, Math.min(99, N.amazon_inbound * 14)), N.amazon_today ? `${N.amazon_today} TODAY` + (N.amazon_inbound > N.amazon_today ? ` · ${N.amazon_inbound - N.amazon_today} MORE` : "") : N.amazon_inbound ? `${N.amazon_inbound} IN TRANSIT` : "NONE INBOUND"],
   };
-  const rows = D.rows.map(r => { const k = (r[3] || "").startsWith("live:") ? r[3].slice(5) : null; if (k) { const v = LIVE[k] && LIVE[k](); return v ? { l: r[0], v: v[0], s: v[1], live: true } : null; } return { l: r[0], v: r[1], s: r[2], fixed: r[3] === "fixed" }; }).filter(Boolean);
+  const rows = D.rows.map(r => { const k = (r[3] || "").startsWith("live:") ? r[3].slice(5) : null; if (k) { const v = LIVE[k] && LIVE[k](); return v ? { l: r[0], v: v[0], s: v[1], live: true } : null; } if (r[3] === "cycle") { const st = String(r[2]).split(" · ").filter(Boolean); const ph = rnd(0, st.length - 1); return { l: r[0], v: ph === st.length - 1 && ph ? 92 : ph ? 30 + 40 * ph / st.length : 15, s: st[ph] || "", cycle: st, ph, until: Date.now() + rnd(60, 240) * 1000 }; }   // a random phase each showing
+    return { l: r[0], v: r[1], s: r[2], fixed: r[3] === "fixed" }; }).filter(Boolean);
   const sc = v => v > 85 ? "rd" : v > 65 ? "am" : "";
+  // many gauges: shrink the list's text until Primary Systems leaves the auxiliary bank at least a few rows
+  setTimeout(function fitRows() {
+    const box = $("rows"), sys = box.parentElement, col = sys.parentElement; let f = 1;
+    while (f > .62 && sys.offsetHeight > col.clientHeight - 140) { f -= .04; box.style.fontSize = f + "rem"; }
+  }, 50);
   $("rows").innerHTML = rows.map((r, i) => `<div class="row${r.s ? "" : " one"}"><span>${esc(r.l)}${r.live ? '<span class="live">◆LIVE</span>' : ""}</span><div class="bar"><b id="rb${i}"></b></div><span class="st" id="rs${i}">${esc(r.s)}</span></div>`).join("");
-  function drawRows() { rows.forEach((r, i) => { if (!r.live && !r.fixed) r.v = Math.max(5, Math.min(99, r.v + rnd(-4, 4))); const c = sc(r.v); $("rb" + i).className = c; $("rb" + i).style.transform = `scaleX(${(r.v / 100).toFixed(3)})`; $("rs" + i).className = "st " + c; }); }
+  // a cycling gauge steps through its statuses every few minutes: low and steady first, climbing in between, high and red at the last
+  function cycleTick(r, i) {
+    const n = r.cycle.length; if (n < 2) return;
+    if (Date.now() > r.until) { r.ph = (r.ph + 1) % n; r.until = Date.now() + rnd(120, 300) * 1000; $("rs" + i).textContent = r.cycle[r.ph]; }
+    const last = r.ph === n - 1;
+    if (r.ph === 0) r.v = Math.max(8, Math.min(28, r.v + rnd(-2, 2) - (r.v > 28 ? 6 : 0)));
+    else if (last) r.v = r.v < 88 ? r.v + rnd(5, 10) : Math.min(99, r.v + rnd(-1, 2));
+    else { const top = 30 + 55 * r.ph / (n - 1); r.v = Math.min(top, r.v + Math.random() * .9); }   // a slow climb, about 4 minutes
+  }
+  function drawRows() { rows.forEach((r, i) => { if (r.cycle) cycleTick(r, i); else if (!r.live && !r.fixed) r.v = Math.max(5, Math.min(99, r.v + rnd(-4, 4))); const c = sc(r.v); $("rb" + i).className = c; $("rb" + i).style.transform = `scaleX(${(r.v / 100).toFixed(3)})`; $("rs" + i).className = "st " + c; }); }
 
   /* espresso core strip chart (canvas, redrawn once a second) */
   $("chartT").innerHTML = H(D.chart);
