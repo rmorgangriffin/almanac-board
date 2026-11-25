@@ -319,7 +319,7 @@
     const R = (k, id) => `<div class="mkr"><span>${k}</span><b id="${id}">—</b></div>`;
     return `<div class="mk">
       <div class="mkh"><span>${esc(MONKEY_TITLE)}</span><i class="mkrec">● LIVE</i></div>
-      <div class="mkstrip">${R("Typewriter", "mkn")}${R("Subject", "mks")}${R("Keystrokes", "mkk")}${R("Chars / sec", "mkc")}${R("Trial time", "mkt")}${R("Subjects on file", "mkf")}</div>
+      <div class="mkstrip">${R("Typewriter", "mkn")}${R("Subject", "mks")}${R("Keystrokes", "mkk")}${R("Chars / sec", "mkc")}${R("Trial time", "mkt")}</div>
       <div class="mkscreen"><div class="mklab" id="mklab"></div><div class="mkfeed" id="mkfeed"></div></div></div>`;
   }
   function monkeyPaint() {
@@ -332,7 +332,7 @@
     const t = Math.floor((Date.now() - MK.shownAt) / 1000), hh = String(Math.floor(t / 3600)).padStart(2, "0"), mm = String(Math.floor(t / 60) % 60).padStart(2, "0"), ss = String(t % 60).padStart(2, "0");
     MK.cps = Math.max(5.1, Math.min(9.8, MK.cps + (Math.random() - .5) * .6));
     $("mkn").textContent = MK.num ? fmtN(MK.num) : "—"; $("mks").textContent = MK.name || "—"; $("mkk").textContent = fmtN(MK.keys);
-    $("mkc").textContent = MK.connecting ? "0.0" : MK.cps.toFixed(1); $("mkt").textContent = `T+${hh}:${mm}:${ss}`; $("mkf").textContent = "10,000";
+    $("mkc").textContent = MK.connecting ? "0.0" : MK.cps.toFixed(1); $("mkt").textContent = `T+${hh}:${mm}:${ss}`;
   }
   function monkeyTick() {
     if (!$("mkfeed")) return;
