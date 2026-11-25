@@ -633,7 +633,7 @@ function outStrip() {
   if (films.length) cols.push(`<div class="oc fl"><h4>At the movies today</h4><div class="fls">${films.map(f =>
     `<div class="fm"><div class="ft">${esc(f.t)}${f.star ? ` <span class="st">★</span>` : ""}</div><div class="fw">${f.at.map(a => `${esc(a.c)} <span class="num">${a.times.map(tShort).join(", ")}</span>`).join(" · ")}</div></div>`).join("")}</div></div>`);
   const D3 = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const ev = (O.events || []).filter(e => e.date > today || (e.date === today && (!e.time || e.time >= hm))).slice(0, 3);
+  const ev = (O.events || []).filter(e => e.date > today || (e.date === today && (!e.time || e.time >= hm))).slice(0, 4);
   if (ev.length) cols.push(`<div class="oc ev2"><h4>Around Northampton</h4>${ev.map(e => {
     const d = e.date === today ? "Today" : e.date === isoAdd(today, 1) ? "Tmrw" : D3[new Date(e.date + "T12:00").getDay()];
     return `<div class="of"><span class="tm num">${d}${e.time ? " " + t12(e.time) : ""}</span><span>${esc(e.title)}${e.place ? ` <i>${esc(e.place.replace(/,\s*Northampton$/, ""))}</i>` : ""}</span></div>`; }).join("")}</div>`);
