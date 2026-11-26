@@ -61,7 +61,8 @@ function show(board) {
   if (board === current) return;
   current = board;
   const next = front === "a" ? "b" : "a", el = document.getElementById(next), old = document.getElementById(front);
-  const swap = () => { if (el.dataset.shown) return; el.dataset.shown = 1; el.classList.remove("hide"); old.classList.add("hide"); setTimeout(() => { old.src = "about:blank"; delete old.dataset.shown; }, 1000); };
+  // Blanking the old frame fires its load event; drop its handler first, or its stale swap would put the blank frame on top (black screen).
+  const swap = () => { if (el.dataset.shown || front !== next) return; el.dataset.shown = 1; el.classList.remove("hide"); old.classList.add("hide"); setTimeout(() => { old.onload = null; old.src = "about:blank"; delete old.dataset.shown; }, 1000); };
   delete el.dataset.shown;
   el.onload = swap;
   setTimeout(swap, first ? 0 : 8000);   // never wait on slow-loading fonts or images to show the board
