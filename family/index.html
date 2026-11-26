@@ -35,10 +35,12 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 
 /* Header */
 .head { display: grid; grid-template-columns: 1fr auto auto; gap: 2rem; align-items: end; padding: .25rem .2rem 0; }
-/* Thanksgiving: Currier & Ives's "Home to Thanksgiving" faint and sepia behind the header, a Thanksgiving line in Po's panel */
-.board.tg .head { position: relative; isolation: isolate; }
-.board.tg .head::before { content: ""; position: absolute; inset: -.4rem -.6rem 0; z-index: -1; background: url(../img/turkey/home-to-thanksgiving.jpg) center 62% / cover no-repeat; opacity: .2; border-radius: .6rem;
+/* Hero image: a faint, sepia public-domain picture behind the header, a different one each day (family/hero.json,
+   overridable from the Seasonal note's "Hero images" tables). Thanksgiving also puts a line in Po's panel. */
+.head { position: relative; isolation: isolate; }
+.hero { position: absolute; inset: -.4rem -.6rem 0; z-index: -1; background: center / cover no-repeat; opacity: .2; border-radius: .6rem;
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.9), rgba(0,0,0,.55)); mask-image: linear-gradient(to bottom, rgba(0,0,0,.9), rgba(0,0,0,.55)); }
+.hero[hidden] { display: none; }
 .tgcred { position: absolute; right: .3rem; bottom: -1.05rem; font-size: .5rem; letter-spacing: .04em; color: var(--muted); opacity: .75; white-space: nowrap; }
 .dubtg { margin-top: .35rem; font-size: .78rem; line-height: 1.3; color: var(--amber); }
 .dubtg small { display: block; color: var(--muted); font-size: .68rem; }
@@ -453,6 +455,7 @@ html[data-look="rouge"] .grid { --gl: #9f5b5b; }
     </div>
     <div class="time num" id="time"></div>
     <div class="now" id="now"><div class="t">--°</div><div class="s">Northampton</div></div>
+    <div class="hero" id="hero" hidden></div>
     <div class="tgcred" id="tgcred" hidden></div>
   </header>
 
@@ -531,11 +534,32 @@ const dayIso = () => DATE_Q || isoToday();
 const tgDate = y => { const d = new Date(Date.UTC(y, 10, 1)); return `${y}-11-${String(1 + (4 - d.getUTCDay() + 7) % 7 + 21).padStart(2, "0")}`; };
 const isTG = () => { const t = dayIso(); return t === tgDate(+t.slice(0, 4)); };
 window.isTG = isTG;
+/* Hero image for the day: a dated picture (Christmas list, special days, Thanksgiving) or else one from the month's pool,
+   going through the pool in a shuffled order so nothing repeats until the pool is used up. ?hero=file previews one. */
+let HERO_D = {};
+fetch("hero.json", { cache: "no-cache" }).then(r => r.json()).then(j => { HERO_D = j; renderHero(); }).catch(() => {});
+function heroPick() {
+  const t = dayIso(), md = t.slice(5), mm = t.slice(5, 7), H = k => T("hero." + k, HERO_D[k]) || [];
+  const dated = [...H("xmas"), ...H("days")], pools = Object.keys(HERO_D).filter(k => /^m\d\d$/.test(k));
+  const want = new URLSearchParams(location.search).get("hero");
+  if (want) { const all = [...dated.map(r => r.slice(1)), ...pools.flatMap(k => H(k))]; return all.find(r => r[0] === want) || [want, want, ""]; }
+  const d = dated.find(r => r[0] === (isTG() ? "thanksgiving" : md)); if (d) return d.slice(1);
+  const pool = H("m" + mm).slice(); if (!pool.length) return null;
+  let seed = +t.slice(0, 4) * 13 + +mm; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;   // same order all month
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  return pool[(+t.slice(8) - 1) % pool.length];
+}
+let heroNow = "";
+function renderHero() {
+  const h = heroPick(), el = $("hero"), cr = $("tgcred");
+  if (!h) { el.hidden = cr.hidden = true; heroNow = ""; return; }
+  if (h[0] !== heroNow) { heroNow = h[0]; el.style.backgroundImage = `url(../img/hero/${encodeURIComponent(h[0])}.jpg)`; }
+  el.hidden = false; cr.textContent = [h[1], h[2]].filter(Boolean).join(" · "); cr.hidden = !cr.textContent;
+}
 function renderTG() {
   const on = isTG(); document.querySelector(".board").classList.toggle("tg", on);
-  $("tgcred").hidden = !on; $("dubtg").hidden = !on;
+  $("dubtg").hidden = !on; renderHero();
   if (!on) return;
-  $("tgcred").textContent = T("thanksgiving.picCredit", "Currier & Ives, Home to Thanksgiving, 1867 · public domain");
   const t = dayIso(), dinner = new Date(Date.UTC(+t.slice(0, 4), 10, +t.slice(8), 22, 0));   // 5pm Eastern (EST is UTC-5)
   const there = new Intl.DateTimeFormat("en-US", { timeZone: DUB, hour: "numeric", minute: "2-digit" }).format(dinner).replace(":00", "").replace(" AM", "am").replace(" PM", "pm");
   $("dubtg").innerHTML = `${CH("thanksgiving.po", "Just a Thursday in Dublin")}<small>${CH("thanksgiving.poDinner", "When we sit down at {here}, it's {there} there", { here: "5pm", there })}</small>`;
@@ -1115,7 +1139,7 @@ renderWeather(); setInterval(renderWeather, 30 * 60000);
 loadData(); setInterval(loadData, 10 * 60000);
 loadPhotos(); setInterval(loadPhotos, 6 * 3600000);
 loadPast(); setInterval(loadPast, 6 * 3600000);
-let tgWas = isTG(); setInterval(() => { if (isTG() !== tgWas) { tgWas = isTG(); renderTG(); loadPast(); } }, 60000);   // Thanksgiving comes on at midnight
+let tgWas = isTG(); setInterval(() => { if (isTG() !== tgWas) { tgWas = isTG(); renderTG(); loadPast(); } renderHero(); }, 60000);   // Thanksgiving comes on at midnight
 // 20s per photo, 3 photos per set, then switch sets: one minute each
 let ticks = 0;
 setInterval(() => { ticks++; if (ticks % 3 === 0) nextMode(); else nextPhoto(); }, 10 * 60000);   // each photo ~10 minutes; the album switches every half hour
