@@ -367,22 +367,45 @@
   }
   setInterval(monkeyTick, 140); setInterval(monkeyStrip, 1000);
 
+  /* ---------- Thanksgiving only: the Mamdani facial hair monitor (a joke; beard grows ~0.4 mm a day) ---------- */
+  const BEARD_LOG = [["07:02", "Beard confirmed present."], ["08:15", "Overnight growth within normal limits."], ["09:30", "Parade coverage: beard visible, no change."],
+    ["11:10", "No trim detected."], ["12:45", "Moustache and beard remain in agreement."], ["14:20", "Stuffing proximity: low."], ["15:35", "Gravy proximity: elevated. Monitoring."],
+    ["16:50", "Cranberry incident ruled out."], ["18:05", "Post-dinner beard integrity: holding."], ["19:40", "Pie crumb sweep recommended."], ["21:15", "No change. Watch continues tomorrow."]];
+  function beardCard() {
+    const R = (k, id, v = "—") => `<div class="mkr"><span>${k}</span><b id="${id}">${v}</b></div>`;
+    const days = Math.floor((Date.parse(isoToday()) - Date.parse("2026-01-01")) / 864e5) + 1;
+    setTimeout(beardTick, 30);
+    return `<div class="mk">
+      <div class="mkh"><span>${esc(TT("beard.title", "Mamdani Facial Hair Monitor"))}</span><i class="mkrec">${esc(TT("monkeys.live", "● LIVE"))}</i></div>
+      <div class="mkstrip">${R("Subject", "bdS", "Mayor, NYC")}${R("Status", "bdT", "Beard")}${R("Coverage", "bdC", "100%")}${R("Days in office", "bdD", fmtN(days))}${R("Trim", "bdR", "None seen")}${R("Growth today", "bdG")}</div>
+      <div class="mkscreen"><div class="mklab">${esc(TT("beard.feed", "Observation log · Thanksgiving"))}</div><div class="mkfeed" id="bdfeed"></div></div></div>`;
+  }
+  function beardTick() {
+    const g = $("bdG"); if (!g) return;
+    const p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" }).formatToParts(new Date())) p[x.type] = x.value;
+    const secs = +p.hour * 3600 + +p.minute * 60 + +p.second, hm = `${p.hour}:${p.minute}`;
+    g.textContent = (secs * 0.4 / 86400).toFixed(4) + "mm";
+    const f = $("bdfeed"); if (f) { const L = BEARD_LOG.filter(r => r[0] <= hm).slice(-7).map(r => r.join("  ")); const s = (L.length ? L : ["Awaiting first observation."]).join("\n"); if (f.textContent !== s) f.textContent = s; }
+  }
+  setInterval(beardTick, 1000);
+
   /* ---------- the Almanac panel ---------- */
   const CARDS = { moon: moonCard, sky: skyCard, day: dayCard, river: riverCard, meteor: meteorCard, plant: plantCard, bird: birdCard, monkeys: monkeyCard };
   let ci = 0, lastName = null;
-  function showCardNow() { if (lastName && $("almbody")) try { $("almbody").innerHTML = CARDS[lastName](); } catch (e) {} }
+  function showCardNow() { if (lastName && $("almbody")) try { $("almbody").innerHTML = (lastName === "beard" ? beardCard : CARDS[lastName])(); } catch (e) {} }
   function showCard(force) {
     const box = $("almbody"); if (!box || !A) return;
-    const names = Object.keys(CARDS), pin = typeof force === "string" ? force : Q.get("alm");
+    const tgOn = window.isTG && isTG(), names = (tgOn ? ["beard"] : []).concat(Object.keys(CARDS)), pin = typeof force === "string" ? force : Q.get("alm");
     const showing = box.dataset.card === "monkeys";
     const tg = window.isTG && isTG();   // Thanksgiving: the monkeys get a short turn, every three hours or so, so the Thanksgivings of yore have the room
     if (tg && MK.endedAt < 0) MK.endedAt = Date.now() - 120 * 60000;   // and not within the first hour after a load
     if (!pin && showing && Date.now() - MK.shownAt < (tg ? 10 : 20) * 60000) return;   // the monkeys get at least 20 minutes (10 on Thanksgiving)
     if (showing && !pin) MK.endedAt = Date.now();
-    let name = CARDS[pin] ? pin : names[ci++ % names.length];
+    const ALL = Object.assign({ beard: beardCard }, CARDS);
+    let name = ALL[pin] ? pin : names[ci++ % names.length];
     if (!pin && name === "monkeys" && Date.now() - MK.endedAt < (tg ? 180 : 40) * 60000) name = names[ci++ % names.length];
     box.classList.add("off");
-    setTimeout(() => { lastName = name; try { box.innerHTML = CARDS[name](); box.dataset.card = name; box.classList.toggle("pic", !!box.querySelector(".plate")); box.parentElement.classList.toggle("pic", !!box.querySelector(".plate")); } catch (e) { if (!pin) { box.classList.remove("off"); return showCard(); } } box.classList.remove("off"); }, 700);
+    setTimeout(() => { lastName = name; try { box.innerHTML = ALL[name](); box.dataset.card = name; box.classList.toggle("pic", !!box.querySelector(".plate")); box.parentElement.classList.toggle("pic", !!box.querySelector(".plate")); } catch (e) { if (!pin) { box.classList.remove("off"); return showCard(); } } box.classList.remove("off"); }, 700);
   }
 
   /* ---------- a quirky countdown, a different one each day ---------- */
