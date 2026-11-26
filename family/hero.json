@@ -1,4 +1,426 @@
 {
- "xmas": [],
- "days": [["thanksgiving", "home-to-thanksgiving", "Home to Thanksgiving", "Currier & Ives, 1867 · public domain"]]
+ "xmas": [
+  [
+   "11-27",
+   "x-early-winter",
+   "Early Winter",
+   "Currier & Ives, 1869 · Library of Congress · public domain"
+  ],
+  [
+   "11-28",
+   "x-road-winter",
+   "The Road, Winter",
+   "Currier & Ives, 1853 · Library of Congress · public domain"
+  ],
+  [
+   "11-29",
+   "x-shishkin-winter",
+   "Winter",
+   "Ivan Shishkin, 1890 · Russian Museum · public domain"
+  ],
+  [
+   "11-30",
+   "x-durrie-winter",
+   "Winter in the Country",
+   "G. H. Durrie, c. 1858 · NGA · public domain"
+  ],
+  [
+   "12-01",
+   "x-evening-skating",
+   "Evening Skating",
+   "L. Prang & Co., 1887 · Boston Public Library · public domain"
+  ],
+  [
+   "12-02",
+   "x-clonney-sled",
+   "The Sleigh Ride",
+   "James G. Clonney, 1845 · Wikimedia Commons · public domain"
+  ],
+  [
+   "12-03",
+   "x-pleasures-winter",
+   "Pleasures of Winter",
+   "F. F. Palmer, N. Currier, 1855 · LOC · public domain"
+  ],
+  [
+   "12-04",
+   "x-hiroshige-kambara",
+   "Snow at Kambara",
+   "Hiroshige, c. 1833 · Cleveland Museum of Art · public domain"
+  ],
+  [
+   "12-05",
+   "x-frentz-sleigh",
+   "Winter Sleigh Ride",
+   "Rudolf Frentz, by 1918 · Commons · public domain"
+  ],
+  [
+   "12-06",
+   "x-brabrand-church",
+   "Skating at Brabrand",
+   "C. D. Gebauer, 1831 · Wikimedia Commons · public domain"
+  ],
+  [
+   "12-07",
+   "x-return-from-ball",
+   "Return from the Ball",
+   "J. Chełmoński, 1879 · Commons · public domain"
+  ],
+  [
+   "12-08",
+   "x-country-sleigh",
+   "Country Sleigh Ride",
+   "Thomas Birch, 1841 · MFA Boston · public domain"
+  ],
+  [
+   "12-09",
+   "x-christmas-belles",
+   "Christmas Belles",
+   "Winslow Homer, 1869 · The Met · public domain"
+  ],
+  [
+   "12-10",
+   "x-caillebotte-rooftops",
+   "Rooftops in the Snow",
+   "G. Caillebotte, 1878 · Musée d'Orsay · public domain"
+  ],
+  [
+   "12-11",
+   "x-gathering-evergreens",
+   "Gathering Evergreens",
+   "Winslow Homer, 1858 · The Met · public domain"
+  ],
+  [
+   "12-12",
+   "x-birds-snow",
+   "Birds in the Snow",
+   "L. Prang & Co., 1880s · Wikimedia Commons · public domain"
+  ],
+  [
+   "12-13",
+   "x-christmas-market",
+   "Christmas Market",
+   "H. Manizer, 19th c. · Commons · public domain"
+  ],
+  [
+   "12-14",
+   "x-christmas-out-of-doors",
+   "Christmas Out of Doors",
+   "Winslow Homer, 1858 · Harper's Weekly · The Met · public domain"
+  ],
+  [
+   "12-15",
+   "x-larsson-jul-igen",
+   "Now It's Christmas Again",
+   "Carl Larsson, 1907 · Commons · public domain"
+  ],
+  [
+   "12-16",
+   "x-santa-workshop",
+   "Santa's Workshop",
+   "Unknown artist, c. 1909 · postcard · public domain"
+  ],
+  [
+   "12-17",
+   "x-father-christmas",
+   "Old Father Christmas",
+   "Illustrated London News, 1866 · public domain"
+  ],
+  [
+   "12-18",
+   "x-census-bethlehem",
+   "Census at Bethlehem",
+   "P. Bruegel the Elder, 1566 · Brussels · public domain"
+  ],
+  [
+   "12-19",
+   "x-santa-airship",
+   "Santa's Airship",
+   "Unknown artist, c. 1916 · postcard · public domain"
+  ],
+  [
+   "12-20",
+   "x-christmas-eve-church",
+   "Church on Christmas Eve",
+   "J. Hoover & Son, 1878 · Commons · public domain"
+  ],
+  [
+   "12-21",
+   "x-christmas-morning-church",
+   "Churchgoers in the Snow",
+   "H. A. Brendekilde, 1898 · Commons · public domain"
+  ],
+  [
+   "12-22",
+   "x-nast-christmas-eve",
+   "Christmas Eve, 1862",
+   "Thomas Nast · Harper's Weekly · The Met · public domain"
+  ],
+  [
+   "12-23",
+   "x-merry-old-santa",
+   "Merry Old Santa Claus",
+   "Thomas Nast, 1881 · Harper's Weekly · public domain"
+  ],
+  [
+   "12-24",
+   "x-larsson-julafton",
+   "Christmas Eve",
+   "Carl Larsson, 1904 · Wikimedia Commons · public domain"
+  ],
+  [
+   "12-25",
+   "x-waldmuller-christmas-morning",
+   "Christmas Morning",
+   "F. G. Waldmüller, 1844 · Wikimedia Commons · public domain"
+  ],
+  [
+   "12-26",
+   "x-monet-magpie",
+   "The Magpie",
+   "Claude Monet, 1869 · Musée d'Orsay · public domain"
+  ]
+ ],
+ "days": [
+  [
+   "thanksgiving",
+   "home-to-thanksgiving",
+   "Home to Thanksgiving",
+   "Currier & Ives, 1867 · public domain"
+  ],
+  [
+   "01-01",
+   "w-hiroshige-susaki-sunrise",
+   "New Year's Sunrise, Susaki",
+   "Hiroshige, c. 1831 · The Met · public domain"
+  ],
+  [
+   "01-02",
+   "w-trh-january-c",
+   "January, Duc de Berry",
+   "Limbourg brothers, c. 1415 · Chantilly · public domain"
+  ],
+  [
+   "02-01",
+   "s-trh-feb",
+   "February, Très Riches Heures",
+   "Limbourg brothers, c. 1415 · public domain"
+  ],
+  [
+   "03-01",
+   "s-trh-mar",
+   "March, Très Riches Heures",
+   "Limbourg brothers, c. 1415 · public domain"
+  ],
+  [
+   "03-17",
+   "s-glendalough",
+   "Glendalough, Co. Wicklow",
+   "Photochrom, 1890s · LOC · public domain"
+  ],
+  [
+   "12-31",
+   "w-old-new-year",
+   "The Old and the New Year",
+   "Joseph Keppler, Puck, 1885 · LOC · public domain"
+  ]
+ ],
+ "m02": [
+  [
+   "s-vanderneer-ice",
+   "Winter Landscape with Skaters",
+   "Aert van der Neer, c. 1642 · public domain"
+  ],
+  [
+   "s-courbet-snow",
+   "Snow Effect",
+   "Gustave Courbet, c. 1867 · public domain"
+  ],
+  [
+   "s-johnson-sugaring",
+   "Sugaring Off",
+   "Eastman Johnson, c. 1865 · public domain"
+  ],
+  [
+   "s-durrie-farmyard",
+   "Farmyard in Winter",
+   "George Henry Durrie, 1858 · public domain"
+  ],
+  [
+   "s-rockland-ice",
+   "Cutting Ice, Rockland Lake",
+   "Lithograph, 1845 · LOC · public domain"
+  ],
+  [
+   "s-hiroshige-kiso",
+   "Kiso Mountains in Snow",
+   "Hiroshige, 1857 · The Met · CC0"
+  ],
+  [
+   "s-hiroshige-hira",
+   "Evening Snow on Mount Hira",
+   "Hiroshige, c. 1832 · The Met · CC0"
+  ],
+  [
+   "s-hiroshige-inokashira",
+   "Inokashira Shrine in Snow",
+   "Hiroshige, 1838 · LOC · public domain"
+  ],
+  [
+   "s-hokusai-koishikawa",
+   "Morning after Snow, Koishikawa",
+   "Hokusai, c. 1830 · The Met · CC0"
+  ]
+ ],
+ "m03": [
+  [
+   "s-monet-thaw",
+   "The Thaw at Vétheuil",
+   "Claude Monet, 1880 · public domain"
+  ],
+  [
+   "s-sisley-flood",
+   "Flood at Port-Marly",
+   "Alfred Sisley, 1872 · public domain"
+  ],
+  [
+   "s-homer-grafting",
+   "Spring Farm Work: Grafting",
+   "Winslow Homer, 1870 · The Met · CC0"
+  ],
+  [
+   "s-vangogh-orchard",
+   "Orchard in Blossom",
+   "Vincent van Gogh, 1888 · public domain"
+  ],
+  [
+   "s-bonheur-ploughing",
+   "Ploughing in the Nivernais",
+   "After Rosa Bonheur, 1880 · public domain"
+  ],
+  [
+   "s-mauve-sheep",
+   "Sheep on the Dunes",
+   "Anton Mauve, 19th c. · public domain"
+  ],
+  [
+   "s-currier-spring",
+   "American Homestead, Spring",
+   "Currier & Ives, 1869 · Cleveland Museum · CC0"
+  ],
+  [
+   "s-inness-blossoms",
+   "Spring Blossoms, Montclair",
+   "George Inness, c. 1891 · The Met · CC0"
+  ],
+  [
+   "s-daubigny-spring",
+   "Spring",
+   "Charles-François Daubigny, etching · public domain"
+  ],
+  [
+   "s-hokusai-gotenyama",
+   "Fuji from Gotenyama",
+   "Hokusai, c. 1830 · The Met · CC0"
+  ],
+  [
+   "s-hokusai-yoshino",
+   "Cherry Blossoms at Yoshino",
+   "Hokusai, c. 1833 · The Met · CC0"
+  ],
+  [
+   "s-hiroshige-gotenyama",
+   "Evening Cherries at Gotenyama",
+   "Hiroshige, 1831 · The Met · CC0"
+  ],
+  [
+   "s-hiroshige-kamata",
+   "Plum Garden at Kamata",
+   "Hiroshige, 1857 · The Met · CC0"
+  ],
+  [
+   "s-cherry-branch",
+   "Blossoming Cherry",
+   "Japanese print, c. 1830 · Rijksmuseum · CC0"
+  ]
+ ],
+ "m12": [
+  [
+   "w-friedrich-church",
+   "Winter Landscape with Church",
+   "C. D. Friedrich, 1811 · Commons · public domain"
+  ],
+  [
+   "w-hiroshige-year-end-fair",
+   "Year-End Fair, Asakusa",
+   "Hiroshige, c. 1836 · The Met · public domain"
+  ],
+  [
+   "w-currier-homestead",
+   "American Homestead Winter",
+   "Currier & Ives, 1868 · LOC · public domain"
+  ],
+  [
+   "w-thaulow-winter",
+   "Winter",
+   "Frits Thaulow, 1886 · Commons · public domain"
+  ]
+ ],
+ "m01": [
+  [
+   "w-bruegel-hunters",
+   "Hunters in the Snow",
+   "Bruegel the Elder, 1565 · KHM Vienna · public domain"
+  ],
+  [
+   "w-currier-newengland",
+   "New England Winter Scene",
+   "N. Currier, 1861 · Cleveland Museum · public domain"
+  ],
+  [
+   "w-homer-skating",
+   "Winter: A Skating Scene",
+   "Winslow Homer, 1868 · The Met · public domain"
+  ],
+  [
+   "w-avercamp-skating",
+   "Skating Scene",
+   "Hendrick Avercamp, c. 1620 · Commons · public domain"
+  ],
+  [
+   "w-hokusai-sumida",
+   "Snow on the Sumida River",
+   "Hokusai, c. 1833 · The Met · public domain"
+  ],
+  [
+   "w-bening-villagers",
+   "Villagers Walking to Church",
+   "Simon Bening, c. 1550 · Getty · public domain"
+  ],
+  [
+   "w-hiroshige-oi",
+   "Oi on the Kisokaido",
+   "Hiroshige, c. 1837 · Musée Guimet · public domain"
+  ],
+  [
+   "w-kiyochika-toshogu",
+   "Heavy Snow at Toshogu, Ueno",
+   "Kiyochika, 1879 · LACMA · public domain"
+  ],
+  [
+   "w-courbet-village",
+   "Village Girl in the Snow",
+   "Gustave Courbet, 1866 · Commons · public domain"
+  ],
+  [
+   "w-kuniyoshi-nichiren",
+   "Nichiren in the Snow",
+   "Kuniyoshi, c. 1840 · The Met · public domain"
+  ],
+  [
+   "w-hiroshige-akabane",
+   "Snow at Akabane, Shiba",
+   "Hiroshige, c. 1837 · The Met · public domain"
+  ]
+ ]
 }
