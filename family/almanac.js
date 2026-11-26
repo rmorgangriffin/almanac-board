@@ -52,7 +52,7 @@
       const d = new Date(now.getTime() + i * 3.69 * DAY), a = A.MoonPhase(d);
       return `<div class="mc${i ? "" : " on"}">${face(a, 30)}<div class="md">${i ? fmt(d, TZ, { month: "short", day: "numeric" }) : "Tonight"}</div><div class="mp">${phaseName(a)[1]}</div></div>`;
     }).join("");
-    return `<div class="alm-k">The Moon</div>
+    return `<div class="alm-k">${esc(window.T ? T("alm.moon", "The Moon") : "The Moon")}</div>
       <div class="moonrow">${face(ang, 112, "big")}<div class="mtxt"><div class="alm-t">${en}</div><div class="alm-la">${la}</div>
         <div class="alm-s">${age.toFixed(1)} days old · ${lit}% lit</div></div></div>
       <div class="mstrip">${strip}</div>
@@ -89,7 +89,7 @@
       const s = Math.round((today.len - yest.len) * 3600), a = Math.abs(s);
       delta = `${Math.floor(a / 60)}m ${a % 60}s ${s < 0 ? "less" : "more"} than yesterday`;
     }
-    return `<div class="alm-k">Daylight</div>
+    return `<div class="alm-k">${esc(window.T ? T("alm.day", "Daylight") : "Daylight")}</div>
       <svg class="alm-day" viewBox="0 0 ${W} ${H}" aria-hidden="true">
         <defs><pattern id="hatch" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="3" class="ink"/></pattern></defs>
         <rect class="ink" x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="none"/>
@@ -121,11 +121,11 @@
       const eq = A.Equator(A.Body[n], t, OBS, true, true), h = A.Horizon(t, OBS, eq.ra, eq.dec, "normal");
       return h.altitude > 5 ? `${n} ${where(h)}` : null;
     }).filter(Boolean);
-    return `<div class="alm-k">Tonight's Sky</div>
+    return `<div class="alm-k">${esc(window.T ? T("alm.sky", "Tonight's Sky") : "Tonight's Sky")}</div>
       <img class="plate" src="../img/sky/${k}.jpg" alt="">
       <div class="alm-t">${la}, ${en}</div>
       <div class="alm-s">${where(best[1]).replace(/^./, c => c.toUpperCase())} at 9 pm</div>
-      <div class="alm-s">${planets.length ? planets.join(" · ") : "No bright planets up at 9 pm"}</div>
+      <div class="alm-s">${planets.length ? planets.join(" · ") : (window.T ? T("alm.skyNone", "No bright planets up at 9 pm") : "No bright planets up at 9 pm")}</div>
       <div class="alm-c">Johannes Hevelius, Uranographia, 1690 (drawn as on a globe, so mirrored) · public domain</div>`;
   }
 
@@ -175,8 +175,8 @@
     const ticks = [0, 7, 14, 21, 28].map(k => last[0] - k * DAY).filter(ts => ts >= start).map(ts => `<line class="rule" x1="${X(ts)}" x2="${X(ts)}" y1="${top}" y2="${bot}"/><text x="${X(ts)}" y="${H - 5}" text-anchor="${ts === last[0] ? "end" : "middle"}">${ts === last[0] ? "today" : fmt(new Date(ts), TZ, { month: "short", day: "numeric" })}</text>`).join("");
     const nToday = R.norm && R.norm[md(last[0])];
     const vsNormal = nToday ? (last[1] < nToday[0] ? `below normal for late ${fmt(new Date(last[0]), TZ, { month: "long" })} (usually ${Math.round(nToday[1]).toLocaleString("en-US")})` : last[1] > nToday[2] ? `above normal for the time of year (usually ${Math.round(nToday[1]).toLocaleString("en-US")})` : "about normal for the time of year") : "";
-    return `<div class="alm-k">The River</div>
-      <div class="alm-t">The Connecticut at Holyoke</div>
+    return `<div class="alm-k">${esc(window.T ? T("alm.river", "The River") : "The River")}</div>
+      <div class="alm-t">${esc(window.T ? T("alm.riverName", "The Connecticut at Holyoke") : "The Connecticut at Holyoke")}</div>
       <svg class="alm-day" viewBox="0 0 ${W} ${H}" aria-hidden="true"><rect class="ink" x="${P}" y="${top}" width="${W - 2 * P}" height="${bot - top}" fill="none"/>${ticks}
         ${bandD ? `<path d="${bandD}" class="normband"/><path d="${med}" class="normline" fill="none"/>` : ""}
         <path d="${line(q)}" class="ink curve" fill="none"/>
@@ -197,7 +197,7 @@
     const [iso, name, rad, zhr, nights] = list[0], n = daysTo(iso);
     const lit = Math.round(A.Illumination(A.Body.Moon, new Date(iso + "T08:00:00Z")).phase_fraction * 100);
     const moon = lit < 25 ? "a dark sky, with little moonlight" : lit < 60 ? `a ${lit}% moon, so some glare` : `a ${lit}% moon washing out the fainter ones`;
-    return `<div class="alm-k">Shooting Stars</div>
+    return `<div class="alm-k">${esc(window.T ? T("alm.meteor", "Shooting Stars") : "Shooting Stars")}</div>
       <img class="plate" src="../img/leonids-1833.jpg" alt="">
       <div class="alm-t">The ${name}</div>
       <div class="alm-s">${n === 0 ? "Peak tonight" : n === 1 ? "Peak tomorrow night" : `Peak in ${n} days`}: the nights of ${nights}</div>
@@ -225,7 +225,7 @@
   function plantCard() {
     const t = isoToday(), week = Math.floor((Date.parse(t) - Date.parse(t.slice(0, 4) + "-01-01")) / DAY / 7) + 1;
     const p = [...PLANTS].reverse().find(x => week >= x[0]) || PLANTS[0];
-    return `<div class="alm-k">In Season</div>
+    return `<div class="alm-k">${esc(window.T ? T("alm.plant", "In Season") : "In Season")}</div>
       <img class="plate" src="../img/bot/${p[1]}.jpg" alt="">
       <div class="alm-t">${p[2]}</div><div class="alm-la">${p[3]}</div>
       <div class="alm-s">${p[4]}</div>
@@ -240,7 +240,7 @@
     const seen = b.seen ? fmt(new Date(b.seen + "T12:00:00Z"), TZ, { month: "short", day: "numeric" }) : "";
     const m = /^(.*?)(?: after)? John James Audubon, (.*?), (\d{4})/.exec(b.plate_title || "");
     const credit = m ? `${b.plate_title.includes("Havell") ? "Robert Havell after " : ""}John James Audubon, ${m[2]}, ${m[3]}` : (b.plate_title || "Audubon, The Birds of America");
-    return `<div class="alm-k">Bird of the Day</div>
+    return `<div class="alm-k">${esc(window.T ? T("alm.bird", "Bird of the Day") : "Bird of the Day")}</div>
       <img class="plate" src="${esc(b.plate)}" alt="">
       <div class="alm-t">${esc(b.common)}</div><div class="alm-la">${esc(b.sci)}</div>
       <div class="alm-s">${b.source === "ebird-notable" ? "A notable sighting" : "Seen"} near Leeds${seen ? ` on ${seen}` : ""}${b.sightings > 1 ? `, ${b.sightings} reports this week` : ""}</div>
@@ -318,7 +318,7 @@
     setTimeout(switchChannel, 50);
     const R = (k, id) => `<div class="mkr"><span>${k}</span><b id="${id}">—</b></div>`;
     return `<div class="mk">
-      <div class="mkh"><span>${esc(MONKEY_TITLE)}</span><i class="mkrec">● LIVE</i></div>
+      <div class="mkh"><span>${esc(window.T ? T("alm.monkeys", MONKEY_TITLE) : MONKEY_TITLE)}</span><i class="mkrec">● LIVE</i></div>
       <div class="mkstrip">${R("Typewriter", "mkn")}${R("Subject", "mks")}${R("Keystrokes", "mkk")}${R("Chars / sec", "mkc")}${R("Trial time", "mkt")}</div>
       <div class="mkscreen"><div class="mklab" id="mklab"></div><div class="mkfeed" id="mkfeed"></div></div></div>`;
   }
@@ -376,26 +376,29 @@
 
   /* ---------- a quirky countdown, a different one each day ---------- */
   function nextMD(md) { const t = isoToday(), y = +t.slice(0, 4); let iso = `${y}-${md}`; if (iso < t) iso = `${y + 1}-${md}`; return iso; }
+  // the countdown templates come from the Family board note (DATA.copy.odd); {n} is shown bold, {s} is "s" unless n is 1
+  const OD = (k, d, v = {}) => window.CH ? CH("odd." + k, d, v) : d.replace(/\{(\w+)\}/g, (m, x) => x in v ? v[x] : m);
+  const B = n => `<b>${n}</b>`, S = n => n === 1 ? "" : "s";
   function oddLines() {
     const now = new Date(), t = isoToday(), y = +t.slice(0, 4), L = [];
     if (A) {
       const f = nextFull(now), fd = daysTo(isoIn(f.date, TZ));
-      if (fd > 0) L.push(`<b>${fd}</b> ${fd === 1 ? "day" : "days"} until the ${f.name} Moon is full`);
+      if (fd > 0) L.push(OD("moon", "{n} day{s} until the {moon} Moon is full", { n: B(fd), s: S(fd), moon: f.name }));
       const s = A.Seasons(y), s2 = A.Seasons(y + 1);
       const dec = isoIn(s.dec_solstice.date, TZ), jun = isoIn(s.jun_solstice.date, TZ) >= t ? isoIn(s.jun_solstice.date, TZ) : isoIn(s2.jun_solstice.date, TZ);
       const decN = dec >= t ? dec : isoIn(s2.dec_solstice.date, TZ);
-      if (daysTo(decN) < daysTo(jun)) L.push(daysTo(decN) ? `<b>${daysTo(decN)}</b> days until the winter solstice, and then the light starts coming back` : "The winter solstice: from tomorrow the days get longer");
-      else L.push(daysTo(jun) ? `<b>${daysTo(jun)}</b> days of lengthening days left, until the summer solstice` : "The summer solstice: the longest day of the year");
+      if (daysTo(decN) < daysTo(jun)) L.push(daysTo(decN) ? OD("winter", "{n} days until the winter solstice, and then the light starts coming back", { n: B(daysTo(decN)) }) : OD("winterDay", "The winter solstice: from tomorrow the days get longer"));
+      else L.push(daysTo(jun) ? OD("summer", "{n} days of lengthening days left, until the summer solstice", { n: B(daysTo(jun)) }) : OD("summerDay", "The summer solstice: the longest day of the year"));
     }
-    const bloom = daysTo(nextMD("06-16")); if (bloom) L.push(`<b>${bloom}</b> days until Bloomsday`);
+    const bloom = daysTo(nextMD("06-16")); if (bloom) L.push(OD("bloomsday", "{n} days until Bloomsday", { n: B(bloom) }));
     const pets = [["07-27", "Hercules"], ["10-05", "Nimona"], ["07-01", "Buster & Lucille"]].map(([md, n]) => [daysTo(nextMD(md)), n]).sort((a, b) => a[0] - b[0])[0];
-    if (pets[0]) L.push(`<b>${pets[0]}</b> days until ${pets[1]}’s next gotcha day`);
-    const moon = nextMD("07-20"); L.push(`<b>${daysTo(moon)}</b> days until the ${+moon.slice(0, 4) - 1969}th anniversary of the first moon landing`);
+    if (pets[0]) L.push(OD("gotcha", "{n} days until {pet}’s next gotcha day", { n: B(pets[0]), pet: esc(pets[1]) }));
+    const moon = nextMD("07-20"); L.push(OD("moonLanding", "{n} days until the {nth} anniversary of the first moon landing", { n: B(daysTo(moon)), nth: `${+moon.slice(0, 4) - 1969}th` }));
     let leap = y; while (!(leap % 4 === 0 && (leap % 100 !== 0 || leap % 400 === 0)) || `${leap}-02-29` < t) leap++;
-    L.push(`<b>${daysTo(`${leap}-02-29`)}</b> days until the next leap day, February 29, ${leap}`);
-    L.push(`<b>${daysTo("2061-07-28").toLocaleString("en-US")}</b> days until Halley’s Comet swings back round the Sun`);
+    L.push(OD("leap", "{n} days until the next leap day, February 29, {year}", { n: B(daysTo(`${leap}-02-29`)), year: leap }));
+    L.push(OD("halley", "{n} days until Halley’s Comet swings back round the Sun", { n: B(daysTo("2061-07-28").toLocaleString("en-US")) }));
     const xmas = daysTo(nextMD("12-25"));
-    L.push(xmas === 0 ? "Christmas: today" : `<b>${xmas}</b> ${xmas === 1 ? "day" : "days"} until Christmas`);
+    L.push(xmas === 0 ? OD("christmasDay", "Christmas: today") : OD("christmas", "{n} day{s} until Christmas", { n: B(xmas), s: S(xmas) }));
     return L;
   }
   function renderOdd() {
@@ -483,17 +486,19 @@
   function renderBanner() {
     const el = $("skybanner"); if (!el) return;
     const force = Q.get("banner"), parts = [];
-    if (auroraKp >= 6 || force === "aurora") parts.push(`<b>Northern lights possible tonight.</b> NOAA forecasts a Kp of ${force === "aurora" ? "6.7" : auroraKp.toFixed(1)}; look low to the north after dark.`);
+    const SB = (k, d, v) => window.CH ? CH("sky." + k, d, v, "b") : d.replace(/\*([^*]+)\*/g, "<b>$1</b>").replace(/\{(\w+)\}/g, (m, x) => v[x]);
+    if (auroraKp >= 6 || force === "aurora") parts.push(SB("aurora", "*Northern lights possible tonight.* NOAA forecasts a Kp of {kp}; look low to the north after dark.", { kp: force === "aurora" ? "6.7" : auroraKp.toFixed(1) }));
     const p = issPass || (force === "iss" ? { start: new Date(Date.now() + 3600000), end: new Date(Date.now() + 3600000 + 300000), startAz: 300, endAz: 120, max: 54 } : null);
     if (p) {
       const mins = Math.max(1, Math.round((p.end - p.start) / 60000));
-      parts.push(`<b>Look up: the ISS passes over at ${hm(p.start)}</b>, from the ${dir16(p.startAz)} to the ${dir16(p.endAz)}, ${mins} minute${mins > 1 ? "s" : ""}, up to ${Math.round(p.max)}° high.`);
+      parts.push(SB("iss", "*Look up: the ISS passes over at {time}*, from the {from} to the {to}, {mins} minute{s}, up to {height}° high.", { time: hm(p.start), from: dir16(p.startAz), to: dir16(p.endAz), mins, s: mins > 1 ? "s" : "", height: Math.round(p.max) }));
     }
     el.innerHTML = parts.join("<br>"); el.hidden = !parts.length;
   }
 
   function daily() { renderOdd(); renderGa(); }
   daily(); renderTide(); loadRiver().catch(() => {}); showCard(); checkAurora(); checkISS();
+  document.addEventListener("copy", () => { renderOdd(); renderBanner(); showCardNow(); });
   setInterval(checkAurora, 3 * 3600000); setInterval(checkISS, 30 * 60000);
   let lastDay = isoToday();
   setInterval(() => { if (isoToday() !== lastDay) { lastDay = isoToday(); daily(); } renderTide(); }, 5 * 60000);

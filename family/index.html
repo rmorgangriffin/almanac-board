@@ -462,7 +462,7 @@ html[data-look="rouge"] .grid { --gl: #9f5b5b; }
   <section class="panel past" id="past" aria-label="This month in past years" hidden>
     <div class="layer"><img class="bg" alt=""><img class="fg" alt=""></div>
     <div class="layer"><img class="bg" alt=""><img class="fg" alt=""></div>
-    <div class="ttl"><b id="pastmonth">Novembers</b><span>of yore</span></div>
+    <div class="ttl"><b id="pastmonth">Novembers</b><span id="yoresfx">of yore</span></div>
     <div class="cap" id="pastcap"></div>
   </section>
   <section class="panel alm" id="alm" aria-label="Almanac"><div class="almbody" id="almbody"></div></section>
@@ -481,8 +481,8 @@ html[data-look="rouge"] .grid { --gl: #9f5b5b; }
     <div class="side">
       <div class="mode dublin dub">
         <div>
-          <h2>Po in Dublin</h2>
-          <div class="ga">Po i mBaile Átha Cliath</div>
+          <h2 id="poh">Po in Dublin</h2>
+          <div class="ga" id="poga">Po i mBaile Átha Cliath</div>
           <div class="gadate" id="gadate"></div>
         </div>
         <div class="dt num" id="dubtime"></div>
@@ -491,8 +491,8 @@ html[data-look="rouge"] .grid { --gl: #9f5b5b; }
         <div class="tide" id="tide" hidden></div>
       </div>
       <div class="mode quad quadtext">
-        <blockquote>Oh, those precious days amongst the ivy, beneath the stately elms upon the quad!</blockquote>
-        <div class="foot"><div class="pennant">RAH! <small>RAH!</small></div><div class="num" id="quadcap"></div></div>
+        <blockquote id="elmsq">Oh, those precious days amongst the ivy, beneath the stately elms upon the quad!</blockquote>
+        <div class="foot"><div class="pennant" id="pennant">RAH! <small>RAH!</small></div><div class="num" id="quadcap"></div></div>
         <img class="cimg" id="cimg" alt="">
         <div class="ccred" id="ccred"></div>
       </div>
@@ -510,6 +510,19 @@ const CAL = { morgan: "var(--amber)", corey: "var(--sage)", family: "var(--lilac
 const $ = id => document.getElementById(id);
 const DAY = 86400000;
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+/* Wording from the vault notes "DAKboard copy/Family board" and "Seasonal" arrives in the encrypted data as DATA.copy;
+   anything missing falls back to the built-in wording here. In the notes, *word* is the amber highlight and " // " starts the small part. */
+let COPY = {};
+const T = (k, d) => { let v = COPY; for (const p of k.split(".")) v = v && typeof v === "object" ? v[p] : undefined; return v == null || v === "" ? d : v; };
+const CH = (k, d, vars = {}, tag = "em") => esc(T(k, d)).replace(/\*([^*]+)\*/g, `<${tag}>$1</${tag}>`).replace(/ \/\/ (.*)$/, " <small>$1</small>").replace(/\{(\w+)\}/g, (m, x) => x in vars ? vars[x] : m);
+window.T = T; window.CH = CH;
+function applyCopy() {
+  $("poh").textContent = T("po.heading", "Po in Dublin"); $("poga").textContent = T("po.irish", "Po i mBaile Átha Cliath");
+  $("elmsq").textContent = T("elms.quote", "Oh, those precious days amongst the ivy, beneath the stately elms upon the quad!");
+  $("pennant").innerHTML = CH("elms.pennant", "RAH! // RAH!"); $("yoresfx").textContent = T("yore.suffix", "of yore");
+  if (typeof setPastTitle === "function") setPastTitle();
+  document.dispatchEvent(new Event("copy"));
+}
 
 function parts(date, tz) {
   const o = {}; for (const p of new Intl.DateTimeFormat("en-US", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit", weekday: "short", hour: "numeric", minute: "2-digit", hour12: true }).formatToParts(date)) o[p.type] = p.value;
@@ -561,7 +574,7 @@ async function renderWeather() {
     const w = await weather(DUBLIN, DUB), c = w.current, d = w.daily;
     $("dubnow").innerHTML = `${icon(c.weather_code)}<b class="num">${Math.round(c.temperature_2m)}°</b><span>${kind(c.weather_code)[1]}</span>`;
     const diff = window.HOME_TEMP != null ? Math.round(c.temperature_2m - window.HOME_TEMP) : null;
-    $("dubx").textContent = [d.sunset ? `Sunset ${hm12(d.sunset[0])}` : "", diff == null ? "" : diff === 0 ? "same as Leeds" : `${Math.abs(diff)}° ${diff > 0 ? "warmer" : "colder"} than Leeds`].filter(Boolean).join(" · ");
+    $("dubx").innerHTML = [d.sunset ? CH("po.sunset", "Sunset {time}", { time: hm12(d.sunset[0]) }) : "", diff == null ? "" : diff === 0 ? CH("po.same", "same as Leeds") : diff > 0 ? CH("po.warmer", "{n}° warmer than Leeds", { n: Math.abs(diff) }) : CH("po.colder", "{n}° colder than Leeds", { n: Math.abs(diff) })].filter(Boolean).join(" · ");
     if (window.wxDub) wxDub(c.weather_code);
     $("dubfc").innerHTML = d.time.slice(1, 4).map((t, i) => `<div><div class="label">${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dowOf(t)]}</div><div class="i">${icon(d.weather_code[i + 1])}</div><div class="num">${Math.round(d.temperature_2m_max[i + 1])}° <span>${Math.round(d.temperature_2m_min[i + 1])}°</span></div></div>`).join("");
   } catch (e) {}
@@ -585,8 +598,8 @@ function renderWork() {
   if (!DATA) return;
   const today = isoToday(), hm = nowHM();
   const days = (DATA.work || []).filter(d => d.date >= today).slice(0, 3);
-  el.innerHTML = `<div class="label">Bloom Works</div>` + days.map(d => {
-    const rel = d.date === today ? "Today" : d.date === isoAdd(today, 1) ? "Tomorrow" : "";
+  el.innerHTML = `<div class="label">${esc(T("labels.work", "Bloom Works"))}</div>` + days.map(d => {
+    const rel = d.date === today ? esc(T("labels.today", "Today")) : d.date === isoAdd(today, 1) ? esc(T("labels.tomorrow", "Tomorrow")) : "";
     const name = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][dowOf(d.date)];
     const evs = d.events || [];
     const items = evs.map(e => {
@@ -634,20 +647,20 @@ function outStrip() {
   const films = P.map(f => ({ t: f.t, star: f.star, at: f.at.map(a => ({ c: a.c, times: a.times.filter(x => x >= hm) })).filter(a => a.times.length) }))
     .filter(f => f.at.length).slice(0, 8);
   films.forEach(f => f.at.forEach(a => a.times = a.times.slice(0, f.at.length > 1 ? 2 : 3)));   // one line of times per film
-  if (films.length) cols.push(`<div class="oc fl"><h4>At the movies today</h4><div class="fls">${films.map(f =>
+  if (films.length) cols.push(`<div class="oc fl"><h4>${esc(T("labels.movies", "At the movies today"))}</h4><div class="fls">${films.map(f =>
     `<div class="fm"><div class="ft">${esc(f.t)}${f.star ? ` <span class="st">★</span>` : ""}</div><div class="fw">${f.at.map(a => `${esc(a.c)} <span class="num">${a.times.map(tShort).join(", ")}</span>`).join(" · ")}</div></div>`).join("")}</div></div>`);
   const D3 = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const ev = (O.events || []).filter(e => e.date > today || (e.date === today && (!e.time || e.time >= hm))).slice(0, 6);
-  if (ev.length) cols.push(`<div class="oc ev2"><h4>Around Northampton</h4>${ev.map(e => {
+  if (ev.length) cols.push(`<div class="oc ev2"><h4>${esc(T("labels.events", "Around Northampton"))}</h4>${ev.map(e => {
     const d = e.date === today ? "Today" : e.date === isoAdd(today, 1) ? "Tmrw" : D3[new Date(e.date + "T12:00").getDay()];
     return `<div class="of"><span class="tm num">${d}${e.time ? " " + t12(e.time) : ""}</span><span>${esc(e.title)}${e.place ? ` <i>${esc(e.place.replace(/,\s*Northampton$/, ""))}</i>` : ""}</span></div>`; }).join("")}</div>`);
   if (!films.length && !ev.length) return "";
   return `<div class="out" style="grid-template-columns: ${films.length ? "minmax(0, 1.45fr)" : ""}${ev.length ? " minmax(0, 1fr)" : ""}">${cols.join("")}</div>`;
 }
 async function loadData() {
-  try { DATA = await unlock("data.enc"); }
+  try { DATA = await unlock("data.enc"); COPY = (DATA && DATA.copy) || {}; applyCopy(); }
   catch (e) {
-    if (!DATA) $("work").innerHTML = `<div class="label">Bloom Works</div><div class="msg">${e.message === "nokey" ? "This board needs its key in the address (after #)." : "Calendar data isn't available yet."}</div>`;
+    if (!DATA) $("work").innerHTML = `<div class="label">${esc(T("labels.work", "Bloom Works"))}</div><div class="msg">${e.message === "nokey" ? "This board needs its key in the address (after #)." : "Calendar data isn't available yet."}</div>`;
   }
   renderWork(); renderGrid();
 }
@@ -730,14 +743,19 @@ function nextMode() { mi++; showPhoto(); }
 
 /* ---------- This month in past years ---------- */
 // One large photo from this month in earlier years, changing about every half hour.
-let PAST = [], pastNext = 0;
+let PAST = [], pastNext = 0, PAST_TITLE = "";
+const MONTHS_YORE = ["Januaries", "Februaries", "Marches", "Aprils", "Mays", "Junes", "Julys", "Augusts", "Septembers", "Octobers", "Novembers", "Decembers"];
+function setPastTitle() {   // "Novembers" of yore, or "Hanukkahs" when the publisher picked Hanukkah photos
+  const m = +new Intl.DateTimeFormat("en-US", { timeZone: TZ, month: "numeric" }).format(new Date()) - 1;
+  $("pastmonth").textContent = PAST_TITLE ? T("yore.hanukkah", PAST_TITLE) : ((T("yore.months", MONTHS_YORE) || MONTHS_YORE)[m] || MONTHS_YORE[m]);
+}
 async function loadPast() {
   let pd = {}; try { pd = await unlock("/almanac-board-photos/past.enc"); } catch (e) {}
   PAST = pd.photos || [];
   const band = $("past"), board = document.querySelector(".board");
   if (!PAST.length) { band.hidden = true; board.classList.add("nopast"); return; }
   band.hidden = false; board.classList.remove("nopast");
-  $("pastmonth").textContent = pd.title || (new Intl.DateTimeFormat("en-US", { timeZone: TZ, month: "long" }).format(new Date()) + "s");
+  PAST_TITLE = pd.title || ""; setPastTitle();
   pastNext = Math.floor(Math.random() * PAST.length);
   pastShow();
 }
@@ -761,7 +779,7 @@ setInterval(pastShow, 30 * 60000);
 let lastDay = "";
 function tick() {
   const now = new Date(), p = parts(now, TZ), today = isoToday();
-  $("latin").innerHTML = `dies <em>${LATIN[dowOf(today)]}</em>`;
+  $("latin").innerHTML = `${esc(T("latin.prefix", "dies"))} <em>${esc((T("latin.days", LATIN) || LATIN)[dowOf(today)] || LATIN[dowOf(today)])}</em>`;
   $("date").textContent = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, weekday: "long", day: "numeric", month: "long" }).format(now).replace(/^(\w+) /, "$1, ");
   $("time").innerHTML = `${p.hour}:${p.minute}<small>${p.dayPeriod}</small>`;
   const d = parts(now, DUB); $("dubtime").innerHTML = `${d.hour}:${d.minute}<small>${d.dayPeriod.toLowerCase()} in Dublin</small>`;
@@ -1072,17 +1090,17 @@ function seasonLine(today) {
   const y = +today.slice(0, 4), m = md(today);
   const until = (mmdd, yy = y) => Math.round((Date.parse(`${yy}-${mmdd}T12:00:00Z`) - Date.parse(today + "T12:00:00Z")) / DAY);
   if (SEASON === "christmas") {
-    if (m === "12-24") return "Christmas Eve <small>one more sleep</small>";
-    if (m === "12-25") return "Merry Christmas <small>Nollaig Shona</small>";
-    if (m === "12-26") return "St. Stephen's Day <small>Lá Fhéile Stiofáin</small>";
-    const n = until("12-25"); if (n > 0) return `${n} sleeps till Christmas`;
+    if (m === "12-24") return CH("season.christmas.eve", "Christmas Eve // one more sleep");
+    if (m === "12-25") return CH("season.christmas.day", "Merry Christmas // Nollaig Shona");
+    if (m === "12-26") return CH("season.christmas.stephen", "St. Stephen's Day // Lá Fhéile Stiofáin");
+    const n = until("12-25"); if (n > 0) return CH("season.christmas.count", "{n} sleeps till Christmas", { n, s: n === 1 ? "" : "s" });
   }
-  if (SEASON === "halloween") { const n = until("10-31"); return n > 0 ? `${n} night${n > 1 ? "s" : ""} till Halloween` : "Happy Halloween <small>Oíche Shamhna</small>"; }
-  if (SEASON === "newyear") return m === "12-31" ? `New Year's Eve <small>Oíche Chinn Bliana</small>` : `Happy New Year <small>${y}</small>`;
-  if (SEASON === "stpatrick") return "Lá Fhéile Pádraig sona daoibh <small>Happy St. Patrick's Day</small>";
+  if (SEASON === "halloween") { const n = until("10-31"); return n > 0 ? CH("season.halloween.count", "{n} night{s} till Halloween", { n, s: n > 1 ? "s" : "" }) : CH("season.halloween.day", "Happy Halloween // Oíche Shamhna"); }
+  if (SEASON === "newyear") return m === "12-31" ? CH("season.newyear.eve", "New Year's Eve // Oíche Chinn Bliana") : CH("season.newyear.day", "Happy New Year // {year}", { year: y });
+  if (SEASON === "stpatrick") return CH("season.stpatrick.day", "Lá Fhéile Pádraig sona daoibh // Happy St. Patrick's Day");
   if (SEASON === "bloomsday") {
-    const LINES = ["Stately, plump Buck Mulligan…", "Yes I said yes I will Yes.", "Love loves to love love.", "History is a nightmare from which I am trying to awake.", "Think you're escaping and run into yourself."];
-    return `Bloomsday <small>${LINES[new Date().getHours() % LINES.length]}</small>`;
+    const LINES = T("season.bloomsday.lines", ["Stately, plump Buck Mulligan…", "Yes I said yes I will Yes.", "Love loves to love love.", "History is a nightmare from which I am trying to awake.", "Think you're escaping and run into yourself."]);
+    return `${esc(T("season.bloomsday.heading", "Bloomsday"))} <small>${esc(LINES[new Date().getHours() % LINES.length])}</small>`;
   }
   return "";
 }
@@ -1108,13 +1126,13 @@ function menorah(n) {
 function hanukkahLine(today) {
   const n = hanukkahNight(today);
   if (n < 0) return "";
-  if (n === 0) return `${menorah(0)}Hanukkah begins tonight`;
-  return `${menorah(n)}Night ${n} of Hanukkah <small>Chag Sameach</small>`;
+  if (n === 0) return menorah(0) + CH("special.hanukkahEve", "Hanukkah begins tonight");
+  return menorah(n) + CH("special.hanukkahNight", "Night {n} of Hanukkah // Chag Sameach", { n });
 }
 function specialLine(today) {
   const out = [], y = +today.slice(0, 4);
-  for (const [d, since, who] of GOTCHA) if (md(today) === d) { const n = y - since; out.push(`${who}: ${n} year${n > 1 ? "s" : ""} home`); }
-  for (const e of (DATA && DATA.grid) || []) if (e.date === today && e.cal === "family" && /birthday/i.test(e.title)) out.push(`Happy birthday, ${esc(e.title.replace(/[’']s\s+birthday.*$/i, "").replace(/\s*birthday.*$/i, ""))}!`);
+  for (const [d, since, who] of GOTCHA) if (md(today) === d) { const n = y - since; out.push(CH("special.gotcha", "{pet}: {n} year{s} home", { pet: esc(who), n, s: n > 1 ? "s" : "" })); }
+  for (const e of (DATA && DATA.grid) || []) if (e.date === today && e.cal === "family" && /birthday/i.test(e.title)) out.push(CH("special.birthday", "Happy birthday, {name}!", { name: esc(e.title.replace(/[’']s\s+birthday.*$/i, "").replace(/\s*birthday.*$/i, "")) }));
   return out.join(" · ");
 }
 let specialToday = false;
