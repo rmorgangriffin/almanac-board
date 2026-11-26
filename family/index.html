@@ -1155,10 +1155,10 @@ function seasonLine(today) {
   const y = +today.slice(0, 4), m = md(today);
   const until = (mmdd, yy = y) => Math.round((Date.parse(`${yy}-${mmdd}T12:00:00Z`) - Date.parse(today + "T12:00:00Z")) / DAY);
   if (SEASON === "christmas") {
-    if (m === "12-24") return CH("season.christmas.eve", "Christmas Eve // one more sleep");
+    if (m === "12-24") return CH("season.christmas.eve", "Christmas Eve // one more day");
     if (m === "12-25") return CH("season.christmas.day", "Merry Christmas // Nollaig Shona");
     if (m === "12-26") return CH("season.christmas.stephen", "St. Stephen's Day // Lá Fhéile Stiofáin");
-    const n = until("12-25"); if (n > 0) return CH("season.christmas.count", "{n} sleeps till Christmas", { n, s: n === 1 ? "" : "s" });
+    const n = until("12-25"); if (n > 0) return CH("season.christmas.count", "{n} day{s} till Christmas", { n, s: n === 1 ? "" : "s" });
   }
   if (SEASON === "halloween") { const n = until("10-31"); return n > 0 ? CH("season.halloween.count", "{n} night{s} till Halloween", { n, s: n > 1 ? "s" : "" }) : CH("season.halloween.day", "Happy Halloween // Oíche Shamhna"); }
   if (SEASON === "newyear") return m === "12-31" ? CH("season.newyear.eve", "New Year's Eve // Oíche Chinn Bliana") : CH("season.newyear.day", "Happy New Year // {year}", { year: y });
