@@ -375,10 +375,12 @@
     const box = $("almbody"); if (!box || !A) return;
     const names = Object.keys(CARDS), pin = typeof force === "string" ? force : Q.get("alm");
     const showing = box.dataset.card === "monkeys";
-    if (!pin && showing && Date.now() - MK.shownAt < 20 * 60000) return;   // the monkeys get at least 20 minutes
+    const tg = window.isTG && isTG();   // Thanksgiving: the monkeys get a short turn, every three hours or so, so the Thanksgivings of yore have the room
+    if (tg && MK.endedAt < 0) MK.endedAt = Date.now() - 120 * 60000;   // and not within the first hour after a load
+    if (!pin && showing && Date.now() - MK.shownAt < (tg ? 10 : 20) * 60000) return;   // the monkeys get at least 20 minutes (10 on Thanksgiving)
     if (showing && !pin) MK.endedAt = Date.now();
     let name = CARDS[pin] ? pin : names[ci++ % names.length];
-    if (!pin && name === "monkeys" && Date.now() - MK.endedAt < 40 * 60000) name = names[ci++ % names.length];
+    if (!pin && name === "monkeys" && Date.now() - MK.endedAt < (tg ? 180 : 40) * 60000) name = names[ci++ % names.length];
     box.classList.add("off");
     setTimeout(() => { lastName = name; try { box.innerHTML = CARDS[name](); box.dataset.card = name; box.classList.toggle("pic", !!box.querySelector(".plate")); box.parentElement.classList.toggle("pic", !!box.querySelector(".plate")); } catch (e) { if (!pin) { box.classList.remove("off"); return showCard(); } } box.classList.remove("off"); }, 700);
   }
