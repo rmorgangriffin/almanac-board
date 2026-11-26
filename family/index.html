@@ -810,7 +810,8 @@ async function loadPast() {
   if (!PAST.length) { band.hidden = true; board.classList.add("nopast"); return; }
   band.hidden = false; board.classList.remove("nopast");
   PAST_TITLE = pd.title || ""; PAST_TG = !!pd.tg; setPastTitle();
-  pastNext = Math.floor(Math.random() * PAST.length);
+  const pin = new URLSearchParams(location.search).get("past");   // ?past=N shows photo N first (for previews)
+  pastNext = pin != null && PAST[+pin] ? +pin : Math.floor(Math.random() * PAST.length);
   pastShow();
 }
 async function pastShow() {
