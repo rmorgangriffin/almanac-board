@@ -1178,7 +1178,7 @@ function specialLine(today) {
 }
 let specialToday = false;
 function renderSeason() {
-  const today = isoToday(), s = seasonLine(today), sp = specialLine(today) || (Q.get("party") ? "Hercules: 10 years home" : "");
+  const today = dayIso(), s = seasonLine(today), sp = specialLine(today) || (Q.get("party") ? "Hercules: 10 years home" : "");
   specialToday = !!sp || (SEASON === "newyear" && md(today) === "01-01");
   const el = $("season"); el.innerHTML = [s, hanukkahLine(today), sp ? `🎉 ${sp}` : ""].filter(Boolean).map(x => `<div>${x}</div>`).join(""); el.hidden = !el.innerHTML;
 }
