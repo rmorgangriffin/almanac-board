@@ -169,8 +169,8 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
   <canvas id="vortex" aria-hidden="true"></canvas>
   <header class="head who">
     <div>
-      <div class="eyebrow">23 November 1963 · 5:16 pm in London</div>
-      <div class="hero">63 years of <em>Doctor Who</em></div>
+      <div class="eyebrow" id="eyebrow">23 November 1963 · 5:16 pm in London</div>
+      <div class="hero" id="hero">63 years of <em>Doctor Who</em></div>
       <div class="date" id="date"></div>
       <span id="latin" hidden></span>
     </div>
@@ -200,16 +200,16 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
     <div class="side">
       <div class="mode dublin dub">
         <div>
-          <h2>Po in Dublin</h2>
-          <div class="ga">Po i mBaile Átha Cliath</div>
+          <h2 id="poh">Po in Dublin</h2>
+          <div class="ga" id="poga">Po i mBaile Átha Cliath</div>
         </div>
         <div class="dt num" id="dubtime"></div>
         <div class="wnow" id="dubnow"></div>
         <div class="mini" id="dubfc"></div>
       </div>
       <div class="mode quad quadtext">
-        <div class="label">Precious days</div>
-        <blockquote>Oh, those precious days amongst the ivy, beneath the stately elms upon the quad!</blockquote>
+        <div class="label" id="quadlab">Precious days</div>
+        <blockquote id="elmsq">Oh, those precious days amongst the ivy, beneath the stately elms upon the quad!</blockquote>
         <div class="label num" id="quadcap"></div>
       </div>
     </div>
@@ -225,6 +225,21 @@ const CAL = { morgan: "var(--amber)", corey: "var(--sage)", family: "var(--lilac
 const $ = id => document.getElementById(id);
 const DAY = 86400000;
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+/* Wording from the vault notes "DAKboard copy/Whovian" and "Family board" arrives in the family's encrypted data as DATA.copy;
+   anything missing falls back to the built-in wording here. *word* is the highlight (italic in facts), " // " the small part. */
+let COPY = {};
+const T = (k, d) => { let v = COPY; for (const p of k.split(".")) v = v && typeof v === "object" ? v[p] : undefined; return v == null || v === "" ? d : v; };
+const CH = (k, d, vars = {}, tag = "em") => esc(T(k, d)).replace(/\*([^*]+)\*/g, `<${tag}>$1</${tag}>`).replace(/ \/\/ (.*)$/, " <small>$1</small>").replace(/\{(\w+)\}/g, (m, x) => x in vars ? vars[x] : m);
+window.T = T; window.CH = CH;
+const whoYears = () => { const p = parts(new Date(), TZ); let y = +p.year - 1963; if (Date.UTC(+p.year, 10, 23, 17, 16, 20) > Date.now()) y--; return y; };
+function applyCopy() {
+  $("eyebrow").textContent = T("whovian.eyebrow", "23 November 1963 · 5:16 pm in London");
+  $("hero").innerHTML = CH("whovian.hero", "{years} years of *Doctor Who*", { years: whoYears() });
+  $("quadlab").textContent = T("whovian.quadLabel", "Precious days");
+  $("poh").textContent = T("po.heading", "Po in Dublin"); $("poga").textContent = T("po.irish", "Po i mBaile Átha Cliath");
+  $("elmsq").textContent = T("elms.quote", "Oh, those precious days amongst the ivy, beneath the stately elms upon the quad!");
+  since();
+}
 
 function parts(date, tz) {
   const o = {}; for (const p of new Intl.DateTimeFormat("en-US", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit", weekday: "short", hour: "numeric", minute: "2-digit", hour12: true }).formatToParts(date)) o[p.type] = p.value;
@@ -292,7 +307,7 @@ function renderWork() {
   if (!DATA) return;
   const today = isoToday(), hm = nowHM();
   const days = (DATA.work || []).filter(d => d.date >= today).slice(0, 3);
-  el.innerHTML = `<div class="label">Bloom Works</div>` + days.map(d => {
+  el.innerHTML = `<div class="label">${esc(T("labels.work", "Bloom Works"))}</div>` + days.map(d => {
     const rel = d.date === today ? "Today" : d.date === isoAdd(today, 1) ? "Tomorrow" : "";
     const name = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][dowOf(d.date)];
     const evs = d.events || [];
@@ -329,7 +344,7 @@ function renderGrid() {
   el.style.gridTemplateRows = "auto repeat(5, minmax(0, 1fr)) auto";
 }
 async function loadData() {
-  try { DATA = await unlock("../family/data.enc"); }
+  try { DATA = await unlock("../family/data.enc"); COPY = (DATA && DATA.copy) || {}; applyCopy(); }
   catch (e) {
     if (!DATA) $("work").innerHTML = `<div class="label">Bloom Works</div><div class="msg">${e.message === "nokey" ? "This board needs its key in the address (after #)." : "Calendar data isn't available yet."}</div>`;
   }
@@ -361,7 +376,7 @@ async function whoFull() {
   try {
     const url = URL.createObjectURL(new Blob([await unlock(PHOTO_DIR + p.file, true)], { type: "image/jpeg" }));
     const d = document.createElement("div"); d.id = "wfull";
-    d.innerHTML = `<img alt="" src="${url}">${p.exterminate ? "<b>EXTERMINATE!</b>" : ""}<span></span>`;
+    d.innerHTML = `<img alt="" src="${url}">${p.exterminate ? `<b>${esc(T("whovian.exterminate", "EXTERMINATE!"))}</b>` : ""}<span></span>`;
     d.querySelector("span").textContent = p.date || "";
     await d.querySelector("img").decode();
     document.body.appendChild(d);
@@ -457,7 +472,11 @@ const FACTS = [
 let fi = 0;
 function showFact() {
   const el = $("fact"); el.classList.add("fade");
-  setTimeout(() => { const [t, s] = FACTS[fi % FACTS.length]; el.innerHTML = `${t}<small>${s}</small>`; el.classList.remove("fade"); fi++; }, 800);
+  setTimeout(() => {
+    const list = T("whovian.facts", null);   // from the Whovian note: [fact, caption], *word* in italics
+    if (list && list.length) { const [t, s] = list[fi % list.length]; el.innerHTML = `${esc(t).replace(/\*([^*]+)\*/g, "<i>$1</i>")}<small>${esc(s)}</small>`; }
+    else { const [t, s] = FACTS[fi % FACTS.length]; el.innerHTML = `${t}<small>${s}</small>`; }
+    el.classList.remove("fade"); fi++; }, 800);
 }
 function since() {
   const now = Date.now(), ms = now - FIRST;
@@ -468,10 +487,10 @@ function since() {
   if (left > 0 && left < 86400000) {   // anniversary day, before 12:16 pm Eastern
     const h = Math.floor(left / 3600000), m = Math.floor(left / 60000) % 60;
     $("sinceBig").textContent = h ? `${h}h ${m}m` : `${m} min`;
-    $("sinceSmall").textContent = `until it turns ${years + 1}, at 12:16 pm here`;
+    $("sinceSmall").innerHTML = CH("whovian.until", "until it turns {n}, at 12:16 pm here", { n: years + 1 });
   } else {
-    $("sinceBig").textContent = `${years} years`;
-    $("sinceSmall").textContent = `${days.toLocaleString("en-US")} days since the first episode`;
+    $("sinceBig").innerHTML = CH("whovian.years", "{n} years", { n: years });
+    $("sinceSmall").innerHTML = CH("whovian.daysSince", "{n} days since the first episode", { n: days.toLocaleString("en-US") });
   }
 }
 showFact(); setInterval(showFact, 15000); since(); setInterval(since, 60000);
