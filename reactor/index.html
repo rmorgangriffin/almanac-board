@@ -271,8 +271,8 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
       $("hostS").textContent = C.hostility[1]; $("hostS").className = "st am"; $("hostB").className = "am"; $("hostB").style.transform = "scaleX(.74)"; $("nimS").textContent = C.nimona[1]; }, 6000);
   }
   function breach() { $("br1").textContent = D.breach[0]; $("br2").textContent = D.breach[1]; $("br3").textContent = D.breach[2]; $("breach").style.display = "flex"; setTimeout(() => $("breach").style.display = "none", 3500); }
-  /* incidents: one sequence played in order, at most one per showing (bear, pantry or internet, each in about 28% of showings; ?bear=1, ?pantry=1 or ?internet=1 forces one) */
-  const INC = [["bear", D.bear], ["pantry", D.pantry], ["internet", D.internet]].filter(x => x[1] && x[1].seq && x[1].seq.length);
+  /* incidents: one sequence played in order, at most one per showing (bear, pantry, internet or TikTok, each in about 21% of showings; ?bear=1, ?pantry=1, ?internet=1 or ?tiktok=1 forces one) */
+  const INC = [["bear", D.bear], ["pantry", D.pantry], ["internet", D.internet], ["tiktok", D.tiktok]].filter(x => x[1] && x[1].seq && x[1].seq.length);
   const roll = Math.random(), forced = INC.find(([k]) => Q.get(k));
   const chosen = forced || (INC.length && roll < .84 ? INC[Math.floor(roll / .84 * INC.length)] : null);
   if (chosen) {
