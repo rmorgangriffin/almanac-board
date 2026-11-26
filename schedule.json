@@ -2,16 +2,6 @@
   "default": "family",
   "rules": [
     {
-      "board": "family",
-      "dates": [
-        "2026-11-25"
-      ],
-      "from": "19:18",
-      "to": "19:40",
-      "params": "alm=monkeys&hamlet=1",
-      "note": "one-off: Monkeys card pinned, first near-miss line within a minute"
-    },
-    {
       "board": "whovian",
       "dates": [
         "2026-11-23"
