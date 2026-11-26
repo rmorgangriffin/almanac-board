@@ -828,14 +828,14 @@ applyLook(); setInterval(applyLook, 60000);
   const GAMES = window.ATARI || [], C = k => k === "bg" ? (css("--gamebg") || "#070a16") : css("--" + k);
   let gi = +(new URLSearchParams(location.search).get("atari") || Math.floor(Math.random() * 99)), game = null;
   function begin() {
-    score = [0, 0]; $("gname").textContent = NAMES[mode];
+    score = [0, 0]; $("gname").textContent = T(["games.rally", "", "games.showdown", ""][mode] || "-", NAMES[mode]);
     const text = mode === 3; c.hidden = text; $("ifbox").hidden = !text; $("ifcred").hidden = true;
     if (typeof ADV !== "undefined") ADV.stop();
     if (typeof TXT !== "undefined") TXT.stop();
     game = null;
-    if (mode === 1) { if (!GAMES.length) { mode = 2; return begin(); } game = GAMES[gi++ % GAMES.length]; st = game.init(); $("gname").textContent = game.name; }
+    if (mode === 1) { if (!GAMES.length) { mode = 2; return begin(); } game = GAMES[gi++ % GAMES.length]; st = game.init(); $("gname").textContent = T("games." + game.name.toLowerCase().replace(/[^a-z0-9]/g, ""), game.name); }
     if (mode === 0) startPong(); else if (mode === 2) startDuel();
-    if (text) { const k = TEXTS[ti++ % TEXTS.length]; if (k === "house") { $("gname").textContent = "House on the Hill"; ADV.start(); } else TXT.start(k); }
+    if (text) { const k = TEXTS[ti++ % TEXTS.length]; if (k === "house") { $("gname").textContent = T("games.house", "House on the Hill"); ADV.start(); } else TXT.start(k); }
   }
 
   function pong(draw) {
@@ -1045,7 +1045,7 @@ applyLook(); setInterval(applyLook, 60000);
         const go = g => { if (!running) return; titled = g.id.startsWith("zork"); $("gname").textContent = g.title; cred.textContent = g.credit; cred.hidden = false; play(g); };
         if (cache[id]) return go(cache[id]);
         fetch(`text/${id}.json`).then(r => r.json()).then(g => { cache[id] = g; go(g); })
-          .catch(() => { if (running) { $("gname").textContent = "House on the Hill"; ADV.start(); } });
+          .catch(() => { if (running) { $("gname").textContent = T("games.house", "House on the Hill"); ADV.start(); } });
       },
       stop() { running = false; clearTimeout(timer); }
     };
