@@ -18,18 +18,19 @@
   const daysTo = iso => Math.round((Date.parse(iso) - Date.parse(isoToday())) / DAY);
   const hmLen = h => `${Math.floor(h)}h ${Math.round((h % 1) * 60)}m`;
   const esc = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  // wording from the Family board note (DATA.copy) when the board has it; the built-in wording otherwise
+  const TT = (k, d) => window.T ? T(k, d) : d;
+  const W = (k, d, v = {}) => window.CH ? CH(k, d, v) : esc(d).replace(/\{(\w+)\}/g, (m, x) => x in v ? v[x] : m);
+  const PL = (k, d, v = {}) => String(TT(k, d)).replace(/\{(\w+)\}/g, (m, x) => x in v ? v[x] : m);
+  const row = (k, i, d) => { const t = TT(k, null); return (t && t[i]) || d; };
 
   /* ---------- the Moon ---------- */
   const FULL_NAMES = ["Wolf", "Snow", "Worm", "Pink", "Flower", "Strawberry", "Buck", "Sturgeon", "Harvest", "Hunter's", "Beaver", "Cold"];
+  const PHASES = [["New moon", "New", "Novilunium"], ["Waxing crescent", "Young crescent", "Luna crescens"], ["First quarter", "First quarter", "Luna dimidiata"], ["Waxing gibbous", "Waxing gibbous", "Luna gibbosa"],
+    ["Full moon", "Full", "Plenilunium"], ["Waning gibbous", "Waning gibbous", "Luna gibbosa"], ["Last quarter", "Last quarter", "Luna dimidiata"], ["Waning crescent", "Old crescent", "Luna decrescens"]];
   function phaseName(a) {   // [English, short, Latin]
-    if (a < 8 || a > 352) return ["New moon", "New", "Novilunium"];
-    if (a < 84) return ["Waxing crescent", "Young crescent", "Luna crescens"];
-    if (a < 96) return ["First quarter", "First quarter", "Luna dimidiata"];
-    if (a < 172) return ["Waxing gibbous", "Waxing gibbous", "Luna gibbosa"];
-    if (a < 188) return ["Full moon", "Full", "Plenilunium"];
-    if (a < 264) return ["Waning gibbous", "Waning gibbous", "Luna gibbosa"];
-    if (a < 276) return ["Last quarter", "Last quarter", "Luna dimidiata"];
-    return ["Waning crescent", "Old crescent", "Luna decrescens"];
+    const i = (a < 8 || a > 352) ? 0 : a < 84 ? 1 : a < 96 ? 2 : a < 172 ? 3 : a < 188 ? 4 : a < 264 ? 5 : a < 276 ? 6 : 7;
+    return row("ref.phases", i, PHASES[i]).map(esc);
   }
   // The dark part of the disc for a phase angle (0 new, 180 full); lit side on the right while waxing.
   function shadow(theta, cx, cy, r) {
@@ -41,7 +42,7 @@
   }
   function nextFull(now) {
     const f = A.SearchMoonPhase(180, now, 40).date;
-    return { date: f, name: FULL_NAMES[+fmt(f, TZ, { month: "numeric" }) - 1] };
+    const i = +fmt(f, TZ, { month: "numeric" }) - 1; return { date: f, name: esc(row("ref.fullMoons", i, FULL_NAMES[i])) };
   }
   const face = (ang, size, cls = "") => `<svg class="${cls}" viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true"><image href="../img/moon-lro.webp" x="2" y="2" width="96" height="96"/><path d="${shadow(ang, 50, 50, 48)}" fill="rgba(12,8,4,.86)"/><circle cx="50" cy="50" r="48.5" fill="none" class="ink"/></svg>`;
   function moonCard() {
@@ -50,14 +51,14 @@
     const [en, , la] = phaseName(ang), f = nextFull(now), nw = A.SearchMoonPhase(0, now, 40).date;
     const strip = Array.from({ length: 8 }, (_, i) => {
       const d = new Date(now.getTime() + i * 3.69 * DAY), a = A.MoonPhase(d);
-      return `<div class="mc${i ? "" : " on"}">${face(a, 30)}<div class="md">${i ? fmt(d, TZ, { month: "short", day: "numeric" }) : "Tonight"}</div><div class="mp">${phaseName(a)[1]}</div></div>`;
+      return `<div class="mc${i ? "" : " on"}">${face(a, 30)}<div class="md">${i ? fmt(d, TZ, { month: "short", day: "numeric" }) : W("almw.moonTonight", "Tonight")}</div><div class="mp">${phaseName(a)[1]}</div></div>`;
     }).join("");
     return `<div class="alm-k">${esc(window.T ? T("alm.moon", "The Moon") : "The Moon")}</div>
       <div class="moonrow">${face(ang, 112, "big")}<div class="mtxt"><div class="alm-t">${en}</div><div class="alm-la">${la}</div>
-        <div class="alm-s">${age.toFixed(1)} days old · ${lit}% lit</div></div></div>
+        <div class="alm-s">${W("almw.moonAge", "{age} days old · {lit}% lit", { age: age.toFixed(1), lit })}</div></div></div>
       <div class="mstrip">${strip}</div>
-      <div class="alm-s">Full moon ${dmy(f.date)} (the ${f.name} Moon) · New moon ${dmy(nw)}</div>
-      <div class="alm-c">Lunar Reconnaissance Orbiter photo, NASA · public domain</div>`;
+      <div class="alm-s">${W("almw.moonNext", "Full moon {full} (the {name} Moon) · New moon {new}", { full: dmy(f.date), name: f.name, new: dmy(nw) })}</div>
+      <div class="alm-c">${W("credits.moon", "Lunar Reconnaissance Orbiter photo, NASA · public domain")}</div>`;
   }
 
   /* ---------- the year's daylight ---------- */
@@ -87,7 +88,7 @@
     let delta = "";
     if (today && yest) {
       const s = Math.round((today.len - yest.len) * 3600), a = Math.abs(s);
-      delta = `${Math.floor(a / 60)}m ${a % 60}s ${s < 0 ? "less" : "more"} than yesterday`;
+      delta = s < 0 ? W("almw.dayLess", "{m}m {sec}s less than yesterday", { m: Math.floor(a / 60), sec: a % 60 }) : W("almw.dayMore", "{m}m {sec}s more than yesterday", { m: Math.floor(a / 60), sec: a % 60 });
     }
     return `<div class="alm-k">${esc(window.T ? T("alm.day", "Daylight") : "Daylight")}</div>
       <svg class="alm-day" viewBox="0 0 ${W} ${H}" aria-hidden="true">
@@ -95,12 +96,12 @@
         <rect class="ink" x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="none"/>
         ${hours}<path d="${fill}" fill="url(#hatch)" opacity=".55"/><path d="${d}" class="ink curve" fill="none"/>
         <line class="hodie" x1="${tx}" x2="${tx}" y1="${T}" y2="${H - B}"/><circle class="hodie" cx="${tx}" cy="${ty}" r="3.2"/>
-        <text class="lbl" x="${tx + (doy > 300 ? -5 : 5)}" y="${ty - 6}" text-anchor="${doy > 300 ? "end" : "start"}">today</text>
+        <text class="lbl" x="${tx + (doy > 300 ? -5 : 5)}" y="${ty - 6}" text-anchor="${doy > 300 ? "end" : "start"}">${W("almw.dayToday", "today")}</text>
         <g class="axis">${months}</g>
       </svg>
-      <div class="alm-t">${today ? hmLen(today.len) : ""} of daylight</div>
+      <div class="alm-t">${today ? W("almw.dayLength", "{len} of daylight", { len: hmLen(today.len) }) : ""}</div>
       <div class="alm-s">${delta}</div>
-      <div class="alm-s">${today ? `Sunrise ${hm(today.rise)} · sunset ${hm(today.set)}` : ""}</div>`;
+      <div class="alm-s">${today ? W("almw.daySun", "Sunrise {rise} · sunset {set}", { rise: hm(today.rise), set: hm(today.set) }) : ""}</div>`;
   }
 
 
@@ -111,12 +112,13 @@
     ["tri", "Triangulum", "the Triangle", 2.1, 32], ["per", "Perseus", "the Hero", 3.2, 45], ["ori", "Orion", "the Hunter", 5.6, 5], ["lyn", "Lynx", "the Lynx", 7.9, 47],
     ["cnc", "Cancer", "the Crab", 8.6, 20], ["lmi", "Leo Minor", "the Little Lion", 10.2, 33], ["leo", "Leo", "the Lion", 10.7, 13]];
   const DIRS = ["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"];
-  const where = h => h.altitude > 75 ? "overhead" : `${h.altitude < 20 ? "low in the" : h.altitude < 50 ? "in the" : "high in the"} ${DIRS[Math.round(h.azimuth / 45) % 8]}`;
+  const where = h => { const i = Math.round(h.azimuth / 45) % 8, dir = esc(row("ref.dirs", i, DIRS[i]));
+    return h.altitude > 75 ? W("almw.skyOverhead", "overhead") : h.altitude < 20 ? W("almw.skyLow", "low in the {dir}", { dir }) : h.altitude < 50 ? W("almw.skyMid", "in the {dir}", { dir }) : W("almw.skyHigh", "high in the {dir}", { dir }); };
   function tonight9() { const m = midnight(isoToday()); return new Date(m.getTime() + 21 * 3600000); }
   function skyCard() {
     const t = tonight9();
     const best = CONST.map(c => [c, A.Horizon(t, OBS, c[3], c[4], "normal")]).sort((a, b) => b[1].altitude - a[1].altitude)[0];
-    const [k, la, en] = best[0];
+    const ci = CONST.indexOf(best[0]), k = best[0][0], [la, en] = row("ref.constellations", ci, [best[0][1], best[0][2]]).map(esc);
     const planets = ["Mercury", "Venus", "Mars", "Jupiter", "Saturn"].map(n => {
       const eq = A.Equator(A.Body[n], t, OBS, true, true), h = A.Horizon(t, OBS, eq.ra, eq.dec, "normal");
       return h.altitude > 5 ? `${n} ${where(h)}` : null;
@@ -124,9 +126,9 @@
     return `<div class="alm-k">${esc(window.T ? T("alm.sky", "Tonight's Sky") : "Tonight's Sky")}</div>
       <img class="plate" src="../img/sky/${k}.jpg" alt="">
       <div class="alm-t">${la}, ${en}</div>
-      <div class="alm-s">${where(best[1]).replace(/^./, c => c.toUpperCase())} at 9 pm</div>
+      <div class="alm-s">${W("almw.skyAt", "{where} at 9 pm", { where: where(best[1]) }).replace(/^./, c => c.toUpperCase())}</div>
       <div class="alm-s">${planets.length ? planets.join(" · ") : (window.T ? T("alm.skyNone", "No bright planets up at 9 pm") : "No bright planets up at 9 pm")}</div>
-      <div class="alm-c">Johannes Hevelius, Uranographia, 1690 (drawn as on a globe, so mirrored) · public domain</div>`;
+      <div class="alm-c">${W("credits.sky", "Johannes Hevelius, Uranographia, 1690 (drawn as on a globe, so mirrored) · public domain")}</div>`;
   }
 
 
@@ -161,7 +163,7 @@
     const iv = R["01172010:00060"] || [], h = R["01172010:00065"] || [], mill = R["01171500:00060"] || [];
     if (!iv.length) throw new Error("no flow");
     const last = iv[iv.length - 1], dayAgo = iv.find(x => x[0] >= last[0] - DAY) || iv[0];
-    const ch = (last[1] - dayAgo[1]) / dayAgo[1], trend = ch > .05 ? "rising" : ch < -.05 ? "falling" : "steady";
+    const ch = (last[1] - dayAgo[1]) / dayAgo[1], trend = ch > .05 ? W("almw.riverRising", "rising") : ch < -.05 ? W("almw.riverFalling", "falling") : W("almw.riverSteady", "steady");
     const q = [...(R.daily || []).filter(x => x[0] < last[0] - 6 * 3600000), last];   // 30 daily means, then the latest reading
     const start = Math.min(q[0][0], last[0] - 29 * DAY);
     const md = ts => { const d = new Date(ts); return `${d.getMonth() + 1}-${d.getDate()}`; };
@@ -172,19 +174,20 @@
     const line = pts => pts.map((x, i) => (i ? "L" : "M") + X(x[0]).toFixed(1) + "," + Y(x[1]).toFixed(1)).join("");
     const bandD = band.length ? band.map((b, i) => (i ? "L" : "M") + X(b[0]).toFixed(1) + "," + Y(b[3]).toFixed(1)).join("") + [...band].reverse().map(b => "L" + X(b[0]).toFixed(1) + "," + Y(b[1]).toFixed(1)).join("") + "Z" : "";
     const med = band.length ? line(band.map(b => [b[0], b[2]])) : "";
-    const ticks = [0, 7, 14, 21, 28].map(k => last[0] - k * DAY).filter(ts => ts >= start).map(ts => `<line class="rule" x1="${X(ts)}" x2="${X(ts)}" y1="${top}" y2="${bot}"/><text x="${X(ts)}" y="${H - 5}" text-anchor="${ts === last[0] ? "end" : "middle"}">${ts === last[0] ? "today" : fmt(new Date(ts), TZ, { month: "short", day: "numeric" })}</text>`).join("");
+    const ticks = [0, 7, 14, 21, 28].map(k => last[0] - k * DAY).filter(ts => ts >= start).map(ts => `<line class="rule" x1="${X(ts)}" x2="${X(ts)}" y1="${top}" y2="${bot}"/><text x="${X(ts)}" y="${H - 5}" text-anchor="${ts === last[0] ? "end" : "middle"}">${ts === last[0] ? W("almw.riverToday", "today") : fmt(new Date(ts), TZ, { month: "short", day: "numeric" })}</text>`).join("");
     const nToday = R.norm && R.norm[md(last[0])];
-    const vsNormal = nToday ? (last[1] < nToday[0] ? `below normal for late ${fmt(new Date(last[0]), TZ, { month: "long" })} (usually ${Math.round(nToday[1]).toLocaleString("en-US")})` : last[1] > nToday[2] ? `above normal for the time of year (usually ${Math.round(nToday[1]).toLocaleString("en-US")})` : "about normal for the time of year") : "";
+    const usual = nToday ? Math.round(nToday[1]).toLocaleString("en-US") : "";
+    const vsNormal = nToday ? (last[1] < nToday[0] ? W("almw.riverBelow", "below normal for late {month} (usually {usual})", { month: fmt(new Date(last[0]), TZ, { month: "long" }), usual }) : last[1] > nToday[2] ? W("almw.riverAbove", "above normal for the time of year (usually {usual})", { usual }) : W("almw.riverNormal", "about normal for the time of year")) : "";
     return `<div class="alm-k">${esc(window.T ? T("alm.river", "The River") : "The River")}</div>
       <div class="alm-t">${esc(window.T ? T("alm.riverName", "The Connecticut at Holyoke") : "The Connecticut at Holyoke")}</div>
       <svg class="alm-day" viewBox="0 0 ${W} ${H}" aria-hidden="true"><rect class="ink" x="${P}" y="${top}" width="${W - 2 * P}" height="${bot - top}" fill="none"/>${ticks}
         ${bandD ? `<path d="${bandD}" class="normband"/><path d="${med}" class="normline" fill="none"/>` : ""}
         <path d="${line(q)}" class="ink curve" fill="none"/>
         <circle class="hodie" cx="${X(last[0])}" cy="${Y(last[1])}" r="3"/></svg>
-      <div class="alm-s"><b class="num">${Math.round(last[1]).toLocaleString("en-US")}</b> cubic feet a second, ${trend}${h.length ? ` · gauge ${h[h.length - 1][1].toFixed(1)} ft` : ""}</div>
-      <div class="alm-s">${vsNormal || `Past month: ${Math.round(Math.min(...q.map(x => x[1]))).toLocaleString("en-US")} to ${Math.round(Math.max(...q.map(x => x[1]))).toLocaleString("en-US")} cfs`}</div>
-      ${mill.length ? `<div class="alm-s">The Mill River at Northampton: ${Math.round(mill[mill.length - 1][1])} cfs</div>` : ""}
-      <div class="alm-c">Last 30 days; shaded: the usual range for the date, 2003–now · USGS gauges 01172010 and 01171500, provisional</div>`;
+      <div class="alm-s">${W("almw.riverFlow", "{cfs} cubic feet a second, {trend}", { cfs: `<b class="num">${Math.round(last[1]).toLocaleString("en-US")}</b>`, trend })}${h.length ? " · " + W("almw.riverGauge", "gauge {ft} ft", { ft: h[h.length - 1][1].toFixed(1) }) : ""}</div>
+      <div class="alm-s">${vsNormal || W("almw.riverRange", "Past month: {lo} to {hi} cfs", { lo: Math.round(Math.min(...q.map(x => x[1]))).toLocaleString("en-US"), hi: Math.round(Math.max(...q.map(x => x[1]))).toLocaleString("en-US") })}</div>
+      ${mill.length ? `<div class="alm-s">${W("almw.riverMill", "The Mill River at Northampton: {cfs} cfs", { cfs: Math.round(mill[mill.length - 1][1]) })}</div>` : ""}
+      <div class="alm-c">${W("credits.river", "Last 30 days; shaded: the usual range for the date, 2003–now · USGS gauges 01172010 and 01171500, provisional")}</div>`;
   }
 
   /* ---------- shooting stars: the next major meteor shower (peak dates and rates after the IMO calendar) ---------- */
@@ -193,16 +196,16 @@
     ["12-14", "Geminids", "Gemini", 150, "Dec 13–14"], ["12-22", "Ursids", "Ursa Minor", 10, "Dec 21–22"]];
   function meteorCard() {
     const t = isoToday(), y = +t.slice(0, 4);
-    const list = SHOWERS.map(s => { let iso = `${y}-${s[0]}`; if (iso < t) iso = `${y + 1}-${s[0]}`; return [iso, ...s.slice(1)]; }).sort((a, b) => a[0] < b[0] ? -1 : 1);
+    const list = SHOWERS.map((s, i) => { let iso = `${y}-${s[0]}`; if (iso < t) iso = `${y + 1}-${s[0]}`; const [nm, rd, ng] = row("ref.showers", i, [s[1], s[2], s[4]]).map(esc); return [iso, nm, rd, s[3], ng]; }).sort((a, b) => a[0] < b[0] ? -1 : 1);
     const [iso, name, rad, zhr, nights] = list[0], n = daysTo(iso);
     const lit = Math.round(A.Illumination(A.Body.Moon, new Date(iso + "T08:00:00Z")).phase_fraction * 100);
-    const moon = lit < 25 ? "a dark sky, with little moonlight" : lit < 60 ? `a ${lit}% moon, so some glare` : `a ${lit}% moon washing out the fainter ones`;
+    const moon = lit < 25 ? W("almw.meteorDark", "a dark sky, with little moonlight") : lit < 60 ? W("almw.meteorSome", "a {lit}% moon, so some glare", { lit }) : W("almw.meteorBright", "a {lit}% moon washing out the fainter ones", { lit });
     return `<div class="alm-k">${esc(window.T ? T("alm.meteor", "Shooting Stars") : "Shooting Stars")}</div>
       <img class="plate" src="../img/leonids-1833.jpg" alt="">
-      <div class="alm-t">The ${name}</div>
-      <div class="alm-s">${n === 0 ? "Peak tonight" : n === 1 ? "Peak tomorrow night" : `Peak in ${n} days`}: the nights of ${nights}</div>
-      <div class="alm-s">Up to ${zhr} an hour from ${rad}, under ideal skies · ${moon}</div>
-      <div class="alm-c">The great Leonid storm of 1833, engraving by Adolf Vollmy, 1889 · public domain</div>`;
+      <div class="alm-t">${W("almw.meteorName", "The {name}", { name })}</div>
+      <div class="alm-s">${W("almw.meteorNights", "{peak}: the nights of {nights}", { peak: n === 0 ? W("almw.meteorTonight", "Peak tonight") : n === 1 ? W("almw.meteorTomorrow", "Peak tomorrow night") : W("almw.meteorDays", "Peak in {n} days", { n }), nights })}</div>
+      <div class="alm-s">${W("almw.meteorRate", "Up to {zhr} an hour from {radiant}, under ideal skies · {moon}", { zhr, radiant: rad, moon })}</div>
+      <div class="alm-c">${W("credits.meteor", "The great Leonid storm of 1833, engraving by Adolf Vollmy, 1889 · public domain")}</div>`;
   }
 
 
@@ -224,12 +227,12 @@
     [49, "winterberry", "Winterberry", "Ilex verticillata", "A holly that drops its leaves; the red berries hang on all winter", "The American Flora, vol. 4, 1855"]];
   function plantCard() {
     const t = isoToday(), week = Math.floor((Date.parse(t) - Date.parse(t.slice(0, 4) + "-01-01")) / DAY / 7) + 1;
-    const p = [...PLANTS].reverse().find(x => week >= x[0]) || PLANTS[0];
+    const p0 = [...PLANTS].reverse().find(x => week >= x[0]) || PLANTS[0], pr = row("credits.plants", PLANTS.indexOf(p0), p0.slice(2)).map(esc), p = [p0[0], p0[1], ...pr];
     return `<div class="alm-k">${esc(window.T ? T("alm.plant", "In Season") : "In Season")}</div>
       <img class="plate" src="../img/bot/${p[1]}.jpg" alt="">
       <div class="alm-t">${p[2]}</div><div class="alm-la">${p[3]}</div>
       <div class="alm-s">${p[4]}</div>
-      <div class="alm-c">${p[5]} · public domain</div>`;
+      <div class="alm-c">${p[5]} · ${W("credits.pd", "public domain")}</div>`;
   }
 
 
@@ -243,8 +246,8 @@
     return `<div class="alm-k">${esc(window.T ? T("alm.bird", "Bird of the Day") : "Bird of the Day")}</div>
       <img class="plate" src="${esc(b.plate)}" alt="">
       <div class="alm-t">${esc(b.common)}</div><div class="alm-la">${esc(b.sci)}</div>
-      <div class="alm-s">${b.source === "ebird-notable" ? "A notable sighting" : "Seen"} near Leeds${seen ? ` on ${seen}` : ""}${b.sightings > 1 ? `, ${b.sightings} reports this week` : ""}</div>
-      <div class="alm-c">${esc(credit)}, The Birds of America · public domain · sighting via ${b.source && b.source.startsWith("ebird") ? "eBird" : "iNaturalist"}</div>`;
+      <div class="alm-s">${W("almw.birdWhere", "{how} near Leeds", { how: b.source === "ebird-notable" ? W("almw.birdNotable", "A notable sighting") : W("almw.birdSeen", "Seen") })}${seen ? " " + W("almw.birdOn", "on {date}", { date: seen }) : ""}${b.sightings > 1 ? ", " + W("almw.birdReports", "{n} reports this week", { n: b.sightings }) : ""}</div>
+      <div class="alm-c">${esc(credit)}, ${W("credits.bird", "The Birds of America · public domain · sighting via {source}", { source: b.source && b.source.startsWith("ebird") ? "eBird" : "iNaturalist" })}</div>`;
   }
 
   /* ---------- infinite monkey theorem: one monkey at a time on a live channel; every 10 minutes the one on screen types a real line with one letter wrong ---------- */
@@ -301,16 +304,17 @@
   const ROSTER = {}, usedNums = new Set();   // monkey -> typewriter, fixed for this session
   function typewriterOf(name) { if (!ROSTER[name]) { let n; do n = 1 + rnd(10000); while (usedNums.has(n)); usedNums.add(n); ROSTER[name] = n; } return ROSTER[name]; }
   let bag = [];
-  function nextLine() { if (!bag.length) { bag = LINES.map((_, i) => i); for (let i = bag.length - 1; i > 0; i--) { const j = rnd(i + 1); [bag[i], bag[j]] = [bag[j], bag[i]]; } } return LINES[bag.pop()]; }
+  function nextLine() { const L = TT("monkeys.lines", LINES); if (!bag.length || bag.some(i => i >= L.length)) { bag = L.map((_, i) => i); for (let i = bag.length - 1; i > 0; i--) { const j = rnd(i + 1); [bag[i], bag[j]] = [bag[j], bag[i]]; } } return L[bag.pop()]; }
   const MK = { name: "", num: 0, text: "", line: null, lineStart: 0, typed: 0, hitAt: 0, keys: 0, cps: 7.4, chanAt: 0, connecting: 0, seen: new Set(), shownAt: 0, nextHit: 0, endedAt: -1e12 };
   function pickMonkey() {
-    let pool = MONKEYS.filter(m => !MK.seen.has(m) && m !== MK.name); if (!pool.length) { MK.seen.clear(); pool = MONKEYS.filter(m => m !== MK.name); }
+    const ALL = TT("monkeys.names", MONKEYS);
+    let pool = ALL.filter(m => !MK.seen.has(m) && m !== MK.name); if (!pool.length) { MK.seen.clear(); pool = ALL.filter(m => m !== MK.name); }
     const name = pool[rnd(pool.length)]; MK.seen.add(name); return name;
   }
   function switchChannel() {   // flicker "connecting", then a new monkey at its own typewriter
     const name = pickMonkey(), num = typewriterOf(name);
     MK.connecting = 18; MK.pending = [name, num]; MK.text = ""; MK.line = null;
-    const lab = $("mklab"); if (lab) { lab.textContent = `Connecting to typewriter ${fmtN(num)}…`; lab.classList.add("conn"); }
+    const lab = $("mklab"); if (lab) { lab.textContent = PL("monkeys.connecting", "Connecting to typewriter {n}…", { n: fmtN(num) }); lab.classList.add("conn"); }
     const f = $("mkfeed"); if (f) f.textContent = "";
   }
   function monkeyCard() {
@@ -318,8 +322,8 @@
     setTimeout(switchChannel, 50);
     const R = (k, id) => `<div class="mkr"><span>${k}</span><b id="${id}">—</b></div>`;
     return `<div class="mk">
-      <div class="mkh"><span>${esc(window.T ? T("alm.monkeys", MONKEY_TITLE) : MONKEY_TITLE)}</span><i class="mkrec">● LIVE</i></div>
-      <div class="mkstrip">${R("Typewriter", "mkn")}${R("Subject", "mks")}${R("Keystrokes", "mkk")}${R("Chars / sec", "mkc")}${R("Trial time", "mkt")}</div>
+      <div class="mkh"><span>${esc(window.T ? T("alm.monkeys", MONKEY_TITLE) : MONKEY_TITLE)}</span><i class="mkrec">${esc(TT("monkeys.live", "● LIVE"))}</i></div>
+      <div class="mkstrip">${R(esc(TT("monkeys.typewriter", "Typewriter")), "mkn")}${R(esc(TT("monkeys.subject", "Subject")), "mks")}${R(esc(TT("monkeys.keystrokes", "Keystrokes")), "mkk")}${R(esc(TT("monkeys.cps", "Chars / sec")), "mkc")}${R(esc(TT("monkeys.time", "Trial time")), "mkt")}</div>
       <div class="mkscreen"><div class="mklab" id="mklab"></div><div class="mkfeed" id="mkfeed"></div></div></div>`;
   }
   function monkeyPaint() {
@@ -341,7 +345,7 @@
         // the monkey has been at it a while: arrive on a full page of its earlier typing, never a blank screen
         let back = ""; while (back.length < 1500) back += KEYS[rnd(KEYS.length)];
         MK.text = back; MK.keys = 20000 + rnd(400000);
-        const lab = $("mklab"); lab.classList.remove("conn"); lab.textContent = `Live input · Typewriter ${fmtN(MK.num)} · ${MK.name}`; }
+        const lab = $("mklab"); lab.classList.remove("conn"); lab.textContent = PL("monkeys.input", "Live input · Typewriter {n} · {name}", { n: fmtN(MK.num), name: MK.name }); }
       return;
     }
     const now = Date.now();
@@ -414,7 +418,8 @@
   function renderGa() {
     const el = $("gadate"); if (!el) return;
     const iso = isoIn(new Date(), DUB), [y, m, d] = iso.split("-").map(Number);
-    el.textContent = `${GA_DAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]}, ${d} ${GA_MONTHS[m - 1]}`;
+    const wd = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+    el.textContent = `${row("ref.gaDays", wd, GA_DAYS[wd])}, ${d} ${row("ref.gaMonths", m - 1, GA_MONTHS[m - 1])}`;
   }
   function renderTide() {
     const el = $("tide"), td = (typeof DATA !== "undefined" && DATA) ? DATA.tides : null;
@@ -429,10 +434,10 @@
     const rad = (ang - 90) * Math.PI / 180, nx = 30 + Math.cos(rad) * 19, ny = 30 + Math.sin(rad) * 19;
     const ticks = Array.from({ length: 24 }, (_, i) => { const a = i / 24 * Math.PI * 2; return `<line x1="${30 + Math.cos(a) * 24}" y1="${30 + Math.sin(a) * 24}" x2="${30 + Math.cos(a) * (i % 6 ? 26 : 27.5)}" y2="${30 + Math.sin(a) * (i % 6 ? 26 : 27.5)}"/>`; }).join("");
     el.innerHTML = `<svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="29" class="brass"/><circle cx="30" cy="30" r="22.5" class="face"/>
-      <g class="tk">${ticks}</g><text x="30" y="14" class="tl">HIGH</text><text x="30" y="50" class="tl">LOW</text>
+      <g class="tk">${ticks}</g><text x="30" y="14" class="tl">${W("almw.tideDialHigh", "HIGH")}</text><text x="30" y="50" class="tl">${W("almw.tideDialLow", "LOW")}</text>
       <line x1="30" y1="30" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" class="needle"/><circle cx="30" cy="30" r="2.4" class="pin"/></svg>
-      <div><div class="tt">Dublin Bay tides</div>
-      <div class="tv">${nh ? `High water <b>${hm(nh.d, DUB)}</b>` : ""}${nh && nl ? " · " : ""}${nl ? `low <b>${hm(nl.d, DUB)}</b>` : ""}</div></div>`;
+      <div><div class="tt">${W("almw.tideTitle", "Dublin Bay tides")}</div>
+      <div class="tv">${nh ? W("almw.tideHigh", "High water {time}", { time: `<b>${hm(nh.d, DUB)}</b>` }) : ""}${nh && nl ? " · " : ""}${nl ? W("almw.tideLow", "low {time}", { time: `<b>${hm(nl.d, DUB)}</b>` }) : ""}</div></div>`;
     el.hidden = false;
   }
 
@@ -498,7 +503,7 @@
 
   function daily() { renderOdd(); renderGa(); }
   daily(); renderTide(); loadRiver().catch(() => {}); showCard(); checkAurora(); checkISS();
-  document.addEventListener("copy", () => { renderOdd(); renderBanner(); showCardNow(); });
+  document.addEventListener("copy", () => { renderOdd(); renderGa(); renderTide(); renderBanner(); showCardNow(); });
   setInterval(checkAurora, 3 * 3600000); setInterval(checkISS, 30 * 60000);
   let lastDay = isoToday();
   setInterval(() => { if (isoToday() !== lastDay) { lastDay = isoToday(); daily(); } renderTide(); }, 5 * 60000);

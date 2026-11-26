@@ -515,6 +515,7 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "
 let COPY = {};
 const T = (k, d) => { let v = COPY; for (const p of k.split(".")) v = v && typeof v === "object" ? v[p] : undefined; return v == null || v === "" ? d : v; };
 const CH = (k, d, vars = {}, tag = "em") => esc(T(k, d)).replace(/\*([^*]+)\*/g, `<${tag}>$1</${tag}>`).replace(/ \/\/ (.*)$/, " <small>$1</small>").replace(/\{(\w+)\}/g, (m, x) => x in vars ? vars[x] : m);
+const PT = (k, d, vars = {}) => String(T(k, d)).replace(/\{(\w+)\}/g, (m, x) => x in vars ? vars[x] : m);   // plain text, for textContent
 window.T = T; window.CH = CH;
 function applyCopy() {
   $("poh").textContent = T("po.heading", "Po in Dublin"); $("poga").textContent = T("po.irish", "Po i mBaile Átha Cliath");
@@ -522,6 +523,7 @@ function applyCopy() {
   $("pennant").innerHTML = CH("elms.pennant", "RAH! // RAH!"); $("yoresfx").textContent = T("yore.suffix", "of yore");
   if (typeof setPastTitle === "function") setPastTitle();
   if (typeof tick === "function") tick();
+  if (window.ADV_RESTART) window.ADV_RESTART();
   document.dispatchEvent(new Event("copy"));
 }
 
@@ -545,10 +547,10 @@ const ICON = {
   storm: '<path d="M7 15h10a4.5 4.5 0 0 0 .6-9A6 6 0 0 0 6.2 7.6 3.8 3.8 0 0 0 7 15z"/><path d="M13 15l-2 4h3l-2 4"/>',
   fog: '<path d="M4 9h16M3 13h18M5 17h14"/>'
 };
+const KINDS = [["sun", "Clear"], ["part", "Partly cloudy"], ["cloud", "Cloudy"], ["fog", "Fog"], ["rain", "Drizzle"], ["rain", "Rain"], ["snow", "Snow"], ["rain", "Showers"], ["snow", "Snow showers"], ["storm", "Thunderstorms"]];
 function kind(code) {
-  if (code <= 0) return ["sun", "Clear"]; if (code <= 2) return ["part", "Partly cloudy"]; if (code === 3) return ["cloud", "Cloudy"];
-  if (code <= 48) return ["fog", "Fog"]; if (code <= 57) return ["rain", "Drizzle"]; if (code <= 67) return ["rain", "Rain"];
-  if (code <= 77) return ["snow", "Snow"]; if (code <= 82) return ["rain", "Showers"]; if (code <= 86) return ["snow", "Snow showers"]; return ["storm", "Thunderstorms"];
+  const i = code <= 0 ? 0 : code <= 2 ? 1 : code === 3 ? 2 : code <= 48 ? 3 : code <= 57 ? 4 : code <= 67 ? 5 : code <= 77 ? 6 : code <= 82 ? 7 : code <= 86 ? 8 : 9;
+  const words = T("wx.kinds", null); return [KINDS[i][0], esc((words && words[i]) || KINDS[i][1])];
 }
 const icon = code => `<svg class="wx" viewBox="0 0 24 24" aria-hidden="true">${ICON[kind(code)[0]]}</svg>`;
 
@@ -561,7 +563,7 @@ const hm12 = s => { let [h, m] = s.slice(11, 16).split(":").map(Number); const p
 async function renderWeather() {
   try {
     const w = await weather(HOME, TZ), c = w.current, d = w.daily;
-    $("now").innerHTML = `<div class="t">${icon(c.weather_code)}<span class="num">${Math.round(c.temperature_2m)}°</span></div><div class="s">Feels like ${Math.round(c.apparent_temperature)}° · ${kind(c.weather_code)[1]}</div><div class="s2">${Math.round(c.relative_humidity_2m)}% humidity · wind ${Math.round(c.wind_speed_10m)} mph ${compass(c.wind_direction_10m)}${d.sunrise ? ` · sun ${hm12(d.sunrise[0])}–${hm12(d.sunset[0])}` : ""}</div>`;
+    $("now").innerHTML = `<div class="t">${icon(c.weather_code)}<span class="num">${Math.round(c.temperature_2m)}°</span></div><div class="s">${CH("wx.feels", "Feels like {t}° · {sky}", { t: Math.round(c.apparent_temperature), sky: kind(c.weather_code)[1] })}</div><div class="s2">${CH("wx.extra", "{hum}% humidity · wind {wind} mph {dir}", { hum: Math.round(c.relative_humidity_2m), wind: Math.round(c.wind_speed_10m), dir: compass(c.wind_direction_10m) })}${d.sunrise ? " · " + CH("wx.sun", "sun {rise}–{set}", { rise: hm12(d.sunrise[0]), set: hm12(d.sunset[0]) }) : ""}</div>`;
     window.HOME_TEMP = c.temperature_2m;
     $("fc").innerHTML = d.time.map((t, i) => {
       const n = i === 0 ? "Today" : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dowOf(t)];
@@ -606,9 +608,9 @@ function renderWork() {
     const items = evs.map(e => {
       let cls = "";
       if (d.date === today && !e.allDay) { if (e.end && e.end <= hm) cls = "past"; else if (e.start <= hm) cls = "nowon"; }
-      return `<li class="${cls}"><span class="tm num">${e.allDay ? "all day" : t12(e.start)}</span><span class="ti">${esc(e.title)}</span></li>`;
+      return `<li class="${cls}"><span class="tm num">${e.allDay ? esc(T("cal.allDay", "all day")) : t12(e.start)}</span><span class="ti">${esc(e.title)}</span></li>`;
     }).join("");
-    return `<div><h3>${name} ${+d.date.slice(8)}<span>${rel}</span></h3>${evs.length ? `<ul>${items}</ul>` : `<div class="free">Nothing scheduled</div>`}</div>`;
+    return `<div><h3>${name} ${+d.date.slice(8)}<span>${rel}</span></h3>${evs.length ? `<ul>${items}</ul>` : `<div class="free">${esc(T("cal.free", "Nothing scheduled"))}</div>`}</div>`;
   }).join("");
 }
 function renderGrid() {
@@ -628,12 +630,12 @@ function renderGrid() {
       const cls = iso < today ? "past" : iso === today ? "today" : "";
       html += `<div class="cell ${cls}"><div class="dn num">${dn}${first ? `<small>${MON[+iso.slice(5, 7) - 1]}</small>` : ""}</div>` +
         shown.map(e => `<div class="ev ${e.time ? "" : "allday"}" style="--c:${CAL[e.cal] || "var(--muted)"}">${e.time ? `<b>${t12(e.time)}</b> ` : ""}${esc(e.title)}</div>`).join("") +
-        (evs.length > max ? `<div class="more">+${evs.length - max} more</div>` : "") + `</div>`;
+        (evs.length > max ? `<div class="more">${CH("cal.more", "+{n} more", { n: evs.length - max })}</div>` : "") + `</div>`;
     }
     html += `</div>`;
   }
   el.innerHTML = html + out;
-  el.insertAdjacentHTML("beforeend", `<div class="legend"><span><i style="--c:var(--amber)"></i>Morgan</span><span><i style="--c:var(--sage)"></i>Corey</span><span><i style="--c:var(--lilac)"></i>Griffano</span></div>`);
+  el.insertAdjacentHTML("beforeend", `<div class="legend"><span><i style="--c:var(--amber)"></i>${esc(T("cal.legendMorgan", "Morgan"))}</span><span><i style="--c:var(--sage)"></i>${esc(T("cal.legendCorey", "Corey"))}</span><span><i style="--c:var(--lilac)"></i>${esc(T("cal.legendFamily", "Griffano"))}</span></div>`);
   const big = (out.match(/class="fm"/g) || []).length > 6 || (out.match(/class="of"/g) || []).length > 4;   // the box grows only when there is more to show
   el.style.gridTemplateRows = out ? `auto repeat(4, minmax(0, 1fr)) minmax(0, ${big ? 1.65 : 1.2}fr) auto` : "auto repeat(5, minmax(0, 1fr)) auto";
 }
@@ -736,7 +738,8 @@ let collegeTurn = Math.floor(Math.random() * 7);
 function showCollege() {
   const day = Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000), [k, list] = COLLEGES[day % 2], i = collegeTurn++ % list.length;
   const img = $("cimg"); if (!img) return;
-  img.src = `../img/college/${k}-${i + 1}.jpg`; $("ccred").textContent = list[i][0] + " · public domain";
+  const caps = T(k === "mhc" ? "credits.elmsMhc" : "credits.elmsBmc", null);
+  img.src = `../img/college/${k}-${i + 1}.jpg`; $("ccred").textContent = ((caps && caps[i]) || list[i][0]) + " · " + T("credits.pd", "public domain");
 }
 function nextPhoto() { const m = MODES[mi % MODES.length]; if (m) idx[m]++; showPhoto(); }
 function nextMode() { mi++; showPhoto(); }
@@ -922,17 +925,25 @@ applyLook(); setInterval(applyLook, 60000);
     };
     let S, timer = null, running = false;
     const lines = [];
+    // wording from the Family board note: rooms and items by id, the extra commands, and the fixed messages (M)
+    const M = (k, d, v) => PT("house." + k, d, v);
+    function applyHouse() {
+      for (const [id, name, desc] of T("house.rooms", [])) if (ROOMS[id]) Object.assign(ROOMS[id], { name, desc });
+      for (const [id, name, seen, taken] of T("house.items", [])) if (ITEMS[id]) Object.assign(ITEMS[id], { name, seen, taken });
+      const fl = T("house.flavor", null);
+      if (fl && fl.length) { for (const k of Object.keys(FLAVOR)) delete FLAVOR[k]; for (const [r, c, t] of fl) if (ROOMS[r]) (FLAVOR[r] = FLAVOR[r] || []).push([c.toLowerCase(), t]); }
+    }
     function out(text, cls) { const d = document.createElement("div"); if (cls) d.className = cls; d.textContent = text; box.appendChild(d); while (box.children.length > 40) box.firstChild.remove(); return d; }
     const here = () => ROOMS[S.room];
     const lit = () => !here().dark || (S.inv.includes("lamp") && S.lampOn);
     const itemsHere = () => Object.keys(ITEMS).filter(k => S.where[k] === S.room);
     const score = () => S.mantel.length * 10;
     function describe() {
-      if (!lit()) return ["It is pitch dark. Something small scuttles off into the black. Better not wander here without a light."];
+      if (!lit()) return [M("dark", "It is pitch dark. Something small scuttles off into the black. Better not wander here without a light.")];
       const r = here(), o = [r.name.toUpperCase() + "|room", r.desc];
-      if (S.room === "study" && S.herbOpen) o.push("The herbarium lies open.");
+      if (S.room === "study" && S.herbOpen) o.push(M("herbLies", "The herbarium lies open."));
       for (const k of itemsHere()) o.push(ITEMS[k].seen);
-      if (S.room === "hall" && S.mantel.length) o.push("On the mantel: " + S.mantel.map(k => "the " + ITEMS[k].name).join(", ") + ".");
+      if (S.room === "hall" && S.mantel.length) o.push(M("mantel", "On the mantel: {items}.", { items: S.mantel.map(k => "the " + ITEMS[k].name).join(", ") }));
       return o;
     }
     function path(to) { // breadth-first route to a room
@@ -959,24 +970,24 @@ applyLook(); setInterval(applyLook, 60000);
       S.moves++;
       const r = here();
       if (r.exits[cmd] !== undefined || ["north", "south", "east", "west", "up", "down"].includes(cmd)) {
-        if (!r.exits[cmd]) return ["You can't go that way."];
-        if (here().dark && !lit() && cmd !== "up") return ["You stumble into a shelf. Jars rattle ominously. You think better of it."];
+        if (!r.exits[cmd]) return [M("cantGo", "You can't go that way.")];
+        if (here().dark && !lit() && cmd !== "up") return [M("stumble", "You stumble into a shelf. Jars rattle ominously. You think better of it.")];
         S.room = r.exits[cmd]; return describe();
       }
-      if (cmd === "light lamp") { S.lampOn = true; return ["The lamp flickers, then steadies.", ...describe()]; }
-      if (cmd === "open herbarium") { S.herbOpen = true; S.where.violet = "study"; return ["You untie the ribbon. Pages of pressed flowers, each with a Latin name. One falls loose."]; }
+      if (cmd === "light lamp") { S.lampOn = true; return [M("lampLit", "The lamp flickers, then steadies."), ...describe()]; }
+      if (cmd === "open herbarium") { S.herbOpen = true; S.where.violet = "study"; return [M("herbOpen", "You untie the ribbon. Pages of pressed flowers, each with a Latin name. One falls loose.")]; }
       if (cmd.startsWith("take ")) { const k = Object.keys(ITEMS).find(k => cmd === "take " + ITEMS[k].name); S.where[k] = null; S.inv.push(k); return [ITEMS[k].taken]; }
-      if (cmd.startsWith("put ")) { const k = Object.keys(ITEMS).find(k => cmd.startsWith("put " + ITEMS[k].name)); S.inv = S.inv.filter(i => i !== k); S.mantel.push(k); return [`Done. The ${ITEMS[k].name} looks right at home. [Your score just went up by 10.]`]; }
-      if (cmd === "inventory") return [S.inv.length ? "You are carrying: " + S.inv.map(k => "a " + ITEMS[k].name + (k === "lamp" && S.lampOn ? " (lit)" : "")).join(", ") + "." : "You are empty-handed."];
+      if (cmd.startsWith("put ")) { const k = Object.keys(ITEMS).find(k => cmd.startsWith("put " + ITEMS[k].name)); S.inv = S.inv.filter(i => i !== k); S.mantel.push(k); return [M("done", "Done. The {item} looks right at home. [Your score just went up by 10.]", { item: ITEMS[k].name })]; }
+      if (cmd === "inventory") return [S.inv.length ? M("carrying", "You are carrying: {items}.", { items: S.inv.map(k => "a " + ITEMS[k].name + (k === "lamp" && S.lampOn ? " (lit)" : "")).join(", ") }) : M("empty", "You are empty-handed.")];
       if (cmd === "look") return describe();
-      const f = (FLAVOR[S.room] || []).find(f => f[0] === cmd); return [f ? f[1] : "Nothing happens."];
+      const f = (FLAVOR[S.room] || []).find(f => f[0] === cmd); return [f ? f[1] : M("nothing", "Nothing happens.")];
     }
     function show(text) { const [t, c] = text.split("|"); out(t, c); }
     function turn() {
       if (!running) return;
       if (score() >= 30) {
-        out(`*** You have put every treasure on the mantel. Your score is 30 of 30, in ${S.moves} moves. ***`, "room");
-        timer = setTimeout(() => { if (running) { out("— Another day dawns. —"); newGame(); } }, 7000);
+        out(M("win", "*** You have put every treasure on the mantel. Your score is 30 of 30, in {moves} moves. ***", { moves: S.moves }), "room");
+        timer = setTimeout(() => { if (running) { out(M("dawn", "— Another day dawns. —")); newGame(); } }, 7000);
         return;
       }
       const cmd = decide(), line = out("> ", "cmd cur");
@@ -995,10 +1006,12 @@ applyLook(); setInterval(applyLook, 60000);
       timer = setTimeout(turn, 1500);
     }
     return {
-      start() { running = true; box.innerHTML = ""; out("THE HOUSE ON THE HILL"); out("An interactive fiction. Release 1."); newGame(); },
-      stop() { running = false; clearTimeout(timer); }
+      start() { running = true; box.innerHTML = ""; applyHouse(); out(T("house.title", "THE HOUSE ON THE HILL")); out(T("house.subtitle", "An interactive fiction. Release 1.")); newGame(); },
+      stop() { running = false; clearTimeout(timer); },
+      restart() { if (running) { this.stop(); this.start(); } }   // the wording arrived after the game began
     };
   })();
+  window.ADV_RESTART = () => ADV.restart();
 
   /* ---------- Text games: recorded sessions of real games (text/*.json, made on the Mac mini), typed back here ---------- */
   const TEXTS = (() => { const t = ["house", "cave", "zork1", "zork2", "zork3", "wumpus"], f = new URLSearchParams(location.search).get("text");
