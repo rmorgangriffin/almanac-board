@@ -238,6 +238,11 @@
 
   /* ---------- bird of the day: a recent sighting near Leeds with its Audubon plate (found by the family data job) ---------- */
   function birdCard() {
+    if (window.isTG && isTG()) return `<div class="alm-k">${esc(TT("alm.bird", "Bird of the Day"))}</div>
+      <img class="plate" src="../img/turkey/audubon-turkey.jpg" alt="">
+      <div class="alm-t">${W("thanksgiving.birdName", "Wild Turkey")}</div><div class="alm-la">Meleagris gallopavo</div>
+      <div class="alm-s">${W("thanksgiving.birdLine", "Plate 1 of The Birds of America; wild flocks roam the woods around Leeds")}</div>
+      <div class="alm-c">${W("thanksgiving.birdCredit", "John James Audubon, engraved by W. H. Lizars, 1827 · The Birds of America, plate 1 · public domain")}</div>`;
     const b = (typeof DATA !== "undefined" && DATA) ? DATA.bird : null;
     if (!b || !b.plate) throw new Error("no bird");
     const seen = b.seen ? fmt(new Date(b.seen + "T12:00:00Z"), TZ, { month: "short", day: "numeric" }) : "";
@@ -407,6 +412,7 @@
   }
   function renderOdd() {
     const el = $("odd"); if (!el) return;
+    if (window.isTG && isTG()) { el.innerHTML = W("thanksgiving.today", "Thanksgiving: today"); el.hidden = false; return; }
     const L = oddLines(), t = isoToday(), doy = Math.round((Date.parse(t) - Date.parse(t.slice(0, 4) + "-01-01")) / DAY);
     const pick = Q.get("odd") != null ? +Q.get("odd") : doy;
     el.innerHTML = L[pick % L.length]; el.hidden = false;
@@ -491,6 +497,8 @@
   function renderBanner() {
     const el = $("skybanner"); if (!el) return;
     const force = Q.get("banner"), parts = [];
+    const hmNow = fmt(new Date(), TZ, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    if ((window.isTG && isTG() && hmNow >= "08:30" && hmNow < "12:00") || force === "parade") parts.push(window.CH ? CH("thanksgiving.parade", "*The parade is on.*", {}, "b") : "<b>The parade is on.</b>");
     const SB = (k, d, v) => window.CH ? CH("sky." + k, d, v, "b") : d.replace(/\*([^*]+)\*/g, "<b>$1</b>").replace(/\{(\w+)\}/g, (m, x) => v[x]);
     if (auroraKp >= 6 || force === "aurora") parts.push(SB("aurora", "*Northern lights possible tonight.* NOAA forecasts a Kp of {kp}; look low to the north after dark.", { kp: force === "aurora" ? "6.7" : auroraKp.toFixed(1) }));
     const p = issPass || (force === "iss" ? { start: new Date(Date.now() + 3600000), end: new Date(Date.now() + 3600000 + 300000), startAz: 300, endAz: 120, max: 54 } : null);
@@ -504,7 +512,7 @@
   function daily() { renderOdd(); renderGa(); }
   daily(); renderTide(); loadRiver().catch(() => {}); showCard(); checkAurora(); checkISS();
   document.addEventListener("copy", () => { renderOdd(); renderGa(); renderTide(); renderBanner(); showCardNow(); });
-  setInterval(checkAurora, 3 * 3600000); setInterval(checkISS, 30 * 60000);
+  setInterval(checkAurora, 3 * 3600000); setInterval(checkISS, 30 * 60000); setInterval(renderBanner, 5 * 60000);   // the parade banner comes and goes
   let lastDay = isoToday();
   setInterval(() => { if (isoToday() !== lastDay) { lastDay = isoToday(); daily(); } renderTide(); }, 5 * 60000);
   setInterval(showCard, 3 * 60000);

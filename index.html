@@ -37,7 +37,11 @@ function reactorSlots(date) {
   else if (r < .65) slots.push(1081 + Math.floor(rnd() * 54));       // 6:01-6:55pm, slop dispersal overdue
   else if (r < .75) slots.push(423 + Math.floor(rnd() * 52));        // 7:03-7:55am, overdue again (after the 7:00 greeting)
   while (slots.length < n) slots.push(430 + Math.floor(rnd() * 885));   // 7:10am-9:55pm
-  return slots.map(m => [m, m + 4]);
+  const out = slots.map(m => [m, m + 4]);
+  // Thanksgiving (fourth Thursday of November): an extra, longer showing at 4:40pm, as dinner pressure peaks
+  const y = +date.slice(0, 4), d1 = new Date(Date.UTC(y, 10, 1)).getUTCDay();
+  if (date === `${y}-11-${String(1 + (4 - d1 + 7) % 7 + 21).padStart(2, "0")}`) out.push([1000, 1010]);
+  return out;
 }
 function pick() {
   if (forced) return forced;

@@ -35,6 +35,13 @@ svg.wx { width: 1em; height: 1em; display: inline-block; vertical-align: -.12em;
 
 /* Header */
 .head { display: grid; grid-template-columns: 1fr auto auto; gap: 2rem; align-items: end; padding: .25rem .2rem 0; }
+/* Thanksgiving: Currier & Ives's "Home to Thanksgiving" faint and sepia behind the header, a Thanksgiving line in Po's panel */
+.board.tg .head { position: relative; isolation: isolate; }
+.board.tg .head::before { content: ""; position: absolute; inset: -.4rem -.6rem 0; z-index: -1; background: url(../img/turkey/home-to-thanksgiving.jpg) center 62% / cover no-repeat; opacity: .2; border-radius: .6rem;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.9), rgba(0,0,0,.55)); mask-image: linear-gradient(to bottom, rgba(0,0,0,.9), rgba(0,0,0,.55)); }
+.tgcred { position: absolute; right: .3rem; bottom: -1.05rem; font-size: .5rem; letter-spacing: .04em; color: var(--muted); opacity: .75; white-space: nowrap; }
+.dubtg { margin-top: .35rem; font-size: .78rem; line-height: 1.3; color: var(--amber); }
+.dubtg small { display: block; color: var(--muted); font-size: .68rem; }
 .latin { font-family: var(--display); font-size: clamp(2.2rem, 8vw, 4.2rem); line-height: 1; }
 .latin em { font-style: normal; color: var(--amber); }
 .date { margin-top: .4rem; font-size: 1.1rem; color: var(--muted); }
@@ -446,6 +453,7 @@ html[data-look="rouge"] .grid { --gl: #9f5b5b; }
     </div>
     <div class="time num" id="time"></div>
     <div class="now" id="now"><div class="t">--°</div><div class="s">Northampton</div></div>
+    <div class="tgcred" id="tgcred" hidden></div>
   </header>
 
   <div class="strip">
@@ -486,7 +494,7 @@ html[data-look="rouge"] .grid { --gl: #9f5b5b; }
           <div class="gadate" id="gadate"></div>
         </div>
         <div class="dt num" id="dubtime"></div>
-        <div><div class="wnow" id="dubnow"></div><div class="dubx" id="dubx"></div></div>
+        <div><div class="wnow" id="dubnow"></div><div class="dubx" id="dubx"></div><div class="dubtg" id="dubtg" hidden></div></div>
         <div class="mini" id="dubfc"></div>
         <div class="tide" id="tide" hidden></div>
       </div>
@@ -517,12 +525,28 @@ const T = (k, d) => { let v = COPY; for (const p of k.split(".")) v = v && typeo
 const CH = (k, d, vars = {}, tag = "em") => esc(T(k, d)).replace(/\*([^*]+)\*/g, `<${tag}>$1</${tag}>`).replace(/ \/\/ (.*)$/, " <small>$1</small>").replace(/\{(\w+)\}/g, (m, x) => x in vars ? vars[x] : m);
 const PT = (k, d, vars = {}) => String(T(k, d)).replace(/\{(\w+)\}/g, (m, x) => x in vars ? vars[x] : m);   // plain text, for textContent
 window.T = T; window.CH = CH;
+/* Thanksgiving: the fourth Thursday of November, every year. ?date=2026-11-26 previews a day. */
+const DATE_Q = new URLSearchParams(location.search).get("date");
+const dayIso = () => DATE_Q || isoToday();
+const tgDate = y => { const d = new Date(Date.UTC(y, 10, 1)); return `${y}-11-${String(1 + (4 - d.getUTCDay() + 7) % 7 + 21).padStart(2, "0")}`; };
+const isTG = () => { const t = dayIso(); return t === tgDate(+t.slice(0, 4)); };
+window.isTG = isTG;
+function renderTG() {
+  const on = isTG(); document.querySelector(".board").classList.toggle("tg", on);
+  $("tgcred").hidden = !on; $("dubtg").hidden = !on;
+  if (!on) return;
+  $("tgcred").textContent = T("thanksgiving.picCredit", "Currier & Ives, Home to Thanksgiving, 1867 · public domain");
+  const t = dayIso(), dinner = new Date(Date.UTC(+t.slice(0, 4), 10, +t.slice(8), 22, 0));   // 5pm Eastern (EST is UTC-5)
+  const there = new Intl.DateTimeFormat("en-US", { timeZone: DUB, hour: "numeric", minute: "2-digit" }).format(dinner).replace(":00", "").replace(" AM", "am").replace(" PM", "pm");
+  $("dubtg").innerHTML = `${CH("thanksgiving.po", "Just a Thursday in Dublin")}<small>${CH("thanksgiving.poDinner", "When we sit down at {here}, it's {there} there", { here: "5pm", there })}</small>`;
+}
 function applyCopy() {
   $("poh").textContent = T("po.heading", "Po in Dublin"); $("poga").textContent = T("po.irish", "Po i mBaile Átha Cliath");
   $("elmsq").textContent = T("elms.quote", "Oh, those precious days amongst the ivy, beneath the stately elms upon the quad!");
   $("pennant").innerHTML = CH("elms.pennant", "RAH! // RAH!"); $("yoresfx").textContent = T("yore.suffix", "of yore");
   if (typeof setPastTitle === "function") setPastTitle();
   if (typeof tick === "function") tick();
+  renderTG();
   if (window.ADV_RESTART) window.ADV_RESTART();
   document.dispatchEvent(new Event("copy"));
 }
@@ -747,19 +771,21 @@ function nextMode() { mi++; showPhoto(); }
 
 /* ---------- This month in past years ---------- */
 // One large photo from this month in earlier years, changing about every half hour.
-let PAST = [], pastNext = 0, PAST_TITLE = "";
+let PAST = [], pastNext = 0, PAST_TITLE = "", PAST_TG = false;
 const MONTHS_YORE = ["Januaries", "Februaries", "Marches", "Aprils", "Mays", "Junes", "Julys", "Augusts", "Septembers", "Octobers", "Novembers", "Decembers"];
 function setPastTitle() {   // "Novembers" of yore, or "Hanukkahs" when the publisher picked Hanukkah photos
   const m = +new Intl.DateTimeFormat("en-US", { timeZone: TZ, month: "numeric" }).format(new Date()) - 1;
-  $("pastmonth").textContent = PAST_TITLE ? T("yore.hanukkah", PAST_TITLE) : ((T("yore.months", MONTHS_YORE) || MONTHS_YORE)[m] || MONTHS_YORE[m]);
+  $("pastmonth").textContent = PAST_TG ? T("thanksgiving.yore", "Thanksgivings") : PAST_TITLE ? T("yore.hanukkah", PAST_TITLE) : ((T("yore.months", MONTHS_YORE) || MONTHS_YORE)[m] || MONTHS_YORE[m]);
 }
 async function loadPast() {
-  let pd = {}; try { pd = await unlock("/almanac-board-photos/past.enc"); } catch (e) {}
+  let pd = {};
+  if (isTG()) try { pd = await unlock("/almanac-board-photos/pastT.enc"); pd.tg = true; } catch (e) {}   // Thanksgivings of yore
+  if (!pd.photos || !pd.photos.length) try { pd = await unlock("/almanac-board-photos/past.enc"); } catch (e) {}
   PAST = pd.photos || [];
   const band = $("past"), board = document.querySelector(".board");
   if (!PAST.length) { band.hidden = true; board.classList.add("nopast"); return; }
   band.hidden = false; board.classList.remove("nopast");
-  PAST_TITLE = pd.title || ""; setPastTitle();
+  PAST_TITLE = pd.title || ""; PAST_TG = !!pd.tg; setPastTitle();
   pastNext = Math.floor(Math.random() * PAST.length);
   pastShow();
 }
@@ -1089,6 +1115,7 @@ renderWeather(); setInterval(renderWeather, 30 * 60000);
 loadData(); setInterval(loadData, 10 * 60000);
 loadPhotos(); setInterval(loadPhotos, 6 * 3600000);
 loadPast(); setInterval(loadPast, 6 * 3600000);
+let tgWas = isTG(); setInterval(() => { if (isTG() !== tgWas) { tgWas = isTG(); renderTG(); loadPast(); } }, 60000);   // Thanksgiving comes on at midnight
 // 20s per photo, 3 photos per set, then switch sets: one minute each
 let ticks = 0;
 setInterval(() => { ticks++; if (ticks % 3 === 0) nextMode(); else nextPhoto(); }, 10 * 60000);   // each photo ~10 minutes; the album switches every half hour
@@ -1235,6 +1262,7 @@ if (Q.get("rain") === "1") wxDub(0);
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@5.0.0/dist/satellite.min.js"></script>
 <script src="almanac.js"></script>
 <script src="../walk.js"></script>
+<script src="turkeys.js"></script>
 <script src="../greet.js"></script>
 </body>
 </html>

@@ -129,13 +129,17 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   const hm = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date())) hm[x.type] = +x.value;
   // Feeding cycle: pressure builds 4-6pm; the slop is overdue from 6:01pm (until 7) and from 7:01am (until 8).
   const overdue = Q.get("overdue") === "1" || ((hm.hour === 18 || hm.hour === 7) && hm.minute >= 1);
-  const dinner = overdue || Q.get("dinner") === "1" || (hm.hour >= 16 && hm.hour < 18);
+  // Thanksgiving, the fourth Thursday of November (?date=2026-11-26 previews it): its own copy (D.thanksgiving), and begging all day
+  const dayIso = Q.get("date") || new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  const tgD = (y => `${y}-11-${String(1 + (4 - new Date(Date.UTC(y, 10, 1)).getUTCDay() + 7) % 7 + 21).padStart(2, "0")}`)(+dayIso.slice(0, 4));
+  const TG = (dayIso === tgD || Q.get("thanksgiving") === "1") && D.thanksgiving ? D.thanksgiving : null;
+  const dinner = overdue || Q.get("dinner") === "1" || (hm.hour >= 16 && hm.hour < 18) || !!TG;
   const N = D.now || {}, wx = { tempF: null, hum: null, wind: null, dublinC: null };
 
   /* header, consoles, lamps */
   const AC = D.access;
   $("access").innerHTML = `<span>${esc(AC.label)} <b id="lvl">${esc(AC.levels[0])}</b></span><span id="acmid"></span><span>${esc(AC.clear)} <b class="no blink">${esc(AC.verdict)}</b></span>`;
-  const setAccess = () => { $("lvl").textContent = pick(AC.levels); $("acmid").textContent = AC.mid.replace("{s}", 7000 + Math.floor(Math.random() * 2999)); };
+  const setAccess = () => { $("lvl").textContent = pick(AC.levels); $("acmid").textContent = TG && TG.access ? TG.access : AC.mid.replace("{s}", 7000 + Math.floor(Math.random() * 2999)); };
   setAccess(); setInterval(setAccess, 9000);
   $("ttl").textContent = D.title; $("sub").textContent = D.subtitle;
   const NB = 120, CLS = ["g", "g", "g", "g", "a", "w", "", "", "", "r"];
@@ -163,7 +167,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
     grocery: () => N.grocery == null ? null : [Math.min(99, N.grocery * 4), `${N.grocery} ITEMS`],
     amazon: () => N.amazon_inbound == null ? null : [Math.max(5, Math.min(99, N.amazon_inbound * 14)), N.amazon_today ? `${N.amazon_today} TODAY` + (N.amazon_inbound > N.amazon_today ? ` · ${N.amazon_inbound - N.amazon_today} MORE` : "") : N.amazon_inbound ? `${N.amazon_inbound} IN TRANSIT` : "NONE INBOUND"],
   };
-  const rows = D.rows.map(r => { const k = (r[3] || "").startsWith("live:") ? r[3].slice(5) : null; if (k) { const v = LIVE[k] && LIVE[k](); return v ? { l: r[0], v: v[0], s: v[1], live: true } : null; } if (r[3] === "cycle") { const st = String(r[2]).split(" · ").filter(Boolean); const ph = Math.min(st.length - 1, Math.floor(rnd(0, st.length))); return { l: r[0], v: ph === st.length - 1 && ph ? 92 : ph ? 30 + 40 * ph / st.length : 15, s: st[ph] || "", cycle: st, ph, until: Date.now() + rnd(60, 240) * 1000 }; }   // a random phase each showing
+  const rows = [...D.rows, ...(TG ? TG.rows || [] : [])].map(r => { const k = (r[3] || "").startsWith("live:") ? r[3].slice(5) : null; if (k) { const v = LIVE[k] && LIVE[k](); return v ? { l: r[0], v: v[0], s: v[1], live: true } : null; } if (r[3] === "cycle") { const st = String(r[2]).split(" · ").filter(Boolean); const ph = Math.min(st.length - 1, Math.floor(rnd(0, st.length))); return { l: r[0], v: ph === st.length - 1 && ph ? 92 : ph ? 30 + 40 * ph / st.length : 15, s: st[ph] || "", cycle: st, ph, until: Date.now() + rnd(60, 240) * 1000 }; }   // a random phase each showing
     return { l: r[0], v: r[1], s: r[2], fixed: r[3] === "fixed" }; }).filter(Boolean);
   const sc = v => v > 85 ? "rd" : v > 65 ? "am" : "";
   // many gauges: shrink the list's text until Primary Systems leaves the auxiliary bank at least a few rows
@@ -237,7 +241,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   /* event log */
   $("logT").innerHTML = H(D.logTitle);
   let mail = P.mailStart, seen = 0;
-  const msgs = D.log.filter(m => !m[2]);
+  const msgs = [...D.log, ...(TG ? TG.log || [] : [])].filter(m => !m[2]);
   if (dinner) msgs.push(...D.dinner.log);
   let deck = [];
   const draw = () => { if (!deck.length) deck = msgs.map(m => [Math.random(), m]).sort((a, b) => a[0] - b[0]).map(x => x[1]); return deck.pop(); };
@@ -254,7 +258,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   }
 
   /* critical alerts and the breach flash: rare on the wall */
-  const crit = [...D.crit]; if (overdue) crit.unshift(D.dinner.crit);
+  const crit = [...(TG ? TG.crit || [] : []), ...D.crit]; if (overdue) crit.unshift(D.dinner.crit);
   let ci = 0;
   let bearOn = false, bearAnn = null;
   function critical(force) {
@@ -313,7 +317,8 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   setInterval(() => { const r = Math.random(); pick(LAMP).className = r < .1 ? "am blink" : r < .14 ? "rd blink" : ""; }, 900);
   setInterval(tick, 1000); setInterval(drawChart, 1000); setInterval(restTick, 2000); setInterval(ohTick, 1800);
   setInterval(() => { drawRows(); drawDials(); }, 3000); setInterval(flips, 3500); setInterval(bark, 4000);
-  setInterval(() => { const s = pick(P.tableStates); $("ttMode").textContent = s; $("ttMode").style.color = s === "STANDBY" || s === "CONCLUDED" ? "#1d8c45" : "#ffb000"; }, 7000);
+  if (TG) { $("ttMode").textContent = TG.table || "INITIATED"; $("ttMode").style.color = "#ffb000"; }   // stuck on INITIATED all day
+  else setInterval(() => { const s = pick(P.tableStates); $("ttMode").textContent = s; $("ttMode").style.color = s === "STANDBY" || s === "CONCLUDED" ? "#1d8c45" : "#ffb000"; }, 7000);
   setInterval(() => addLog(), 2400);
   for (let i = 0; i < 24; i++) addLog();
   tick(); drawChart(); drawRows(); restTick(); ohTick(); bark(); loadWx();
