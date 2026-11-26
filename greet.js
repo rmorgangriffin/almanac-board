@@ -23,11 +23,12 @@
     if (h === 0 && m < 5) return "night";
     return null;
   }
+  // the wording comes from the Family board note when the board has it (window.CH), else MSG
   function check() {
     const w = which();
     if (w === shown) return;
     shown = w;
-    if (w) { el.innerHTML = `<div>${MSG[w]}</div>`; el.hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("on"))); }
+    if (w) { el.innerHTML = `<div>${window.CH ? CH("greet." + w, { morning: "Good morning, *jerks!*", night: "Goodnight, *jerks!*" }[w]) : MSG[w]}</div>`; el.hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("on"))); }
     else { el.classList.remove("on"); setTimeout(() => { if (!shown) el.hidden = true; }, 1600); }
   }
   check(); setInterval(check, 5000);

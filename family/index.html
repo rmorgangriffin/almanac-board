@@ -521,6 +521,7 @@ function applyCopy() {
   $("elmsq").textContent = T("elms.quote", "Oh, those precious days amongst the ivy, beneath the stately elms upon the quad!");
   $("pennant").innerHTML = CH("elms.pennant", "RAH! // RAH!"); $("yoresfx").textContent = T("yore.suffix", "of yore");
   if (typeof setPastTitle === "function") setPastTitle();
+  if (typeof tick === "function") tick();
   document.dispatchEvent(new Event("copy"));
 }
 
