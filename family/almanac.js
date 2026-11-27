@@ -414,16 +414,25 @@
   /* ---------- Advent calendar, Dec 1-24: 24 doors, today's opens, past ones stay open (family/advent.json; Seasonal.md "Advent calendar") ---------- */
   let ADV = []; fetch("advent.json", { cache: "no-cache" }).then(r => r.json()).then(j => { ADV = j; }).catch(() => {});
   const advDay = () => { const t = typeof dayIso === "function" ? dayIso() : isoToday(); return t.slice(5, 7) === "12" && +t.slice(8) <= 24 ? +t.slice(8) : 0; };
+  // rows: [day, curiosity, picture file, picture title, credit, photo]; the photo column only matters to the publish job, which
+  // seals each day's family photo as advent-DD.enc. The picture shows first, then the photo fades in (?advphoto=1: straight away).
   function adventCard() {
     const rows = TT("advent.days", ADV) || [], day = advDay() || +(Q.get("door") || 0); if (!day || !rows.length) throw new Error("no advent");
     const row = rows.find(r => +r[0] === day) || rows[0], img = f => `../img/advent/${encodeURIComponent(f)}`;
     const doors = Array.from({ length: 24 }, (_, i) => { const d = i + 1, r = rows.find(x => +x[0] === d);
-      if (d < day && r) return `<div class="ad o" style="background-image:url(${img(r[1])})"><span>${d}</span></div>`;
-      if (d === day) return `<div class="ad t" style="background-image:url(${img(row[1])})"><i class="leaf"><span>${d}</span></i></div>`;
+      if (d < day && r) return `<div class="ad o" style="background-image:url(${img(r[2])})"><span>${d}</span></div>`;
+      if (d === day) return `<div class="ad t" style="background-image:url(${img(row[2])})"><i class="leaf"><span>${d}</span></i></div>`;
       return `<div class="ad"><span>${d}</span></div>`; }).join("");
+    setTimeout(() => adventPhoto(day), 50);
     return `<div class="adv"><div class="mkh"><span>${esc(TT("advent.title", "Advent calendar"))}</span><span>${esc(TT("advent.door", "Door"))} ${day}</span></div>
-      <div class="advb"><figure class="advpic"><img src="${img(row[1])}" alt=""><figcaption>${esc(row[2] || "")}</figcaption></figure><div class="advdoors">${doors}</div></div>
+      <div class="advb"><figure class="advpic"><div class="advimg" id="advimg" style="--phd:${Q.get("advphoto") ? 1 : 75}s"><img src="${img(row[2])}" alt=""></div><figcaption>${esc(row[1] || "")}</figcaption></figure><div class="advdoors">${doors}</div></div>
       <div class="stcred">${esc([row[3], row[4]].filter(Boolean).join(" · "))}</div></div>`;
+  }
+  async function adventPhoto(day) {
+    if (typeof unlock !== "function" || typeof PHOTO_DIR === "undefined") return;
+    let url; try { url = URL.createObjectURL(new Blob([await unlock(`${PHOTO_DIR}advent-${String(day).padStart(2, "0")}.enc`, true)], { type: "image/jpeg" })); } catch (e) { return; }
+    const box = $("advimg"); if (!box) { URL.revokeObjectURL(url); return; }
+    const im = new Image(); im.className = "ph"; im.alt = ""; im.onload = () => box.appendChild(im); im.src = url;
   }
 
   /* ---------- the Almanac panel ---------- */
