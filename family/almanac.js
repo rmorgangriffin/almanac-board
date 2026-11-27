@@ -389,19 +389,58 @@
   }
   setInterval(beardTick, 1000);
 
+  /* ---------- Christmas Eve: Santa's run, worked out by family/santa.js (6am Dec 24 to 3am Dec 25; ?santa=1&santat=19:05 previews) ---------- */
+  const santaOn = () => !!window.SANTA && SANTA.live(SANTA.now());
+  const clock = ms => new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", minute: "2-digit" }).format(new Date(ms)).replace(" AM", " am").replace(" PM", " pm");
+  const bigN = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " billion" : n >= 1e6 ? Math.round(n / 1e6) + " million" : fmtN(Math.round(n));
+  function santaCard() { setTimeout(santaTick, 20);
+    return `<div class="st"><div class="mkh"><span>${esc(TT("santa.title", "Santa tracker · Christmas Eve"))}</span><i class="mkrec">${esc(TT("monkeys.live", "● LIVE"))}</i></div>
+      <div class="stmap"><img src="../img/santa/world.jpg" alt=""><i class="stdot" id="stdot"></i></div>
+      <div class="stnow" id="stnow"></div><div class="stnext" id="stnext"></div>
+      <div class="stcred">${esc(TT("santa.credit", "Santa's route worked out on this board, following midnight west · map: NASA Blue Marble, public domain"))}</div></div>`; }
+  function santaTick() {
+    const dot = $("stdot"); if (!dot || !window.SANTA) return;
+    const s = SANTA.at(SANTA.now()), lat = Math.max(-64.8, Math.min(75.6, s.lat));
+    dot.style.left = ((s.lng + 180) / 360 * 100).toFixed(2) + "%"; dot.style.top = ((75.6 - lat) / 140.4 * 100).toFixed(2) + "%";
+    let now, next;
+    if (s.phase === "before") { now = TT("santa.before", "The sleigh is being readied at the North Pole"); next = `Takeoff ${clock(s.takeoff)} · first stop ${s.next}, ${s.nextRegion}`; }
+    else if (s.phase === "home") { now = TT("santa.home", "Santa is home at the North Pole. Merry Christmas!"); next = `Homes visited: ${bigN(s.homes)}`; }
+    else { now = `${s.city === "Leeds" ? "★ " : ""}Santa is over <b>${esc(s.city)}</b> <small>${esc(s.region)}</small>`;
+      next = `Next: ${esc(s.next)}${s.nextRegion ? ", " + esc(s.nextRegion) : ""} · ${clock(s.nextAt)}<br>Homes visited: <b>${bigN(s.homes)}</b>`; }
+    $("stnow").innerHTML = s.phase === "flying" ? now : esc(now); $("stnext").innerHTML = next;
+  }
+  setInterval(santaTick, 15000);
+
+  /* ---------- Advent calendar, Dec 1-24: 24 doors, today's opens, past ones stay open (family/advent.json; Seasonal.md "Advent calendar") ---------- */
+  let ADV = []; fetch("advent.json", { cache: "no-cache" }).then(r => r.json()).then(j => { ADV = j; }).catch(() => {});
+  const advDay = () => { const t = typeof dayIso === "function" ? dayIso() : isoToday(); return t.slice(5, 7) === "12" && +t.slice(8) <= 24 ? +t.slice(8) : 0; };
+  function adventCard() {
+    const rows = TT("advent.days", ADV) || [], day = advDay() || +(Q.get("door") || 0); if (!day || !rows.length) throw new Error("no advent");
+    const row = rows.find(r => +r[0] === day) || rows[0], img = f => `../img/advent/${encodeURIComponent(f)}`;
+    const doors = Array.from({ length: 24 }, (_, i) => { const d = i + 1, r = rows.find(x => +x[0] === d);
+      if (d < day && r) return `<div class="ad o" style="background-image:url(${img(r[1])})"><span>${d}</span></div>`;
+      if (d === day) return `<div class="ad t" style="background-image:url(${img(row[1])})"><i class="leaf"><span>${d}</span></i></div>`;
+      return `<div class="ad"><span>${d}</span></div>`; }).join("");
+    return `<div class="adv"><div class="mkh"><span>${esc(TT("advent.title", "Advent calendar"))}</span><span>${esc(TT("advent.door", "Door"))} ${day}</span></div>
+      <div class="advb"><figure class="advpic"><img src="${img(row[1])}" alt=""><figcaption>${esc(row[2] || "")}</figcaption></figure><div class="advdoors">${doors}</div></div>
+      <div class="stcred">${esc([row[3], row[4]].filter(Boolean).join(" · "))}</div></div>`;
+  }
+
   /* ---------- the Almanac panel ---------- */
   const CARDS = { moon: moonCard, sky: skyCard, day: dayCard, river: riverCard, meteor: meteorCard, plant: plantCard, bird: birdCard, monkeys: monkeyCard };
+  const EXTRA = { beard: beardCard, santa: santaCard, advent: adventCard };
   let ci = 0, lastName = null;
-  function showCardNow() { if (lastName && $("almbody")) try { $("almbody").innerHTML = (lastName === "beard" ? beardCard : CARDS[lastName])(); } catch (e) {} }
+  function showCardNow() { if (lastName && $("almbody")) try { $("almbody").innerHTML = (EXTRA[lastName] || CARDS[lastName])(); } catch (e) {} }
   function showCard(force) {
     const box = $("almbody"); if (!box || !A) return;
-    const tgOn = window.isTG && isTG(), names = (tgOn ? ["beard"] : []).concat(Object.keys(CARDS)), pin = typeof force === "string" ? force : Q.get("alm");
+    const tgOn = window.isTG && isTG(), base = (tgOn ? ["beard"] : []).concat(advDay() ? ["advent"] : [], Object.keys(CARDS));
+    const names = santaOn() ? base.flatMap(n => ["santa", n]) : base, pin = typeof force === "string" ? force : Q.get("alm");
     const showing = box.dataset.card === "monkeys";
     const tg = window.isTG && isTG();   // Thanksgiving: the monkeys get a short turn, every three hours or so, so the Thanksgivings of yore have the room
     if (tg && MK.endedAt < 0) MK.endedAt = Date.now() - 120 * 60000;   // and not within the first hour after a load
     if (!pin && showing && Date.now() - MK.shownAt < (tg ? 10 : 20) * 60000) return;   // the monkeys get at least 20 minutes (10 on Thanksgiving)
     if (showing && !pin) MK.endedAt = Date.now();
-    const ALL = Object.assign({ beard: beardCard }, CARDS);
+    const ALL = Object.assign({}, EXTRA, CARDS);
     let name = ALL[pin] ? pin : names[ci++ % names.length];
     if (!pin && name === "monkeys" && Date.now() - MK.endedAt < (tg ? 180 : 40) * 60000) name = names[ci++ % names.length];
     box.classList.add("off");

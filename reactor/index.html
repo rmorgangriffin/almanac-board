@@ -111,6 +111,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
 </div>
 <div class="alert" id="alert"></div>
 <div class="breach" id="breach"><h3 class="blink" id="br1"></h3><p id="br2"></p><p id="br3" style="font-size:1.4rem;color:#ffb3ad"></p></div>
+<script src="../family/santa.js"></script>
 <script>
 (async function () {
   const $ = id => document.getElementById(id), Q = new URLSearchParams(location.search), TZ = "America/New_York";
@@ -244,7 +245,13 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   const msgs = [...D.log, ...(TG ? TG.log || [] : [])].filter(m => !m[2]);
   if (dinner) msgs.push(...D.dinner.log);
   let deck = [];
-  const draw = () => { if (!deck.length) deck = msgs.map(m => [Math.random(), m]).sort((a, b) => a[0] - b[0]).map(x => x[1]); return deck.pop(); };
+  // Christmas Eve (6am Dec 24 to 3am Dec 25): sleigh telemetry from family/santa.js now and then
+  const santaMsg = () => { if (!window.SANTA || !SANTA.live(SANTA.now()) || Math.random() > .3) return null; const s = SANTA.at(SANTA.now());
+    if (s.phase === "before") return ["a", "SLEIGH PRE-FLIGHT CHECKS UNDER WAY · NORTH POLE"];
+    if (s.phase === "home") return ["g", "SLEIGH RETURNED TO NORTH POLE · ALL ROUTES CLEAR"];
+    if (s.city === "Leeds" || s.next === "Leeds") return ["rd", "SLEIGH IN LEEDS SECTOR AIRSPACE · ALL SUBJECTS STAND BY"];
+    return ["a", `SLEIGH TELEMETRY: OVER ${s.city}, ${s.region} · NEXT ${s.next} · HOMES ${(s.homes / 1e9).toFixed(2)}B`]; };
+  const draw = () => { const sm = santaMsg(); if (sm) return sm; if (!deck.length) deck = msgs.map(m => [Math.random(), m]).sort((a, b) => a[0] - b[0]).map(x => x[1]); return deck.pop(); };
   function fill(t) { return t.replace("{dublinC}", wx.dublinC == null ? "--" : Math.round(wx.dublinC)).replace("{tempF}", wx.tempF == null ? "--" : Math.round(wx.tempF)).replace("{hum}", wx.hum == null ? "--" : Math.round(wx.hum)).replace("{wind}", wx.wind == null ? "--" : Math.round(wx.wind)).replace("{mailM}", Math.floor(mail / 1e6) + 1); }
   const lines = [];
   function addLog(m) {
