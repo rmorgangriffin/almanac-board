@@ -134,7 +134,9 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   const nowMin = () => { if (AT) return AT[0] * 60 + AT[1]; const p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date())) p[x.type] = +x.value; return p.hour * 60 + p.minute; };
   // time tags from the note ([6pm-7pm] etc.) arrive as {h: [[fromMin, toMin], ...]} on an item; untagged items are allowed any time
   const hrsOf = x => { if (!x) return null; if (x.h) return x.h; if (Array.isArray(x)) for (const v of x) if (v && typeof v === "object" && !Array.isArray(v) && v.h) return v.h; return null; };
-  const inHrs = h => { if (!h) return true; const m = nowMin(); return h.some(w => m >= w[0] && m < w[1]); };
+  // a window may carry a third number, a bitmask of days (Sunday = 1 ... Saturday = 64), from tags like [sat 11am-2pm]; ?date= previews a day
+  const dowNow = () => new Date((Q.get("date") || new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date())) + "T12:00:00Z").getUTCDay();
+  const inHrs = h => { if (!h) return true; const m = nowMin(), d = 1 << dowNow(); return h.some(w => m >= w[0] && m < w[1] && (!w[2] || (w[2] & d))); };
   const bare = x => x.filter(v => !(v && typeof v === "object" && !Array.isArray(v) && v.h));
   const wpick = (a, w) => { let t = 0; for (const x of a) t += w(x); let r = Math.random() * t; for (const x of a) if ((r -= w(x)) < 0) return x; return a[a.length - 1]; };
   const W = x => hrsOf(x) ? 4 : 1;   // tagged items are four times as likely inside their hours
@@ -307,8 +309,8 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
       $("hostS").textContent = C.hostility[1]; $("hostS").className = "st am"; $("hostB").className = "am"; $("hostB").style.transform = "scaleX(.74)"; $("nimS").textContent = C.nimona[1]; }, 6000);
   }
   function breach() { $("br1").textContent = D.breach[0]; $("br2").textContent = D.breach[1]; $("br3").textContent = D.breach[2]; $("breach").style.display = "flex"; setTimeout(() => $("breach").style.display = "none", 3500); }
-  /* incidents: one sequence played in order, at most one per showing (bear, pantry, internet, TikTok, tweet or smoke, each in about 14% of showings; ?bear=1, ?pantry=1, ?internet=1, ?tiktok=1, ?tweet=1 or ?smoke=1 forces one) */
-  const INC = [["bear", D.bear], ["pantry", D.pantry], ["internet", D.internet], ["tiktok", D.tiktok], ["tweet", D.tweet], ["smoke", D.smoke]].filter(x => x[1] && x[1].seq && x[1].seq.length);
+  /* incidents: one sequence played in order, at most one per showing (bear, pantry, internet, TikTok, tweet, smoke or Melissa, picked from those allowed at that hour; ?bear=1, ?pantry=1, ?internet=1, ?tiktok=1, ?tweet=1, ?smoke=1 or ?melissa=1 forces one) */
+  const INC = [["bear", D.bear], ["pantry", D.pantry], ["internet", D.internet], ["tiktok", D.tiktok], ["tweet", D.tweet], ["smoke", D.smoke], ["melissa", D.melissa]].filter(x => x[1] && x[1].seq && x[1].seq.length);
   const roll = Math.random(), forced = INC.find(([k]) => Q.get(k));
   const incOk = INC.filter(x => inHrs(x[1].h));   // tagged incidents only in their hours, and four times as likely there
   const chosen = forced || (incOk.length && roll < .84 ? wpick(incOk, x => x[1].h ? 4 : 1) : null);
@@ -356,7 +358,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   setInterval(() => { drawRows(); drawDials(); }, 3000); setInterval(flips, 3500); setInterval(bark, 4000);
   if (TG) { $("ttMode").textContent = TG.table || "INITIATED"; $("ttMode").style.color = "#ffb000"; }   // stuck on INITIATED all day
   else setInterval(() => { const s = tablePick(); $("ttMode").textContent = s; $("ttMode").style.color = s === "STANDBY" || s === "CONCLUDED" ? "#1d8c45" : "#ffb000"; }, 7000);
-  setInterval(() => addLog(), 2400);
+  (function logLoop() { setTimeout(() => { addLog(); logLoop(); }, (pairNext ? rnd(3, 5) : rnd(9, 12)) * 1000); })();   // about one line every 10s: a 10-minute showing deals roughly one pass of the deck
   for (let i = 0; i < 24; i++) addLog();
   tick(); drawChart(); drawRows(); restTick(); ohTick(); bark(); loadWx();
 })();
