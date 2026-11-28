@@ -256,6 +256,8 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   const lines = [];
   function addLog(m) {
     if (!m) { for (let k = 0; k < 5; k++) { m = draw(); if (!(wx.tempF == null && /\{(dublinC|tempF|hum|wind)\}/.test(m[1]))) break; } }
+    const pair = m[1].split(" >> ");   // "A >> B" in the note: A now, B as the next line 4-6s later, same colour
+    if (pair.length > 1) { const rest = pair.slice(1).join(" >> "); m = [m[0], pair[0]]; setTimeout(() => addLog([m[0], rest]), rnd(4, 6) * 1000); }
     const t = new Date().toLocaleTimeString("en-GB", { timeZone: TZ, hour12: false });
     lines.push(`<div class="${m[0]}">${t} ${m[0] === "rd" ? "**" : ">"} ${esc(fill(m[1])).replace(/█+/g, x => `<span class="redact">${x}</span>`)}</div>`);
     if (lines.length > 40) lines.shift();
