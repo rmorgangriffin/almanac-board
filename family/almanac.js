@@ -331,10 +331,10 @@
       <div class="mkstrip">${R(esc(TT("monkeys.typewriter", "Typewriter")), "mkn")}${R(esc(TT("monkeys.subject", "Subject")), "mks")}${R(esc(TT("monkeys.keystrokes", "Keystrokes")), "mkk")}${R(esc(TT("monkeys.cps", "Chars / sec")), "mkc")}${R(esc(TT("monkeys.time", "Trial time")), "mkt")}</div>
       <div class="mkscreen"><div class="mklab" id="mklab"></div><div class="mkfeed" id="mkfeed"></div></div></div>`;
   }
-  function monkeyPaint() {
+  function monkeyPaint() {   // one inline run in one block, so the near-miss is just more of the stream (no own line, no rewrap, no highlight)
     const el = $("mkfeed"); if (!el) return;
-    if (MK.line) { const s = Math.max(0, MK.lineStart), e = MK.lineStart + MK.typed; el.innerHTML = esc(MK.text.slice(0, s)) + `<span class="${MK.hitAt && Date.now() - MK.hitAt > 180000 ? "" : "hit"}">${esc(MK.text.slice(s, e))}</span>` + esc(MK.text.slice(e)); }
-    else el.textContent = MK.text;
+    let b = el.firstChild; if (!b || b.className !== "mkin") { el.textContent = ""; b = document.createElement("div"); b.className = "mkin"; el.appendChild(b); }
+    b.textContent = MK.text;
   }
   function monkeyStrip() {
     if (!$("mkn")) return;
@@ -355,10 +355,10 @@
     }
     const now = Date.now();
     if (!MK.line && now >= MK.nextHit) {   // the moment: this monkey types a real line, one letter off
-      MK.nextHit = now + 10 * 60000; MK.line = oneWrong(nextLine()); MK.text += MK.text && !MK.text.endsWith(" ") ? " " : ""; MK.lineStart = MK.text.length; MK.typed = 0; MK.hitAt = 0;
+      MK.nextHit = now + 10 * 60000; MK.line = oneWrong(nextLine()); MK.lineStart = MK.text.length; MK.typed = 0; MK.hitAt = 0;
     }
     let add = "";
-    if (MK.line && MK.typed < MK.line.length) { add = MK.line[MK.typed++]; if (MK.typed === MK.line.length) { MK.hitAt = now; add += " "; } }
+    if (MK.line && MK.typed < MK.line.length) { const n = Math.random() < .3 ? 2 : 1; add = MK.line.slice(MK.typed, MK.typed + n); MK.typed += add.length; if (MK.typed === MK.line.length) MK.hitAt = now; }
     else { add = KEYS[rnd(KEYS.length)]; if (Math.random() < .3) add += KEYS[rnd(KEYS.length)]; }
     if (add) { MK.keys += add.length; MK.text += add; const cut = Math.max(0, MK.text.length - 1600); if (cut) { MK.text = MK.text.slice(cut); MK.lineStart -= cut; } }
     if (MK.line && MK.lineStart + MK.line.length <= 0) MK.line = null;
