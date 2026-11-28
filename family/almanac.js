@@ -425,7 +425,7 @@
       return `<div class="ad"><span>${d}</span></div>`; }).join("");
     setTimeout(() => adventPhoto(day), 50);
     return `<div class="adv"><div class="mkh"><span>${esc(TT("advent.title", "Advent calendar"))}</span><span>${esc(TT("advent.door", "Door"))} ${day}</span></div>
-      <div class="advb"><figure class="advpic"><div class="advimg" id="advimg" style="--phd:${Q.get("advphoto") ? 1 : 75}s"><img src="${img(row[2])}" alt=""></div><figcaption>${esc(row[1] || "")}</figcaption></figure><div class="advdoors">${doors}</div></div>
+      <div class="advb"><figure class="advpic"><div class="advimg" id="advimg" style="--phd:${Q.get("advphoto") || /\(first\)/i.test(row[5] || "") ? 1 : 75}s"><img src="${img(row[2])}" alt=""></div><figcaption>${esc(row[1] || "")}</figcaption></figure><div class="advdoors">${doors}</div></div>
       <div class="stcred">${esc([row[3], row[4]].filter(Boolean).join(" · "))}</div></div>`;
   }
   async function adventPhoto(day) {
