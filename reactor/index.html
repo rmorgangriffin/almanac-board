@@ -11,7 +11,7 @@
 /* A 1984 green-phosphor control console, laid out after Morgan's mockup. The public page is only the engine;
    every label, name, joke and log line comes from the encrypted data (reactor/data.enc).
    Pi-light: no glow, blur or scanlines; a few element updates a second; alerts every couple of minutes.
-   Tests: ?dinner=1 (the 4-6pm feeding cycle), ?overdue=1 (slop dispersal overdue, 6:01pm and 7:01am), ?alert=1 (an alert in 3 seconds), ?flash=1 (the breach flash). */
+   Tests: ?at=18:15 (pretend it's that time of day: time tags, feeding, overdue), ?dinner=1 (the feeding cycle), ?overdue=1 (slop dispersal overdue, 6:01pm and 7:01am), ?alert=1 (an alert in 3 seconds), ?flash=1 (the breach flash). */
 :root { --g: #39ff7a; --gd: #1d8c45; --amber: #ffb000; --red: #ff3b30; --panel: #06140b; color-scheme: dark; }
 * { box-sizing: border-box; }
 html { font-size: 16px; }
@@ -128,13 +128,36 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   const esc = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
   const H = (a) => `${esc(a[0])}${a[1] ? ` <span>${esc(a[1])}</span>` : ""}`;
   const hm = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date())) hm[x.type] = +x.value;
-  // Feeding cycle: pressure builds 4-6pm; the slop is overdue from 6:01pm (until 7) and from 7:01am (until 8).
+  // ?at=18:15 previews a time of day (time tags, feeding, overdue); otherwise the real Eastern time, read fresh each time
+  const AT = /^\d{1,2}:\d{2}$/.test(Q.get("at") || "") ? Q.get("at").split(":").map(Number) : null;
+  if (AT) { hm.hour = AT[0]; hm.minute = AT[1]; }
+  const nowMin = () => { if (AT) return AT[0] * 60 + AT[1]; const p = {}; for (const x of new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date())) p[x.type] = +x.value; return p.hour * 60 + p.minute; };
+  // time tags from the note ([6pm-7pm] etc.) arrive as {h: [[fromMin, toMin], ...]} on an item; untagged items are allowed any time
+  const hrsOf = x => { if (!x) return null; if (x.h) return x.h; if (Array.isArray(x)) for (const v of x) if (v && typeof v === "object" && !Array.isArray(v) && v.h) return v.h; return null; };
+  const inHrs = h => { if (!h) return true; const m = nowMin(); return h.some(w => m >= w[0] && m < w[1]); };
+  const bare = x => x.filter(v => !(v && typeof v === "object" && !Array.isArray(v) && v.h));
+  const wpick = (a, w) => { let t = 0; for (const x of a) t += w(x); let r = Math.random() * t; for (const x of a) if ((r -= w(x)) < 0) return x; return a[a.length - 1]; };
+  const W = x => hrsOf(x) ? 4 : 1;   // tagged items are four times as likely inside their hours
+  // a shuffled deck that remembers what it has dealt across showings (localStorage), so each item shows once before any repeats
+  function deck(name, items, key) {
+    let seen; try { seen = new Set(JSON.parse(localStorage.getItem("rx-" + name) || "[]")); } catch (e) { seen = new Set(); }
+    const recent = [];
+    const save = () => { const live = new Set(items.map(key)); try { localStorage.setItem("rx-" + name, JSON.stringify([...seen].filter(k => live.has(k)))); } catch (e) {} };
+    return () => {
+      const ok = items.filter(x => inHrs(hrsOf(x))); if (!ok.length) return null;
+      let un = ok.filter(x => !seen.has(key(x)));
+      if (!un.length) { ok.forEach(x => seen.delete(key(x))); un = ok.filter(x => !recent.includes(key(x))); if (!un.length) un = ok; }   // fresh deck, minus the last few shown
+      const x = wpick(un, W); seen.add(key(x)); recent.push(key(x)); if (recent.length > Math.min(12, ok.length >> 1)) recent.shift(); save(); return x;
+    };
+  }
+  // Feeding: banner and dinner lines in their tagged hours (7-8am, 5-6pm; 4-6pm if untagged); the slop is overdue from 6:01pm (until 7) and from 7:01am (until 8).
   const overdue = Q.get("overdue") === "1" || ((hm.hour === 18 || hm.hour === 7) && hm.minute >= 1);
   // Thanksgiving, the fourth Thursday of November (?date=2026-11-26 previews it): its own copy (D.thanksgiving), and begging all day
   const dayIso = Q.get("date") || new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
   const tgD = (y => `${y}-11-${String(1 + (4 - new Date(Date.UTC(y, 10, 1)).getUTCDay() + 7) % 7 + 21).padStart(2, "0")}`)(+dayIso.slice(0, 4));
   const TG = (dayIso === tgD || Q.get("thanksgiving") === "1") && D.thanksgiving ? D.thanksgiving : null;
-  const dinner = overdue || Q.get("dinner") === "1" || (hm.hour >= 16 && hm.hour < 18) || !!TG;
+  const forceDinner = overdue || Q.get("dinner") === "1" || !!TG;
+  const dinner = forceDinner || (D.feedH ? inHrs(D.feedH) : hm.hour >= 16 && hm.hour < 18);
   const N = D.now || {}, wx = { tempF: null, hum: null, wind: null, dublinC: null };
 
   /* header, consoles, lamps */
@@ -152,8 +175,9 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
 
   /* the protocol panels */
   const P = D.protos;
+  const tablePick = () => { const TS = P.tableStates.map((s, i) => ({ s, h: (P.tableH || [])[i] || null })).filter(x => inHrs(x.h)); return TS.length ? wpick(TS, x => x.h ? 4 : 1).s : "STANDBY"; };
   $("protos").innerHTML = `
-    <div class="p w2"><h2>${H(P.table)}</h2><div class="tt" id="ttMode">${esc(P.tableStates[0])}</div></div>
+    <div class="p w2"><h2>${H(P.table)}</h2><div class="tt" id="ttMode">${esc(tablePick())}</div></div>
     <div class="p ${P.nimps ? "w2" : "w4"}"><h2>${H(P.acoustic)}</h2><div class="binary"><div class="lampbox" id="binA"><i></i>${esc(P.acousticOpts[0])}</div><div class="lampbox" id="binB"><i></i>${esc(P.acousticOpts[1])}</div></div></div>
     ${P.nimps ? `<div class="p w2"><h2>${H(P.nimps)}</h2><div class="binary"><div class="lampbox" id="niA"><i></i>${esc(P.nimpsOpts[0])}</div><div class="lampbox" id="niB"><i></i>${esc(P.nimpsOpts[1])}</div></div></div>` : ""}
     <div class="p w2"><h2>${H([P.spirits[0], ""])}</h2><div class="binary"><div class="lampbox t" id="spT"><i></i>${esc(P.spiritsOpts[0])}</div><div class="lampbox f" id="spF"><i></i>${esc(P.spiritsOpts[1])}</div></div></div>
@@ -168,7 +192,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
     grocery: () => N.grocery == null ? null : [Math.min(99, N.grocery * 4), `${N.grocery} ITEMS`],
     amazon: () => N.amazon_inbound == null ? null : [Math.max(5, Math.min(99, N.amazon_inbound * 14)), N.amazon_today ? `${N.amazon_today} TODAY` + (N.amazon_inbound > N.amazon_today ? ` · ${N.amazon_inbound - N.amazon_today} MORE` : "") : N.amazon_inbound ? `${N.amazon_inbound} IN TRANSIT` : "NONE INBOUND"],
   };
-  const rows = [...D.rows, ...(TG ? TG.rows || [] : [])].map(r => { const k = (r[3] || "").startsWith("live:") ? r[3].slice(5) : null; if (k) { const v = LIVE[k] && LIVE[k](); return v ? { l: r[0], v: v[0], s: v[1], live: true } : null; } if (r[3] === "cycle") { const st = String(r[2]).split(" · ").filter(Boolean); const ph = Math.min(st.length - 1, Math.floor(rnd(0, st.length))); return { l: r[0], v: ph === st.length - 1 && ph ? 92 : ph ? 30 + 40 * ph / st.length : 15, s: st[ph] || "", cycle: st, ph, until: Date.now() + rnd(60, 240) * 1000 }; }   // a random phase each showing
+  const rows = [...D.rows, ...(TG ? TG.rows || [] : [])].filter(r => inHrs(hrsOf(r))).map(bare).map(r => { const k = (r[3] || "").startsWith("live:") ? r[3].slice(5) : null; if (k) { const v = LIVE[k] && LIVE[k](); return v ? { l: r[0], v: v[0], s: v[1], live: true } : null; } if (r[3] === "cycle") { const st = String(r[2]).split(" · ").filter(Boolean); const ph = Math.min(st.length - 1, Math.floor(rnd(0, st.length))); return { l: r[0], v: ph === st.length - 1 && ph ? 92 : ph ? 30 + 40 * ph / st.length : 15, s: st[ph] || "", cycle: st, ph, until: Date.now() + rnd(60, 240) * 1000 }; }   // a random phase each showing
     return { l: r[0], v: r[1], s: r[2], fixed: r[3] === "fixed" }; }).filter(Boolean);
   const sc = v => v > 85 ? "rd" : v > 65 ? "am" : "";
   // many gauges: shrink the list's text until Primary Systems leaves the auxiliary bank at least a few rows
@@ -242,16 +266,16 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   /* event log */
   $("logT").innerHTML = H(D.logTitle);
   let mail = P.mailStart, seen = 0;
-  const msgs = [...D.log, ...(TG ? TG.log || [] : [])].filter(m => !m[2]);
-  if (dinner) msgs.push(...D.dinner.log);
-  let deck = [];
+  // dinner lines: in their own hours, or all of them when the slop is overdue / ?dinner=1 / Thanksgiving
+  const msgs = [...D.log, ...(TG ? TG.log || [] : []), ...(forceDinner ? D.dinner.log.map(bare) : D.dinner.log.filter(m => hrsOf(m) || dinner))];
+  const dealLog = deck("log", msgs, m => m[1]);
   // Christmas Eve (6am Dec 24 to 3am Dec 25): sleigh telemetry from family/santa.js now and then
   const santaMsg = () => { if (!window.SANTA || !SANTA.live(SANTA.now()) || Math.random() > .3) return null; const s = SANTA.at(SANTA.now());
     if (s.phase === "before") return ["a", "SLEIGH PRE-FLIGHT CHECKS UNDER WAY · NORTH POLE"];
     if (s.phase === "home") return ["g", "SLEIGH RETURNED TO NORTH POLE · ALL ROUTES CLEAR"];
     if (s.city === "Leeds" || s.next === "Leeds") return ["rd", "SLEIGH IN LEEDS SECTOR AIRSPACE · ALL SUBJECTS STAND BY"];
     return ["a", `SLEIGH TELEMETRY: OVER ${s.city}, ${s.region} · NEXT ${s.next} · HOMES ${(s.homes / 1e9).toFixed(2)}B`]; };
-  const draw = () => { const sm = santaMsg(); if (sm) return sm; if (!deck.length) deck = msgs.map(m => [Math.random(), m]).sort((a, b) => a[0] - b[0]).map(x => x[1]); return deck.pop(); };
+  const draw = () => { const sm = santaMsg(); if (sm) return sm; return dealLog() || ["", "SYSTEMS NOMINAL"]; };
   function fill(t) { return t.replace("{dublinC}", wx.dublinC == null ? "--" : Math.round(wx.dublinC)).replace("{tempF}", wx.tempF == null ? "--" : Math.round(wx.tempF)).replace("{hum}", wx.hum == null ? "--" : Math.round(wx.hum)).replace("{wind}", wx.wind == null ? "--" : Math.round(wx.wind)).replace("{mailM}", Math.floor(mail / 1e6) + 1); }
   const lines = [];
   let pairNext = null;   // second half of an "A >> B" line: always the very next random line
@@ -269,12 +293,13 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   }
 
   /* critical alerts and the breach flash: rare on the wall */
-  const crit = [...(TG ? TG.crit || [] : []), ...D.crit]; if (overdue) crit.unshift(D.dinner.crit);
-  let ci = 0;
+  const crit = [...(TG ? TG.crit || [] : []), ...D.crit, ...(overdue ? [D.dinner.crit] : [])];
+  const dealCrit = deck("crit", crit, c => c[0] + "|" + c[1]);
+  let critFirst = overdue ? D.dinner.crit : null;   // when the slop is overdue, that alert comes first
   let bearOn = false, bearAnn = null;
   function critical(force) {
     if (bearOn && !force) return;
-    const c = force || crit[ci++ % crit.length], a = $("alert");
+    let c = force || critFirst || dealCrit(); critFirst = null; if (!c) return; const a = $("alert");
     a.innerHTML = `⚠ ${esc(c[0])} ⚠<small>${esc(c[1])}</small>`; a.style.display = "block"; a.classList.add("blink");
     $("ticker").textContent = "!! " + c[0] + " !!"; $("ticker").style.color = "#ff3b30"; addLog(["rd", c[0] + " · " + c[1]]);
     if (c[2] === "hostile") { $("hostS").textContent = C.hostility[2]; $("hostS").className = "st rd"; $("hostB").className = "rd"; $("hostB").style.transform = "scaleX(.97)"; $("nimS").textContent = C.nimona[2]; }
@@ -285,7 +310,8 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   /* incidents: one sequence played in order, at most one per showing (bear, pantry, internet, TikTok, tweet or smoke, each in about 14% of showings; ?bear=1, ?pantry=1, ?internet=1, ?tiktok=1, ?tweet=1 or ?smoke=1 forces one) */
   const INC = [["bear", D.bear], ["pantry", D.pantry], ["internet", D.internet], ["tiktok", D.tiktok], ["tweet", D.tweet], ["smoke", D.smoke]].filter(x => x[1] && x[1].seq && x[1].seq.length);
   const roll = Math.random(), forced = INC.find(([k]) => Q.get(k));
-  const chosen = forced || (INC.length && roll < .84 ? INC[Math.floor(roll / .84 * INC.length)] : null);
+  const incOk = INC.filter(x => inHrs(x[1].h));   // tagged incidents only in their hours, and four times as likely there
+  const chosen = forced || (incOk.length && roll < .84 ? wpick(incOk, x => x[1].h ? 4 : 1) : null);
   if (chosen) {
     const B = chosen[1]; let step = 0;
     bearAnn = B.ann ? [...$("ann").children].find(e => e.textContent === B.ann) || null : null;
@@ -329,7 +355,7 @@ footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.
   setInterval(tick, 1000); setInterval(drawChart, 1000); setInterval(restTick, 2000); setInterval(ohTick, 1800);
   setInterval(() => { drawRows(); drawDials(); }, 3000); setInterval(flips, 3500); setInterval(bark, 4000);
   if (TG) { $("ttMode").textContent = TG.table || "INITIATED"; $("ttMode").style.color = "#ffb000"; }   // stuck on INITIATED all day
-  else setInterval(() => { const s = pick(P.tableStates); $("ttMode").textContent = s; $("ttMode").style.color = s === "STANDBY" || s === "CONCLUDED" ? "#1d8c45" : "#ffb000"; }, 7000);
+  else setInterval(() => { const s = tablePick(); $("ttMode").textContent = s; $("ttMode").style.color = s === "STANDBY" || s === "CONCLUDED" ? "#1d8c45" : "#ffb000"; }, 7000);
   setInterval(() => addLog(), 2400);
   for (let i = 0; i < 24; i++) addLog();
   tick(); drawChart(); drawRows(); restTick(); ohTick(); bark(); loadWx();
